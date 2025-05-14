@@ -41,8 +41,8 @@ export async function fetchAndGenerateNews(): Promise<NewsItem[]> {
   try {
     const rssRes = await axios.get('https://cryptopanic.com/news/rss/', { responseType: 'text' })
     const match = rssRes.data.match(/<title>(.*?)<\/title>/g)
-    const topNews = match?.slice(1, 4).map((t) => t.replace(/<\/?title>/g, '')) || []
-    topNews.forEach((title) => {
+    const topNews = match?.slice(1, 4).map((t: string) => t.replace(/<\/?title>/g, '')) || []
+    topNews.forEach((title: string) => {
       articles.push({
         title: `📰 ${title}`,
         summary: `CryptoPanic 헤드라인: ${title}`,
