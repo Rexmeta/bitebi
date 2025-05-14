@@ -11,6 +11,14 @@ const FEEDS = [
   { source: 'Bitcoin Magazine', url: 'https://bitcoinmagazine.com/.rss/full/' },
 ]
 
+// 기사 인터페이스 정의
+interface Article {
+  title: string;
+  link: string;
+  pubDate: string;
+  source: string;
+}
+
 // 타임아웃 추가된 fetch 함수
 async function fetchWithTimeout(url: string, timeout = 5000) {
   const controller = new AbortController();
@@ -28,15 +36,15 @@ async function fetchWithTimeout(url: string, timeout = 5000) {
 
 export async function GET() {
   try {
-    const allItems = []
+    const allItems: Article[] = [] // 명시적 타입 지정
     for (const feed of FEEDS) {
       try {
         const parsed = await parser.parseURL(feed.url)
         parsed.items.forEach((item) => {
           allItems.push({
-            title: item.title,
-            link: item.link,
-            pubDate: item.pubDate,
+            title: item.title || '',
+            link: item.link || '',
+            pubDate: item.pubDate || '',
             source: feed.source,
           })
         })
@@ -48,7 +56,7 @@ export async function GET() {
     }
     
     // 날짜별로 정렬
-    allItems.sort((a, b) => new Date(b.pubDate!).getTime() - new Date(a.pubDate!).getTime())
+    allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
     
     if (allItems.length === 0) {
       return NextResponse.json({ 
