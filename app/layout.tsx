@@ -35,6 +35,7 @@ export default function RootLayout({
             <nav className="space-x-6 text-sm">
               <Link href="/" className="hover:text-yellow-400">홈</Link>
               <Link href="/news" className="hover:text-yellow-400">뉴스</Link>
+              <Link href="/social" className="hover:text-yellow-400">소셜</Link>
               <Link href="/aggregator" className="hover:text-yellow-400">전체 뉴스</Link>
             </nav>
           </div>
