@@ -38,9 +38,7 @@ export default function RootLayout({
               </Link>
               <div className="flex items-center space-x-6 text-sm">
                 <Link href="/" className="hover:text-yellow-400 transition-colors">홈</Link>
-                <Link href="/news" className="hover:text-yellow-400 transition-colors">뉴스</Link>
                 <Link href="/social" className="hover:text-yellow-400 transition-colors">소셜</Link>
-                <Link href="/aggregator" className="hover:text-yellow-400 transition-colors">전체 뉴스</Link>
               </div>
             </div>
             
@@ -96,10 +94,6 @@ export default function RootLayout({
             <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>🏠</span>
               <span className="text-xs">홈</span>
-            </Link>
-            <Link href="/news" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>📰</span>
-              <span className="text-xs">뉴스</span>
             </Link>
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💬</span>
