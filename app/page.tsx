@@ -2,6 +2,7 @@
 'use client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import AdBanner from './components/AdBanner'
 
 interface Article {
   title: string
@@ -232,6 +233,7 @@ export default function HomePage() {
               ))}
             </ul>
           )}
+          <AdBanner slot="1234567890" />
         </div>
 
         <div className="lg:w-1/2">
