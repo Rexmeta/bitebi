@@ -70,9 +70,22 @@ export default function SocialFeedPage() {
 
   // 초기 로드 및 필터 변경 시
   useEffect(() => {
-    setPage(1)
-    fetchPosts(1, true)
-  }, [filter, fetchPosts])
+    // URL 파라미터 처리
+    const params = new URLSearchParams(window.location.search);
+    const platformParam = params.get('platform');
+    const filterParam = params.get('filter');
+    
+    if (platformParam && ['twitter', 'reddit', 'telegram'].includes(platformParam)) {
+      setFilter(platformParam as 'twitter' | 'reddit' | 'telegram');
+    }
+    
+    if (filterParam === 'bookmarks') {
+      setShowBookmarksOnly(true);
+    }
+    
+    setPage(1);
+    fetchPosts(1, true);
+  }, [filter, fetchPosts]);
 
   // 키워드 검색 디바운스
   const debouncedSearch = debounce((value: string) => {
@@ -112,6 +125,14 @@ export default function SocialFeedPage() {
         return null
     }
   }
+
+  // URL 변경 처리를 위한 함수 추가
+  const handleFilterChange = (newFilter: typeof filter) => {
+    setFilter(newFilter);
+    const url = new URL(window.location.href);
+    url.searchParams.set('platform', newFilter);
+    window.history.pushState({}, '', url);
+  };
 
   if (error) {
     return (
@@ -159,7 +180,7 @@ export default function SocialFeedPage() {
             전체
           </button>
           <button
-            onClick={() => setFilter('twitter')}
+            onClick={() => handleFilterChange('twitter')}
             className={`px-3 py-1 rounded-full text-sm ${
               filter === 'twitter'
                 ? 'bg-blue-400 text-black'
