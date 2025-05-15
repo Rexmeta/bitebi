@@ -28,56 +28,89 @@ export default function RootLayout({
           strategy="afterInteractive"
         />
       </head>
-      <body className={`${inter.className} bg-[#1b1f23] text-white`}>
+      <body className={`${inter.className} bg-[#1b1f23] text-white min-h-screen`}>
         <header className="bg-[#13161a] sticky top-0 z-50 border-b border-[#2d333b]">
-          <div className="max-w-7xl mx-auto px-4 py-3">
-            <div className="flex justify-between items-center mb-2">
-              <h1 className="text-xl font-bold text-yellow-400">bitebi</h1>
-              <nav className="space-x-6 text-sm">
-                <Link href="/" className="hover:text-yellow-400">홈</Link>
-                <Link href="/news" className="hover:text-yellow-400">뉴스</Link>
-                <Link href="/social" className="hover:text-yellow-400">소셜</Link>
-                <Link href="/aggregator" className="hover:text-yellow-400">전체 뉴스</Link>
-              </nav>
+          <nav className="max-w-7xl mx-auto">
+            {/* 메인 네비게이션 */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#2d333b]">
+              <Link href="/" className="text-xl font-bold text-yellow-400">
+                bitebi
+              </Link>
+              <div className="flex items-center space-x-6 text-sm">
+                <Link href="/" className="hover:text-yellow-400 transition-colors">홈</Link>
+                <Link href="/news" className="hover:text-yellow-400 transition-colors">뉴스</Link>
+                <Link href="/social" className="hover:text-yellow-400 transition-colors">소셜</Link>
+                <Link href="/aggregator" className="hover:text-yellow-400 transition-colors">전체 뉴스</Link>
+              </div>
             </div>
             
-            <div className="flex items-center justify-end space-x-4 text-xs text-gray-400">
+            {/* SNS 서브 네비게이션 */}
+            <div className="px-4 py-2 flex items-center justify-end space-x-6 text-sm bg-[#1c2128]">
               <Link 
                 href="/social?platform=twitter" 
-                className="hover:text-blue-400 transition-colors"
+                className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 transition-colors"
               >
-                𝕏 Twitter
+                <span>𝕏</span>
+                <span>Twitter</span>
               </Link>
               <Link 
                 href="/social?platform=reddit" 
-                className="hover:text-orange-500 transition-colors"
+                className="flex items-center space-x-1 text-gray-400 hover:text-orange-500 transition-colors"
               >
-                📱 Reddit
+                <span>📱</span>
+                <span>Reddit</span>
               </Link>
               <Link 
                 href="/social?platform=telegram" 
-                className="hover:text-blue-500 transition-colors"
+                className="flex items-center space-x-1 text-gray-400 hover:text-blue-500 transition-colors"
               >
-                ✈️ Telegram
+                <span>✈️</span>
+                <span>Telegram</span>
               </Link>
+              <div className="h-4 w-px bg-[#2d333b]"></div>
               <Link 
                 href="/social?filter=trending" 
-                className="hover:text-yellow-400 transition-colors"
+                className="flex items-center space-x-1 text-gray-400 hover:text-yellow-400 transition-colors"
               >
-                🔥 트렌딩
+                <span>🔥</span>
+                <span>트렌딩</span>
               </Link>
               <Link 
                 href="/social?filter=bookmarks" 
-                className="hover:text-yellow-400 transition-colors"
+                className="flex items-center space-x-1 text-gray-400 hover:text-yellow-400 transition-colors"
               >
-                🔖 북마크
+                <span>🔖</span>
+                <span>북마크</span>
               </Link>
             </div>
-          </div>
+          </nav>
         </header>
-        <main className="w-full px-4 pt-6 pb-20">
+
+        <main className="max-w-7xl mx-auto px-4 py-6">
           {children}
         </main>
+
+        {/* 모바일 하단 네비게이션 */}
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b]">
+          <div className="flex justify-around py-2">
+            <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>🏠</span>
+              <span className="text-xs">홈</span>
+            </Link>
+            <Link href="/news" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>📰</span>
+              <span className="text-xs">뉴스</span>
+            </Link>
+            <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>💬</span>
+              <span className="text-xs">소셜</span>
+            </Link>
+            <Link href="/social?filter=bookmarks" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>🔖</span>
+              <span className="text-xs">북마크</span>
+            </Link>
+          </div>
+        </nav>
       </body>
     </html>
   )
