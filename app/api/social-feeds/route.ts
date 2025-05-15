@@ -60,21 +60,33 @@ export async function GET(request: Request) {
       // 텔레그램 채널에서 메시지 가져오기
       for (const channel of TELEGRAM_CHANNELS) {
         try {
-          const messages = await telegram.getUpdates()
-          const channelPosts = messages
-            .filter(msg => msg.channel_post)
-            .map(msg => ({
-              id: `telegram-${msg.update_id}`,
-              platform: 'telegram',
-              author: channel,
-              content: msg.channel_post?.text || '',
-              timestamp: new Date(msg.channel_post?.date * 1000).toISOString(),
-              link: `https://t.me/${channel}`,
-              engagement: {
-                views: msg.channel_post?.views
+          // 텔레그램 API를 통해 채널 메시지 가져오기
+          const response = await axios.get(
+            `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getUpdates`,
+            {
+              params: {
+                allowed_updates: ['channel_post'],
+                limit: 10
               }
-            }))
-          posts = [...posts, ...channelPosts]
+            }
+          )
+
+          if (response.data.ok) {
+            const channelPosts = response.data.result
+              .filter((update: any) => update.channel_post)
+              .map((update: any) => ({
+                id: `telegram-${update.update_id}`,
+                platform: 'telegram' as const,
+                author: channel,
+                content: update.channel_post?.text || '',
+                timestamp: new Date(update.channel_post?.date * 1000).toISOString(),
+                link: `https://t.me/${channel}`,
+                engagement: {
+                  views: update.channel_post?.views
+                }
+              }))
+            posts = [...posts, ...channelPosts]
+          }
         } catch (error) {
           console.error(`Telegram channel ${channel} error:`, error)
         }
@@ -84,9 +96,13 @@ export async function GET(request: Request) {
     // 키워드 필터링
     if (keyword) {
       posts = posts.filter(post => 
-        post.content.toLowerCase().includes(keyword.toLowerCase())
+        post.content.toLowerCase().includes(keyword.toLowerCase()) ||
+        KEYWORDS.some(kw => post.content.toLowerCase().includes(kw.toLowerCase()))
       )
     }
+
+    // 최신순 정렬
+    posts.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
 
     // 페이지네이션
     const postsPerPage = 10
