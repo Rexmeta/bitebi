@@ -8,8 +8,37 @@ import Script from 'next/script'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'bitebi - Crypto News Aggregator',
-  description: '비트코인 및 암호화폐 뉴스를 실시간으로 모아보는 중국어권 정보 허브',
+  title: 'bitebi - 실시간 암호화폐 뉴스 및 소셜 피드',
+  description: '비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼',
+  keywords: ['비트코인', '암호화폐', '크립토', '블록체인', '뉴스', '소셜미디어', '실시간정보'],
+  authors: [{ name: 'bitebi team' }],
+  creator: 'bitebi',
+  publisher: 'bitebi',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'ko_KR',
+    url: 'https://bitebi.vercel.app',
+    title: 'bitebi - 실시간 암호화폐 뉴스 및 소셜 피드',
+    description: '비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼',
+    siteName: 'bitebi',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'bitebi - 실시간 암호화폐 뉴스 및 소셜 피드',
+    description: '비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼',
+    creator: '@bitebi',
+  },
   manifest: '/manifest.json',
 }
 

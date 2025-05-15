@@ -6,6 +6,7 @@ import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { storage } from '../utils/storage'
 import AdBanner from '../components/AdBanner'
 import debounce from 'lodash/debounce'
+import { SocialFeedJsonLd } from '../components/JsonLd'
 
 interface SocialPost {
   id: string
@@ -149,184 +150,187 @@ export default function SocialFeedPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-yellow-400 mb-2">
-          💬 암호화폐 소셜 피드
-        </h1>
-        <p className="text-gray-400 text-sm">
-          주요 인플루언서와 커뮤니티의 실시간 업데이트
-        </p>
-      </div>
-
-      {/* 상단 광고 배너 */}
-      <AdBanner 
-        slot="5844761425"
-        format="horizontal"
-        style={{ minHeight: '100px', marginBottom: '1rem' }}
-      />
-
-      <div className="flex flex-col gap-4 mb-6">
-        {/* 플랫폼 필터 */}
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => setFilter('all')}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === 'all' 
-                ? 'bg-yellow-400 text-black' 
-                : 'border border-yellow-400 text-yellow-400'
-            }`}
-          >
-            전체
-          </button>
-          <button
-            onClick={() => handleFilterChange('twitter')}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === 'twitter'
-                ? 'bg-blue-400 text-black'
-                : 'border border-blue-400 text-blue-400'
-            }`}
-          >
-            Twitter
-          </button>
-          <button
-            onClick={() => setFilter('reddit')}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === 'reddit'
-                ? 'bg-orange-500 text-black'
-                : 'border border-orange-500 text-orange-500'
-            }`}
-          >
-            Reddit
-          </button>
-          <button
-            onClick={() => setFilter('telegram')}
-            className={`px-3 py-1 rounded-full text-sm ${
-              filter === 'telegram'
-                ? 'bg-blue-500 text-black'
-                : 'border border-blue-500 text-blue-500'
-            }`}
-          >
-            Telegram
-          </button>
+    <>
+      <SocialFeedJsonLd />
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-yellow-400 mb-2">
+            💬 암호화폐 소셜 피드
+          </h1>
+          <p className="text-gray-400 text-sm">
+            주요 인플루언서와 커뮤니티의 실시간 업데이트
+          </p>
         </div>
 
-        {/* 검색 및 북마크 필터 */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="🔍 키워드 검색..."
-            onChange={(e) => debouncedSearch(e.target.value)}
-            className="flex-1 bg-[#161b22] text-white px-3 py-2 rounded border border-[#2d333b] focus:border-yellow-400 focus:outline-none"
-          />
-          <button
-            onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
-            className={`px-3 py-2 rounded text-sm ${
-              showBookmarksOnly
-                ? 'bg-yellow-400 text-black'
-                : 'border border-yellow-400 text-yellow-400'
-            }`}
-          >
-            🔖 북마크
-          </button>
-        </div>
-      </div>
+        {/* 상단 광고 배너 */}
+        <AdBanner 
+          slot="5844761425"
+          format="horizontal"
+          style={{ minHeight: '100px', marginBottom: '1rem' }}
+        />
 
-      <div className="space-y-4">
-        {displayPosts.map((post, index) => (
-          <>
-            {/* 5개 포스트마다 광고 삽입 */}
-            {index > 0 && index % 5 === 0 && (
-              <div key={`ad-${index}`} className="my-4">
-                <AdBanner 
-                  slot="8421697053"
-                  format="rectangle"
-                  style={{ minHeight: '250px' }}
-                />
-              </div>
-            )}
-            
-            <div
-              key={post.id}
-              className="p-4 bg-[#161b22] rounded border border-[#2d333b] hover:bg-[#1c2129] transition-colors"
+        <div className="flex flex-col gap-4 mb-6">
+          {/* 플랫폼 필터 */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                filter === 'all' 
+                  ? 'bg-yellow-400 text-black' 
+                  : 'border border-yellow-400 text-yellow-400'
+              }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <PlatformIcon platform={post.platform} />
-                  <span className="font-medium text-yellow-400">
-                    {post.author}
-                  </span>
-                  <span className="text-sm text-gray-400">
-                    {formatDistanceToNow(new Date(post.timestamp), {
-                      addSuffix: true,
-                      locale: ko
-                    })}
-                  </span>
-                </div>
-                <button
-                  onClick={() => toggleBookmark(post.id)}
-                  className="text-gray-400 hover:text-yellow-400"
-                >
-                  {bookmarks.includes(post.id) ? '★' : '☆'}
-                </button>
-              </div>
+              전체
+            </button>
+            <button
+              onClick={() => handleFilterChange('twitter')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                filter === 'twitter'
+                  ? 'bg-blue-400 text-black'
+                  : 'border border-blue-400 text-blue-400'
+              }`}
+            >
+              Twitter
+            </button>
+            <button
+              onClick={() => setFilter('reddit')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                filter === 'reddit'
+                  ? 'bg-orange-500 text-black'
+                  : 'border border-orange-500 text-orange-500'
+              }`}
+            >
+              Reddit
+            </button>
+            <button
+              onClick={() => setFilter('telegram')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                filter === 'telegram'
+                  ? 'bg-blue-500 text-black'
+                  : 'border border-blue-500 text-blue-500'
+              }`}
+            >
+              Telegram
+            </button>
+          </div>
 
-              <p className="text-white mb-2">{post.content}</p>
+          {/* 검색 및 북마크 필터 */}
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="🔍 키워드 검색..."
+              onChange={(e) => debouncedSearch(e.target.value)}
+              className="flex-1 bg-[#161b22] text-white px-3 py-2 rounded border border-[#2d333b] focus:border-yellow-400 focus:outline-none"
+            />
+            <button
+              onClick={() => setShowBookmarksOnly(!showBookmarksOnly)}
+              className={`px-3 py-2 rounded text-sm ${
+                showBookmarksOnly
+                  ? 'bg-yellow-400 text-black'
+                  : 'border border-yellow-400 text-yellow-400'
+              }`}
+            >
+              🔖 북마크
+            </button>
+          </div>
+        </div>
 
-              {/* 키워드 태그 */}
-              {post.keywords && (
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {post.keywords.map((kw, i) => (
-                    <span
-                      key={i}
-                      className="px-2 py-0.5 text-xs bg-[#2d333b] text-gray-300 rounded-full"
-                    >
-                      #{kw}
-                    </span>
-                  ))}
+        <div className="space-y-4">
+          {displayPosts.map((post, index) => (
+            <>
+              {/* 5개 포스트마다 광고 삽입 */}
+              {index > 0 && index % 5 === 0 && (
+                <div key={`ad-${index}`} className="my-4">
+                  <AdBanner 
+                    slot="8421697053"
+                    format="rectangle"
+                    style={{ minHeight: '250px' }}
+                  />
                 </div>
               )}
+              
+              <div
+                key={post.id}
+                className="p-4 bg-[#161b22] rounded border border-[#2d333b] hover:bg-[#1c2129] transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <PlatformIcon platform={post.platform} />
+                    <span className="font-medium text-yellow-400">
+                      {post.author}
+                    </span>
+                    <span className="text-sm text-gray-400">
+                      {formatDistanceToNow(new Date(post.timestamp), {
+                        addSuffix: true,
+                        locale: ko
+                      })}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => toggleBookmark(post.id)}
+                    className="text-gray-400 hover:text-yellow-400"
+                  >
+                    {bookmarks.includes(post.id) ? '★' : '☆'}
+                  </button>
+                </div>
 
-              {/* 인게이지먼트 메트릭스 */}
-              <div className="flex gap-4 text-sm text-gray-400">
-                {post.engagement?.likes && (
-                  <span>❤️ {post.engagement.likes}</span>
+                <p className="text-white mb-2">{post.content}</p>
+
+                {/* 키워드 태그 */}
+                {post.keywords && (
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {post.keywords.map((kw, i) => (
+                      <span
+                        key={i}
+                        className="px-2 py-0.5 text-xs bg-[#2d333b] text-gray-300 rounded-full"
+                      >
+                        #{kw}
+                      </span>
+                    ))}
+                  </div>
                 )}
-                {post.engagement?.comments && (
-                  <span>💬 {post.engagement.comments}</span>
-                )}
-                {post.engagement?.shares && (
-                  <span>🔄 {post.engagement.shares}</span>
-                )}
-                {post.engagement?.views && (
-                  <span>👁️ {post.engagement.views}</span>
-                )}
-                <a
-                  href={post.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="ml-auto text-blue-400 hover:underline"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  원본 보기 →
-                </a>
+
+                {/* 인게이지먼트 메트릭스 */}
+                <div className="flex gap-4 text-sm text-gray-400">
+                  {post.engagement?.likes && (
+                    <span>❤️ {post.engagement.likes}</span>
+                  )}
+                  {post.engagement?.comments && (
+                    <span>💬 {post.engagement.comments}</span>
+                  )}
+                  {post.engagement?.shares && (
+                    <span>🔄 {post.engagement.shares}</span>
+                  )}
+                  {post.engagement?.views && (
+                    <span>👁️ {post.engagement.views}</span>
+                  )}
+                  <a
+                    href={post.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ml-auto text-blue-400 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    원본 보기 →
+                  </a>
+                </div>
               </div>
+            </>
+          ))}
+
+          {isLoading && (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
             </div>
-          </>
-        ))}
+          )}
 
-        {isLoading && (
-          <div className="flex justify-center py-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
-          </div>
-        )}
-
-        {!isLoading && !hasMore && (
-          <div className="text-center py-4 text-gray-400">
-            더 이상 표시할 게시물이 없습니다
-          </div>
-        )}
+          {!isLoading && !hasMore && (
+            <div className="text-center py-4 text-gray-400">
+              더 이상 표시할 게시물이 없습니다
+            </div>
+          )}
+        </div>
       </div>
-    </div>
+    </>
   )
 } 

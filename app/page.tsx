@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import AdBanner from './components/AdBanner'
+import { HomeJsonLd } from './components/JsonLd'
 
 interface Article {
   title: string
@@ -154,235 +155,238 @@ export default function HomePage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-white p-4">
-      <main className="flex flex-col lg:flex-row gap-6">
-        <div className="lg:w-1/2">
-          <h2 className="text-lg font-semibold text-yellow-400 mb-3">📰 실시간 뉴스</h2>
+    <>
+      <HomeJsonLd />
+      <div className="min-h-screen bg-[#0d1117] text-white p-4">
+        <main className="flex flex-col lg:flex-row gap-6">
+          <div className="lg:w-1/2">
+            <h2 className="text-lg font-semibold text-yellow-400 mb-3">📰 실시간 뉴스</h2>
 
-          <div className="mb-4">
-            <AdBanner 
-              slot="5844761425" 
-              format="horizontal"
-              style={{ minHeight: '100px' }}
-            />
-          </div>
-
-          {allKeywords.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {allKeywords.map((keyword, idx) => (
-                <button
-                  key={idx}
-                  className={`px-2 py-1 rounded-full text-sm border ${selectedKeyword === keyword ? 'bg-yellow-400 text-black' : 'border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black'}`}
-                  onClick={() => handleCoinSelect(keyword)}
-                >
-                  #{keyword}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {selectedKeyword && (
-            <div className="mb-3">
-              <span className="inline-flex items-center bg-yellow-500 text-black text-sm font-medium px-3 py-1 rounded-full">
-                keyword: {selectedKeyword}
-                <button
-                  className="ml-2 text-black hover:text-white"
-                  onClick={() => {
-                    setSelectedKeyword(null)
-                    setSelectedSymbol(null)
-                  }}
-                >✕</button>
-              </span>
-            </div>
-          )}
-
-          {isLoading.articles && <LoadingSpinner />}
-          {error.articles && <ErrorMessage message={error.articles} />}
-
-          {!isLoading.articles && !error.articles && filteredArticles.length === 0 && (
-            <div className="bg-gray-800/50 rounded p-4 text-gray-400 text-center">
-              표시할 뉴스가 없습니다.
-            </div>
-          )}
-
-          {!isLoading.articles && !error.articles && filteredArticles.length > 0 && (
-            <ul className="space-y-2">
-              {filteredArticles.slice(0, 5).map((a, i) => (
-                <li key={i}>
-                  <div
-                    onClick={() => window.open(a.link, '_blank')}
-                    className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
-                  >
-                    <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
-                        <span>{a.title}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {(a.keywords || []).map((keyword, idx) => (
-                          <button
-                            key={idx}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleCoinSelect(keyword)
-                            }}
-                            className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
-                          >
-                            #{keyword}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {a.source} | {new Date(a.pubDate).toLocaleString()}
-                    </div>
-                  </div>
-                </li>
-              ))}
-              
-              <li className="my-4">
-                <AdBanner 
-                  slot="8421697053"
-                  format="rectangle"
-                  style={{ minHeight: '250px' }}
-                />
-              </li>
-
-              {filteredArticles.slice(5).map((a, i) => (
-                <li key={i + 5}>
-                  <div
-                    onClick={() => window.open(a.link, '_blank')}
-                    className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
-                  >
-                    <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
-                        <span>{a.title}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {(a.keywords || []).map((keyword, idx) => (
-                          <button
-                            key={idx}
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              handleCoinSelect(keyword)
-                            }}
-                            className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
-                          >
-                            #{keyword}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-400 mt-1">
-                      {a.source} | {new Date(a.pubDate).toLocaleString()}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <div className="lg:w-1/2">
-          {selectedSymbol ? (
-            <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
-              <h3 className="text-yellow-300 font-semibold mb-2">고급 차트</h3>
-
-              <div className="mb-4">
-                <AdBanner 
-                  slot="9632784159"
-                  format="horizontal"
-                  style={{ minHeight: '100px' }}
-                />
-              </div>
-
-              <iframe
-                src={`https://s.tradingview.com/widgetembed/?frameElementId=tvchart&symbol=BINANCE:${selectedSymbol}&interval=1D&theme=dark&style=1&timezone=Asia%2FSeoul&withdateranges=1&hide_side_toolbar=0&allow_symbol_change=1&saveimage=1&toolbarbg=f1f3f6`}
-                width="100%"
-                height="600"
-                frameBorder="0"
-                allowFullScreen
-                className="w-full rounded"
-                title={`Advanced chart for ${selectedSymbol}`}
+            <div className="mb-4">
+              <AdBanner 
+                slot="5844761425" 
+                format="horizontal"
+                style={{ minHeight: '100px' }}
               />
             </div>
-          ) : (
-            <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
-              <h3 className="text-yellow-300 font-semibold mb-3">💯 시총 TOP 100</h3>
 
-              <div className="mb-4">
-                <AdBanner 
-                  slot="3574861290"
-                  format="horizontal"
-                  style={{ minHeight: '100px' }}
+            {allKeywords.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {allKeywords.map((keyword, idx) => (
+                  <button
+                    key={idx}
+                    className={`px-2 py-1 rounded-full text-sm border ${selectedKeyword === keyword ? 'bg-yellow-400 text-black' : 'border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black'}`}
+                    onClick={() => handleCoinSelect(keyword)}
+                  >
+                    #{keyword}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {selectedKeyword && (
+              <div className="mb-3">
+                <span className="inline-flex items-center bg-yellow-500 text-black text-sm font-medium px-3 py-1 rounded-full">
+                  keyword: {selectedKeyword}
+                  <button
+                    className="ml-2 text-black hover:text-white"
+                    onClick={() => {
+                      setSelectedKeyword(null)
+                      setSelectedSymbol(null)
+                    }}
+                  >✕</button>
+                </span>
+              </div>
+            )}
+
+            {isLoading.articles && <LoadingSpinner />}
+            {error.articles && <ErrorMessage message={error.articles} />}
+
+            {!isLoading.articles && !error.articles && filteredArticles.length === 0 && (
+              <div className="bg-gray-800/50 rounded p-4 text-gray-400 text-center">
+                표시할 뉴스가 없습니다.
+              </div>
+            )}
+
+            {!isLoading.articles && !error.articles && filteredArticles.length > 0 && (
+              <ul className="space-y-2">
+                {filteredArticles.slice(0, 5).map((a, i) => (
+                  <li key={i}>
+                    <div
+                      onClick={() => window.open(a.link, '_blank')}
+                      className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
+                    >
+                      <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
+                          <span>{a.title}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(a.keywords || []).map((keyword, idx) => (
+                            <button
+                              key={idx}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleCoinSelect(keyword)
+                              }}
+                              className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
+                            >
+                              #{keyword}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {a.source} | {new Date(a.pubDate).toLocaleString()}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+                
+                <li className="my-4">
+                  <AdBanner 
+                    slot="8421697053"
+                    format="rectangle"
+                    style={{ minHeight: '250px' }}
+                  />
+                </li>
+
+                {filteredArticles.slice(5).map((a, i) => (
+                  <li key={i + 5}>
+                    <div
+                      onClick={() => window.open(a.link, '_blank')}
+                      className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
+                    >
+                      <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
+                          <span>{a.title}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-1">
+                          {(a.keywords || []).map((keyword, idx) => (
+                            <button
+                              key={idx}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleCoinSelect(keyword)
+                              }}
+                              className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
+                            >
+                              #{keyword}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {a.source} | {new Date(a.pubDate).toLocaleString()}
+                      </div>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          <div className="lg:w-1/2">
+            {selectedSymbol ? (
+              <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
+                <h3 className="text-yellow-300 font-semibold mb-2">고급 차트</h3>
+
+                <div className="mb-4">
+                  <AdBanner 
+                    slot="9632784159"
+                    format="horizontal"
+                    style={{ minHeight: '100px' }}
+                  />
+                </div>
+
+                <iframe
+                  src={`https://s.tradingview.com/widgetembed/?frameElementId=tvchart&symbol=BINANCE:${selectedSymbol}&interval=1D&theme=dark&style=1&timezone=Asia%2FSeoul&withdateranges=1&hide_side_toolbar=0&allow_symbol_change=1&saveimage=1&toolbarbg=f1f3f6`}
+                  width="100%"
+                  height="600"
+                  frameBorder="0"
+                  allowFullScreen
+                  className="w-full rounded"
+                  title={`Advanced chart for ${selectedSymbol}`}
                 />
               </div>
+            ) : (
+              <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
+                <h3 className="text-yellow-300 font-semibold mb-3">💯 시총 TOP 100</h3>
 
-              <div className="flex justify-between items-center mb-2">
-                <input
-                  type="text"
-                  placeholder="🔍 코인 검색..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="bg-[#0d1117] text-white px-3 py-1 text-sm rounded border border-[#2d333b] w-1/2"
-                />
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className="bg-[#0d1117] text-white px-2 py-1 text-sm rounded border border-[#2d333b]"
-                >
-                  <option value="rank">Rank</option>
-                  <option value="price">Price</option>
-                  <option value="change">24h %</option>
-                  <option value="marketCap">Market Cap</option>
-                </select>
-              </div>
+                <div className="mb-4">
+                  <AdBanner 
+                    slot="3574861290"
+                    format="horizontal"
+                    style={{ minHeight: '100px' }}
+                  />
+                </div>
 
-              {isLoading.coins && <LoadingSpinner />}
-              {error.coins && <ErrorMessage message={error.coins} />}
+                <div className="flex justify-between items-center mb-2">
+                  <input
+                    type="text"
+                    placeholder="🔍 코인 검색..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="bg-[#0d1117] text-white px-3 py-1 text-sm rounded border border-[#2d333b] w-1/2"
+                  />
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as any)}
+                    className="bg-[#0d1117] text-white px-2 py-1 text-sm rounded border border-[#2d333b]"
+                  >
+                    <option value="rank">Rank</option>
+                    <option value="price">Price</option>
+                    <option value="change">24h %</option>
+                    <option value="marketCap">Market Cap</option>
+                  </select>
+                </div>
 
-              {!isLoading.coins && !error.coins && (
-                <table className="w-full text-sm text-white">
-                  <thead className="sticky top-0 bg-[#161b22] border-b border-[#2d333b]">
-                    <tr>
-                      <th className="text-left px-2 py-1">#</th>
-                      <th className="text-left px-2 py-1">Name</th>
-                      <th className="text-right px-2 py-1">Price</th>
-                      <th className="text-right px-2 py-1">24h %</th>
-                      <th className="text-right px-2 py-1">Market Cap</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedCoins.length === 0 ? (
+                {isLoading.coins && <LoadingSpinner />}
+                {error.coins && <ErrorMessage message={error.coins} />}
+
+                {!isLoading.coins && !error.coins && (
+                  <table className="w-full text-sm text-white">
+                    <thead className="sticky top-0 bg-[#161b22] border-b border-[#2d333b]">
                       <tr>
-                        <td colSpan={5} className="text-center py-4 text-gray-400">일치하는 코인이 없습니다</td>
+                        <th className="text-left px-2 py-1">#</th>
+                        <th className="text-left px-2 py-1">Name</th>
+                        <th className="text-right px-2 py-1">Price</th>
+                        <th className="text-right px-2 py-1">24h %</th>
+                        <th className="text-right px-2 py-1">Market Cap</th>
                       </tr>
-                    ) : (
-                      sortedCoins.map((coin) => (
-                        <tr
-                          key={coin.id}
-                          className="border-b border-[#2d333b] hover:bg-[#2a2e35] cursor-pointer"
-                          onClick={() => handleCoinSelect(coin.name)}
-                        >
-                          <td className="px-2 py-1">{coin.market_cap_rank}</td>
-                          <td className="px-2 py-1 flex items-center gap-2">
-                            <img src={coin.image} alt={coin.name} className="w-4 h-4" />
-                            {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
-                          </td>
-                          <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>
-                          <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}> {coin.price_change_percentage_24h.toFixed(2)}%</td>
-                          <td className="px-2 py-1 text-right">${coin.market_cap.toLocaleString()}</td>
+                    </thead>
+                    <tbody>
+                      {sortedCoins.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="text-center py-4 text-gray-400">일치하는 코인이 없습니다</td>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+                      ) : (
+                        sortedCoins.map((coin) => (
+                          <tr
+                            key={coin.id}
+                            className="border-b border-[#2d333b] hover:bg-[#2a2e35] cursor-pointer"
+                            onClick={() => handleCoinSelect(coin.name)}
+                          >
+                            <td className="px-2 py-1">{coin.market_cap_rank}</td>
+                            <td className="px-2 py-1 flex items-center gap-2">
+                              <img src={coin.image} alt={coin.name} className="w-4 h-4" />
+                              {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
+                            </td>
+                            <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>
+                            <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}> {coin.price_change_percentage_24h.toFixed(2)}%</td>
+                            <td className="px-2 py-1 text-right">${coin.market_cap.toLocaleString()}</td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
+    </>
   )
 }

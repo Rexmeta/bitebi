@@ -4,6 +4,7 @@ import Parser from 'rss-parser'
 import { Telegram } from 'telegraf'
 
 const parser = new Parser()
+const telegram = new Telegram(process.env.TELEGRAM_BOT_TOKEN || '')
 
 interface SocialPost {
   id: string
@@ -52,25 +53,51 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1')
     const platform = searchParams.get('platform')
     const keyword = searchParams.get('keyword')
+    
+    let posts: SocialPost[] = []
 
-    // 임시 데이터 (실제로는 각 플랫폼 API에서 데이터를 가져와야 함)
-    const mockPosts = Array.from({ length: 10 }, (_, i) => ({
-      id: `post-${page}-${i}`,
-      platform: platform || ['twitter', 'reddit', 'telegram'][Math.floor(Math.random() * 3)],
-      author: `User${i}`,
-      content: `This is a sample post ${i} about #Bitcoin and #Crypto`,
-      timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-      link: 'https://example.com',
-      engagement: {
-        likes: Math.floor(Math.random() * 1000),
-        comments: Math.floor(Math.random() * 100),
+    if (!platform || platform === 'telegram') {
+      // 텔레그램 채널에서 메시지 가져오기
+      for (const channel of TELEGRAM_CHANNELS) {
+        try {
+          const messages = await telegram.getUpdates()
+          const channelPosts = messages
+            .filter(msg => msg.channel_post)
+            .map(msg => ({
+              id: `telegram-${msg.update_id}`,
+              platform: 'telegram',
+              author: channel,
+              content: msg.channel_post?.text || '',
+              timestamp: new Date(msg.channel_post?.date * 1000).toISOString(),
+              link: `https://t.me/${channel}`,
+              engagement: {
+                views: msg.channel_post?.views
+              }
+            }))
+          posts = [...posts, ...channelPosts]
+        } catch (error) {
+          console.error(`Telegram channel ${channel} error:`, error)
+        }
       }
-    }))
+    }
+
+    // 키워드 필터링
+    if (keyword) {
+      posts = posts.filter(post => 
+        post.content.toLowerCase().includes(keyword.toLowerCase())
+      )
+    }
+
+    // 페이지네이션
+    const postsPerPage = 10
+    const start = (page - 1) * postsPerPage
+    const end = start + postsPerPage
+    const paginatedPosts = posts.slice(start, end)
 
     return NextResponse.json({
       success: true,
-      posts: mockPosts,
-      hasMore: page < 5 // 5페이지까지만 제공
+      posts: paginatedPosts,
+      hasMore: end < posts.length
     })
   } catch (e) {
     console.error('[SOCIAL FEEDS ERROR]', e)
