@@ -159,6 +159,14 @@ export default function HomePage() {
         <div className="lg:w-1/2">
           <h2 className="text-lg font-semibold text-yellow-400 mb-3">📰 실시간 뉴스</h2>
 
+          <div className="mb-4">
+            <AdBanner 
+              slot="5844761425" 
+              format="horizontal"
+              style={{ minHeight: '100px' }}
+            />
+          </div>
+
           {allKeywords.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-4">
               {allKeywords.map((keyword, idx) => (
@@ -199,8 +207,49 @@ export default function HomePage() {
 
           {!isLoading.articles && !error.articles && filteredArticles.length > 0 && (
             <ul className="space-y-2">
-              {filteredArticles.map((a, i) => (
+              {filteredArticles.slice(0, 5).map((a, i) => (
                 <li key={i}>
+                  <div
+                    onClick={() => window.open(a.link, '_blank')}
+                    className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
+                  >
+                    <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
+                        <span>{a.title}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {(a.keywords || []).map((keyword, idx) => (
+                          <button
+                            key={idx}
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleCoinSelect(keyword)
+                            }}
+                            className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
+                          >
+                            #{keyword}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-1">
+                      {a.source} | {new Date(a.pubDate).toLocaleString()}
+                    </div>
+                  </div>
+                </li>
+              ))}
+              
+              <li className="my-4">
+                <AdBanner 
+                  slot="8421697053"
+                  format="rectangle"
+                  style={{ minHeight: '250px' }}
+                />
+              </li>
+
+              {filteredArticles.slice(5).map((a, i) => (
+                <li key={i + 5}>
                   <div
                     onClick={() => window.open(a.link, '_blank')}
                     className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
@@ -233,13 +282,21 @@ export default function HomePage() {
               ))}
             </ul>
           )}
-          <AdBanner slot="1234567890" />
         </div>
 
         <div className="lg:w-1/2">
           {selectedSymbol ? (
             <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
               <h3 className="text-yellow-300 font-semibold mb-2">고급 차트</h3>
+
+              <div className="mb-4">
+                <AdBanner 
+                  slot="9632784159"
+                  format="horizontal"
+                  style={{ minHeight: '100px' }}
+                />
+              </div>
+
               <iframe
                 src={`https://s.tradingview.com/widgetembed/?frameElementId=tvchart&symbol=BINANCE:${selectedSymbol}&interval=1D&theme=dark&style=1&timezone=Asia%2FSeoul&withdateranges=1&hide_side_toolbar=0&allow_symbol_change=1&saveimage=1&toolbarbg=f1f3f6`}
                 width="100%"
@@ -253,6 +310,15 @@ export default function HomePage() {
           ) : (
             <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
               <h3 className="text-yellow-300 font-semibold mb-3">💯 시총 TOP 100</h3>
+
+              <div className="mb-4">
+                <AdBanner 
+                  slot="3574861290"
+                  format="horizontal"
+                  style={{ minHeight: '100px' }}
+                />
+              </div>
+
               <div className="flex justify-between items-center mb-2">
                 <input
                   type="text"
