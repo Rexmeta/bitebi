@@ -7,11 +7,11 @@ export function useInfiniteScroll(
   const handleScroll = useCallback(() => {
     if (!hasMore) return
 
-    const scrollTop = window.scrollY
-    const scrollHeight = document.documentElement.scrollHeight
-    const clientHeight = window.innerHeight
+    const scrollTop = window.scrollY || document.documentElement.scrollTop
+    const windowHeight = window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight
 
-    if (scrollTop + clientHeight >= scrollHeight - 100) {
+    if (windowHeight + scrollTop >= documentHeight - 1000) {
       callback()
     }
   }, [callback, hasMore])
