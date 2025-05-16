@@ -10,7 +10,8 @@ interface TopicMapProps {
   height: number
 }
 
-interface Word extends cloud.Word {
+// cloud.Word를 확장하는 커스텀 Word 타입
+interface CloudWord extends cloud.Word {
   topic: Topic
   color: string
 }
@@ -46,12 +47,12 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
       .padding(5)
       .rotate(() => ~~(Math.random() * 2) * 90)
       .font('Inter')
-      .fontSize((d: Word) => d.size || 12) // 기본값 12 추가
+      .fontSize((d: any) => d.size || 12) // any 타입 사용
       .on('end', draw)
 
     layout.start()
 
-    function draw(words: Word[]) {
+    function draw(words: CloudWord[]) {
       const svg = d3.select(svgRef.current)
       
       // 그룹 생성
