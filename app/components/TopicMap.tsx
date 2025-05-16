@@ -69,7 +69,7 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
         .style('fill', d => d.color)
         .attr('text-anchor', 'middle')
         .attr('transform', d => `translate(${d.x},${d.y}) rotate(${d.rotate})`)
-        .text(d => d.text)
+        .text((d: CloudWord) => d.text || '') // 기본값 빈 문자열 추가
         .on('mouseover', function(event, d) {
           d3.select(this)
             .style('font-weight', 'bold')
