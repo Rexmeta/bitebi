@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getLatestVideos } from '@/app/utils/youtube'
-import { getSocialFeeds, SocialFeed } from '@/app/api/social-feeds/route'
+import { getSocialFeeds, SocialFeed } from '@/app/utils/social-feeds'
 
 interface TopicMention {
   id: string
