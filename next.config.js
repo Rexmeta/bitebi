@@ -21,9 +21,9 @@ const nextConfig = {
               default-src 'self';
               script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://messari.io;
               style-src 'self' 'unsafe-inline' https://messari.io;
-              img-src 'self' data: https://assets.coingecko.com https://*.google.com https://*.doubleclick.net https://www.google-analytics.com https://messari.io;
-              frame-src 'self' https://*.google.com https://www.google.com https://messari.io;
-              connect-src 'self' https://api.coingecko.com https://*.google.com https://www.google-analytics.com https://messari.io;
+              img-src 'self' data: https://assets.coingecko.com https://*.google.com https://*.doubleclick.net https://www.google-analytics.com https://messari.io https://googleads.g.doubleclick.net;
+              frame-src 'self' https://*.google.com https://www.google.com https://messari.io https://googleads.g.doubleclick.net;
+              connect-src 'self' https://api.coingecko.com https://*.google.com https://www.google-analytics.com https://messari.io https://ep1.adtrafficquality.google;
               font-src 'self' https://messari.io;
               object-src 'none';
               media-src 'self';
@@ -32,7 +32,6 @@ const nextConfig = {
               form-action 'self';
               base-uri 'self';
               manifest-src 'self';
-              prefetch-src 'self';
               frame-ancestors 'none';
               upgrade-insecure-requests;
             `.replace(/\s+/g, ' ').trim()
