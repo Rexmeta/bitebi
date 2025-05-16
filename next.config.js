@@ -17,7 +17,25 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://assets.coingecko.com https://*.google.com https://*.doubleclick.net; frame-src 'self' https://*.google.com; connect-src 'self' https://api.coingecko.com https://*.google.com;"
+            value: `
+              default-src 'self';
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com;
+              style-src 'self' 'unsafe-inline';
+              img-src 'self' data: https://assets.coingecko.com https://*.google.com https://*.doubleclick.net https://www.google-analytics.com;
+              frame-src 'self' https://*.google.com https://www.google.com;
+              connect-src 'self' https://api.coingecko.com https://*.google.com https://www.google-analytics.com;
+              font-src 'self';
+              object-src 'none';
+              media-src 'self';
+              worker-src 'self';
+              child-src 'self';
+              form-action 'self';
+              base-uri 'self';
+              manifest-src 'self';
+              prefetch-src 'self';
+              frame-ancestors 'none';
+              upgrade-insecure-requests;
+            `.replace(/\s+/g, ' ').trim()
           }
         ]
       }
