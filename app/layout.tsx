@@ -53,22 +53,8 @@ export default function RootLayout({
         <Script
           id="adsbygoogle-init"
           strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-              window.adsbygoogle = window.adsbygoogle || [];
-              window.adsbygoogle.push({
-                google_ad_client: "ca-pub-9956651639047657",
-                enable_page_level_ads: true,
-                overlays: {bottom: true}
-              });
-            `,
-          }}
-        />
-        <Script
-          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9956651639047657"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body className={`${inter.className} bg-[#1b1f23] text-white min-h-screen`}>

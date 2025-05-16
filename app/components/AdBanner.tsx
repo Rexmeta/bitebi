@@ -11,19 +11,15 @@ interface AdBannerProps {
 export default function AdBanner({ slot, format = 'auto', style, className }: AdBannerProps) {
   const adRef = useRef<HTMLDivElement>(null)
   const [isVisible, setIsVisible] = useState(false)
-  const observerRef = useRef<IntersectionObserver | null>(null)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   useEffect(() => {
-    // Intersection Observer 설정
-    observerRef.current = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
+          if (entry.isIntersecting && !isLoaded) {
             setIsVisible(true)
-            // 광고가 보이면 observer 해제
-            if (observerRef.current) {
-              observerRef.current.disconnect()
-            }
+            observer.disconnect()
           }
         })
       },
@@ -34,59 +30,64 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
     )
 
     if (adRef.current) {
-      observerRef.current.observe(adRef.current)
+      observer.observe(adRef.current)
     }
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-      }
-    }
-  }, [])
+    return () => observer.disconnect()
+  }, [isLoaded])
 
   useEffect(() => {
-    if (!isVisible) return
+    if (!isVisible || isLoaded) return
 
     const loadAd = () => {
       try {
         // @ts-ignore
-        if (window.adsbygoogle && adRef.current) {
+        if (window.adsbygoogle) {
           // @ts-ignore
           (window.adsbygoogle = window.adsbygoogle || []).push({})
+          setIsLoaded(true)
         }
       } catch (err) {
         console.error('AdSense error:', err)
       }
     }
 
-    // AdSense가 로드되었는지 확인
+    // AdSense가 로드되었는지 확인하고 로드
     if (typeof window !== 'undefined') {
       // @ts-ignore
       if (window.adsbygoogle) {
         loadAd()
       } else {
-        // AdSense가 아직 로드되지 않았다면 1초 후에 다시 시도
-        setTimeout(loadAd, 1000)
+        const checkAdsbyGoogle = setInterval(() => {
+          // @ts-ignore
+          if (window.adsbygoogle) {
+            loadAd()
+            clearInterval(checkAdsbyGoogle)
+          }
+        }, 1000)
+
+        // 10초 후에도 로드되지 않으면 인터벌 정리
+        setTimeout(() => clearInterval(checkAdsbyGoogle), 10000)
       }
     }
-  }, [isVisible])
+  }, [isVisible, isLoaded])
+
+  if (!isVisible) return null
 
   return (
     <div ref={adRef} className={className}>
-      {isVisible && (
-        <ins
-          className="adsbygoogle"
-          style={{
-            display: 'block',
-            textAlign: 'center',
-            ...style
-          }}
-          data-ad-client="ca-pub-9956651639047657"
-          data-ad-slot={slot}
-          data-ad-format={format}
-          data-full-width-responsive="true"
-        />
-      )}
+      <ins
+        className="adsbygoogle"
+        style={{
+          display: 'block',
+          textAlign: 'center',
+          ...style
+        }}
+        data-ad-client="ca-pub-9956651639047657"
+        data-ad-slot={slot}
+        data-ad-format={format}
+        data-full-width-responsive="true"
+      />
     </div>
   )
 } 

@@ -225,8 +225,8 @@ export default function HomePage() {
                         <span>{timeAgo(article.pubDate)}</span>
                       </div>
                     </a>
-                    {(index + 1) % 5 === 0 && (
-                      <div className="my-4">
+                    {(index + 1) % 8 === 0 && (
+                      <div className="my-8">
                         <AdBanner 
                           slot="5844761425" 
                           format="auto"
