@@ -164,7 +164,7 @@ export default function SocialFeedPage() {
 
         {/* 상단 광고 */}
         <AdBanner 
-          slot="5844761425"
+          slot="5844761428"
           format="horizontal"
           style={{ minHeight: '100px', marginBottom: '1rem' }}
         />
@@ -306,7 +306,7 @@ export default function SocialFeedPage() {
               {(index + 1) % 3 === 0 && (
                 <div className="my-4">
                   <AdBanner 
-                    slot="5844761425"
+                    slot="5844761429"
                     format="horizontal"
                     style={{ minHeight: '100px' }}
                   />
@@ -319,7 +319,7 @@ export default function SocialFeedPage() {
         {/* 하단 광고 */}
         <div className="mt-4">
           <AdBanner 
-            slot="5844761425"
+            slot="5844761430"
             format="horizontal"
             style={{ minHeight: '100px' }}
           />

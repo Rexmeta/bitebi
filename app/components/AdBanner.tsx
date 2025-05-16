@@ -1,6 +1,5 @@
 'use client'
-import { useEffect } from 'react'
-import Script from 'next/script'
+import { useEffect, useRef } from 'react'
 
 interface AdBannerProps {
   slot: string
@@ -10,25 +9,24 @@ interface AdBannerProps {
 }
 
 export default function AdBanner({ slot, format = 'auto', style, className }: AdBannerProps) {
+  const adRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     try {
       // @ts-ignore
-      (window.adsbygoogle = window.adsbygoogle || []).push({})
+      if (window.adsbygoogle && adRef.current) {
+        // @ts-ignore
+        (window.adsbygoogle = window.adsbygoogle || []).push({})
+      }
     } catch (err) {
       console.error('AdSense error:', err)
     }
   }, [])
 
   return (
-    <>
-      <Script
-        async
-        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9956651639047657"
-        crossOrigin="anonymous"
-        strategy="afterInteractive"
-      />
+    <div ref={adRef} className={className}>
       <ins
-        className={`adsbygoogle ${className || ''}`}
+        className="adsbygoogle"
         style={{
           display: 'block',
           textAlign: 'center',
@@ -39,6 +37,6 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
         data-ad-format={format}
         data-full-width-responsive="true"
       />
-    </>
+    </div>
   )
 } 

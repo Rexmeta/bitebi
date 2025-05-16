@@ -228,7 +228,7 @@ export default function HomePage() {
                     {(index + 1) % 3 === 0 && (
                       <div className="my-4">
                         <AdBanner 
-                          slot="5844761425" 
+                          slot="5844761426" 
                           format="horizontal"
                           style={{ minHeight: '100px' }}
                         />
@@ -340,7 +340,7 @@ export default function HomePage() {
 
                 <div className="mt-4">
                   <AdBanner 
-                    slot="5844761425" 
+                    slot="5844761427" 
                     format="horizontal"
                     style={{ minHeight: '100px' }}
                   />
