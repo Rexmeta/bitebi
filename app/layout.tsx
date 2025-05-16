@@ -80,6 +80,9 @@ export default function RootLayout({
                 <Link href="/topics" className="text-gray-300 hover:text-white">
                   토픽 맵
                 </Link>
+                <Link href="/youtube" className="text-gray-300 hover:text-white">
+                  유튜브
+                </Link>
                 <Link href="/social" className="text-gray-300 hover:text-white">
                   SNS 피드
                 </Link>

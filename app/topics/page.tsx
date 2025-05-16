@@ -1,15 +1,40 @@
 'use client'
-import { useState } from 'react'
-import { topicCategories } from '../data/topics'
+import { useState, useEffect } from 'react'
 import { Topic } from '../types/topic'
+import TopicMap from '../components/TopicMap'
 
 export default function TopicsPage() {
+  const [topics, setTopics] = useState<Topic[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<'trending' | 'mentions' | 'recent'>('trending')
+  const [sortBy, setSortBy] = useState<'trending' | 'mentions' | 'recent'>('mentions')
+  const [windowSize, setWindowSize] = useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 0,
+    height: typeof window !== 'undefined' ? window.innerHeight : 0
+  })
 
-  const filteredTopics = topicCategories
-    .filter(category => selectedCategory === 'all' || category.id === selectedCategory)
-    .flatMap(category => category.topics)
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const response = await fetch('/api/topics')
+        const data = await response.json()
+        setTopics(data)
+      } catch (err) {
+        setError('토픽을 불러오는 중 오류가 발생했습니다.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchTopics()
+    // 5분마다 데이터 갱신
+    const interval = setInterval(fetchTopics, 5 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const filteredTopics = topics
+    .filter(topic => selectedCategory === 'all' || topic.category === selectedCategory)
     .sort((a, b) => {
       switch (sortBy) {
         case 'trending':
@@ -36,9 +61,9 @@ export default function TopicsPage() {
             className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2"
           >
             <option value="all">전체 카테고리</option>
-            {topicCategories.map(category => (
-              <option key={category.id} value={category.id}>
-                {category.name}
+            {topics.map(topic => (
+              <option key={topic.id} value={topic.category}>
+                {topic.category}
               </option>
             ))}
           </select>
