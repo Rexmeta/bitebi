@@ -209,81 +209,34 @@ export default function HomePage() {
             )}
 
             {!isLoading.articles && !error.articles && filteredArticles.length > 0 && (
-              <ul className="space-y-2">
-                {filteredArticles.slice(0, 5).map((a, i) => (
-                  <li key={i}>
-                    <div
-                      onClick={() => window.open(a.link, '_blank')}
-                      className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
+              <div className="space-y-4">
+                {filteredArticles.map((article, index) => (
+                  <div key={article.link}>
+                    <a
+                      href={article.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block p-4 bg-[#161b22] rounded-lg hover:bg-[#1c2128] transition-colors"
                     >
-                      <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
-                          <span>{a.title}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {(a.keywords || []).map((keyword, idx) => (
-                            <button
-                              key={idx}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleCoinSelect(keyword)
-                              }}
-                              className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
-                            >
-                              #{keyword}
-                            </button>
-                          ))}
-                        </div>
+                      <h3 className="text-lg font-medium mb-2">{article.title}</h3>
+                      <div className="flex items-center text-sm text-gray-400">
+                        <span>{article.source}</span>
+                        <span className="mx-2">•</span>
+                        <span>{timeAgo(article.pubDate)}</span>
                       </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {a.source} | {new Date(a.pubDate).toLocaleString()}
+                    </a>
+                    {(index + 1) % 3 === 0 && (
+                      <div className="my-4">
+                        <AdBanner 
+                          slot="5844761425" 
+                          format="horizontal"
+                          style={{ minHeight: '100px' }}
+                        />
                       </div>
-                    </div>
-                  </li>
+                    )}
+                  </div>
                 ))}
-                
-                <li className="my-4">
-                  <AdBanner 
-                    slot="8421697053"
-                    format="rectangle"
-                    style={{ minHeight: '250px' }}
-                  />
-                </li>
-
-                {filteredArticles.slice(5).map((a, i) => (
-                  <li key={i + 5}>
-                    <div
-                      onClick={() => window.open(a.link, '_blank')}
-                      className="cursor-pointer block p-3 rounded border border-[#2d333b] hover:bg-[#2a2e35]"
-                    >
-                      <div className="text-sm font-medium text-white leading-snug flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-400">{timeAgo(a.pubDate)}</span>
-                          <span>{a.title}</span>
-                        </div>
-                        <div className="flex flex-wrap gap-1">
-                          {(a.keywords || []).map((keyword, idx) => (
-                            <button
-                              key={idx}
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleCoinSelect(keyword)
-                              }}
-                              className="bg-yellow-400 text-black px-2 py-0.5 text-xs rounded-full hover:bg-yellow-300"
-                            >
-                              #{keyword}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-xs text-gray-400 mt-1">
-                        {a.source} | {new Date(a.pubDate).toLocaleString()}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              </div>
             )}
           </div>
 
@@ -346,42 +299,52 @@ export default function HomePage() {
                 {error.coins && <ErrorMessage message={error.coins} />}
 
                 {!isLoading.coins && !error.coins && (
-                  <table className="w-full text-sm text-white">
-                    <thead className="sticky top-0 bg-[#161b22] border-b border-[#2d333b]">
-                      <tr>
-                        <th className="text-left px-2 py-1">#</th>
-                        <th className="text-left px-2 py-1">Name</th>
-                        <th className="text-right px-2 py-1">Price</th>
-                        <th className="text-right px-2 py-1">24h %</th>
-                        <th className="text-right px-2 py-1">Market Cap</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {sortedCoins.length === 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-white">
+                      <thead className="sticky top-0 bg-[#161b22] border-b border-[#2d333b]">
                         <tr>
-                          <td colSpan={5} className="text-center py-4 text-gray-400">일치하는 코인이 없습니다</td>
+                          <th className="text-left px-2 py-1">#</th>
+                          <th className="text-left px-2 py-1">Name</th>
+                          <th className="text-right px-2 py-1">Price</th>
+                          <th className="text-right px-2 py-1">24h %</th>
+                          <th className="text-right px-2 py-1">Market Cap</th>
                         </tr>
-                      ) : (
-                        sortedCoins.map((coin) => (
-                          <tr
-                            key={coin.id}
-                            className="border-b border-[#2d333b] hover:bg-[#2a2e35] cursor-pointer"
-                            onClick={() => handleCoinSelect(coin.name)}
-                          >
-                            <td className="px-2 py-1">{coin.market_cap_rank}</td>
-                            <td className="px-2 py-1 flex items-center gap-2">
-                              <img src={coin.image} alt={coin.name} className="w-4 h-4" />
-                              {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
-                            </td>
-                            <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>
-                            <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}> {coin.price_change_percentage_24h.toFixed(2)}%</td>
-                            <td className="px-2 py-1 text-right">${coin.market_cap.toLocaleString()}</td>
+                      </thead>
+                      <tbody>
+                        {sortedCoins.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="text-center py-4 text-gray-400">일치하는 코인이 없습니다</td>
                           </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                        ) : (
+                          sortedCoins.map((coin) => (
+                            <tr
+                              key={coin.id}
+                              className="border-b border-[#2d333b] hover:bg-[#2a2e35] cursor-pointer"
+                              onClick={() => handleCoinSelect(coin.name)}
+                            >
+                              <td className="px-2 py-1">{coin.market_cap_rank}</td>
+                              <td className="px-2 py-1 flex items-center gap-2">
+                                <img src={coin.image} alt={coin.name} className="w-4 h-4" />
+                                {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
+                              </td>
+                              <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>
+                              <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}> {coin.price_change_percentage_24h.toFixed(2)}%</td>
+                              <td className="px-2 py-1 text-right">${coin.market_cap.toLocaleString()}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
                 )}
+
+                <div className="mt-4">
+                  <AdBanner 
+                    slot="5844761425" 
+                    format="horizontal"
+                    style={{ minHeight: '100px' }}
+                  />
+                </div>
               </div>
             )}
           </div>

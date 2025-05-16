@@ -1,13 +1,15 @@
 'use client'
 import { useEffect } from 'react'
+import Script from 'next/script'
 
 interface AdBannerProps {
   slot: string
-  format?: 'auto' | 'fluid' | 'rectangle' | 'horizontal'
+  format?: 'auto' | 'horizontal' | 'vertical' | 'rectangle'
   style?: React.CSSProperties
+  className?: string
 }
 
-export default function AdBanner({ slot, format = 'auto', style }: AdBannerProps) {
+export default function AdBanner({ slot, format = 'auto', style, className }: AdBannerProps) {
   useEffect(() => {
     try {
       // @ts-ignore
@@ -18,15 +20,25 @@ export default function AdBanner({ slot, format = 'auto', style }: AdBannerProps
   }, [])
 
   return (
-    <div className="ad-container my-4" style={style}>
+    <>
+      <Script
+        async
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9956651639047657"
+        crossOrigin="anonymous"
+        strategy="afterInteractive"
+      />
       <ins
-        className="adsbygoogle"
-        style={{ display: 'block' }}
+        className={`adsbygoogle ${className || ''}`}
+        style={{
+          display: 'block',
+          textAlign: 'center',
+          ...style
+        }}
         data-ad-client="ca-pub-9956651639047657"
         data-ad-slot={slot}
         data-ad-format={format}
         data-full-width-responsive="true"
       />
-    </div>
+    </>
   )
 } 

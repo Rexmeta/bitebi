@@ -162,7 +162,7 @@ export default function SocialFeedPage() {
           </p>
         </div>
 
-        {/* 상단 광고 배너 */}
+        {/* 상단 광고 */}
         <AdBanner 
           slot="5844761425"
           format="horizontal"
@@ -235,24 +235,11 @@ export default function SocialFeedPage() {
           </div>
         </div>
 
+        {/* 소셜 피드 */}
         <div className="space-y-4">
           {displayPosts.map((post, index) => (
-            <>
-              {/* 5개 포스트마다 광고 삽입 */}
-              {index > 0 && index % 5 === 0 && (
-                <div key={`ad-${index}`} className="my-4">
-                  <AdBanner 
-                    slot="8421697053"
-                    format="rectangle"
-                    style={{ minHeight: '250px' }}
-                  />
-                </div>
-              )}
-              
-              <div
-                key={post.id}
-                className="p-4 bg-[#161b22] rounded border border-[#2d333b] hover:bg-[#1c2129] transition-colors"
-              >
+            <div key={post.id}>
+              <div className="bg-[#161b22] rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <PlatformIcon platform={post.platform} />
@@ -315,20 +302,27 @@ export default function SocialFeedPage() {
                   </a>
                 </div>
               </div>
-            </>
+              {/* 포스트 사이 광고 (3개마다) */}
+              {(index + 1) % 3 === 0 && (
+                <div className="my-4">
+                  <AdBanner 
+                    slot="5844761425"
+                    format="horizontal"
+                    style={{ minHeight: '100px' }}
+                  />
+                </div>
+              )}
+            </div>
           ))}
+        </div>
 
-          {isLoading && (
-            <div className="flex justify-center py-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
-            </div>
-          )}
-
-          {!isLoading && !hasMore && (
-            <div className="text-center py-4 text-gray-400">
-              더 이상 표시할 게시물이 없습니다
-            </div>
-          )}
+        {/* 하단 광고 */}
+        <div className="mt-4">
+          <AdBanner 
+            slot="5844761425"
+            format="horizontal"
+            style={{ minHeight: '100px' }}
+          />
         </div>
       </div>
     </>
