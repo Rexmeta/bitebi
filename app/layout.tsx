@@ -77,6 +77,9 @@ export default function RootLayout({
                 </Link>
               </div>
               <div className="flex items-center space-x-4">
+                <Link href="/topics" className="text-gray-300 hover:text-white">
+                  토픽 맵
+                </Link>
                 <Link href="/social" className="text-gray-300 hover:text-white">
                   SNS 피드
                 </Link>
