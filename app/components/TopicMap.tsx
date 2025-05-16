@@ -10,6 +10,11 @@ interface TopicMapProps {
   height: number
 }
 
+interface Word extends cloud.Word {
+  topic: Topic
+  color: string
+}
+
 export default function TopicMap({ topics, width, height }: TopicMapProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
@@ -41,12 +46,12 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
       .padding(5)
       .rotate(() => ~~(Math.random() * 2) * 90)
       .font('Inter')
-      .fontSize(d => d.size)
+      .fontSize((d: Word) => d.size || 12) // 기본값 12 추가
       .on('end', draw)
 
     layout.start()
 
-    function draw(words: any[]) {
+    function draw(words: Word[]) {
       const svg = d3.select(svgRef.current)
       
       // 그룹 생성
