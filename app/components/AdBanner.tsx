@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface AdBannerProps {
   slot: string
@@ -10,10 +10,42 @@ interface AdBannerProps {
 
 export default function AdBanner({ slot, format = 'auto', style, className }: AdBannerProps) {
   const adRef = useRef<HTMLDivElement>(null)
-  const isLoaded = useRef(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const observerRef = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
-    if (isLoaded.current) return
+    // Intersection Observer 설정
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true)
+            // 광고가 보이면 observer 해제
+            if (observerRef.current) {
+              observerRef.current.disconnect()
+            }
+          }
+        })
+      },
+      {
+        rootMargin: '50px 0px',
+        threshold: 0.1
+      }
+    )
+
+    if (adRef.current) {
+      observerRef.current.observe(adRef.current)
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isVisible) return
 
     const loadAd = () => {
       try {
@@ -21,7 +53,6 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
         if (window.adsbygoogle && adRef.current) {
           // @ts-ignore
           (window.adsbygoogle = window.adsbygoogle || []).push({})
-          isLoaded.current = true
         }
       } catch (err) {
         console.error('AdSense error:', err)
@@ -38,22 +69,24 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
         setTimeout(loadAd, 1000)
       }
     }
-  }, [])
+  }, [isVisible])
 
   return (
     <div ref={adRef} className={className}>
-      <ins
-        className="adsbygoogle"
-        style={{
-          display: 'block',
-          textAlign: 'center',
-          ...style
-        }}
-        data-ad-client="ca-pub-9956651639047657"
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive="true"
-      />
+      {isVisible && (
+        <ins
+          className="adsbygoogle"
+          style={{
+            display: 'block',
+            textAlign: 'center',
+            ...style
+          }}
+          data-ad-client="ca-pub-9956651639047657"
+          data-ad-slot={slot}
+          data-ad-format={format}
+          data-full-width-responsive="true"
+        />
+      )}
     </div>
   )
 } 

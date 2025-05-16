@@ -225,11 +225,11 @@ export default function HomePage() {
                         <span>{timeAgo(article.pubDate)}</span>
                       </div>
                     </a>
-                    {(index + 1) % 3 === 0 && (
+                    {(index + 1) % 5 === 0 && (
                       <div className="my-4">
                         <AdBanner 
-                          slot="5844761426" 
-                          format="horizontal"
+                          slot="5844761425" 
+                          format="auto"
                           style={{ minHeight: '100px' }}
                         />
                       </div>

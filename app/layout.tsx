@@ -55,9 +55,11 @@ export default function RootLayout({
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
-              (adsbygoogle = window.adsbygoogle || []).push({
+              window.adsbygoogle = window.adsbygoogle || [];
+              window.adsbygoogle.push({
                 google_ad_client: "ca-pub-9956651639047657",
-                enable_page_level_ads: true
+                enable_page_level_ads: true,
+                overlays: {bottom: true}
               });
             `,
           }}
