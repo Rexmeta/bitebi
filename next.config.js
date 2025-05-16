@@ -1,8 +1,15 @@
-/** @type {import('next').NextConfig} */
-const withPWA = require('next-pwa')
+const withPWA = require('next-pwa')({
+  dest: 'public',
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === 'development'
+})
 
-const config = {
-  reactStrictMode: true,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: ['assets.coingecko.com'],
+  },
   async headers() {
     return [
       {
@@ -10,7 +17,7 @@ const config = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-ancestors 'self' https://googleads.g.doubleclick.net https://tpc.googlesyndication.com"
+            value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://assets.coingecko.com https://*.google.com https://*.doubleclick.net; frame-src 'self' https://*.google.com; connect-src 'self' https://api.coingecko.com https://*.google.com;"
           }
         ]
       }
@@ -18,8 +25,4 @@ const config = {
   }
 }
 
-module.exports = withPWA({
-  dest: 'public',
-  register: true,
-  skipWaiting: true,
-})(config)
+module.exports = withPWA(nextConfig)
