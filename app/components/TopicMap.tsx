@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import * as d3 from 'd3'
-import * as cloud from 'd3-cloud'
+import cloud from 'd3-cloud'
 import { Topic } from '../types/topic'
 
 interface TopicMapProps {
@@ -30,7 +30,7 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
       .range(['#22c55e', '#ef4444', '#6b7280'])
 
     // 워드 클라우드 레이아웃 설정
-    const layout = d3.layout.cloud()
+    const layout = cloud()
       .size([width, height])
       .words(topics.map(topic => ({
         text: topic.name,
