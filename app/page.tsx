@@ -165,7 +165,7 @@ export default function HomePage() {
             <div className="mb-4">
               <AdBanner 
                 slot="5844761425" 
-                format="horizontal"
+                format="auto"
                 style={{ minHeight: '100px' }}
               />
             </div>
