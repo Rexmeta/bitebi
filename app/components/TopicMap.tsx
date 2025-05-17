@@ -98,8 +98,8 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
         .style('z-index', '1000')
 
       // 마우스 이벤트에 툴팁 추가
-      g.selectAll('text')
-        .on('mouseover', function(event, d: CloudWord) {
+      g.selectAll<SVGTextElement, CloudWord>('text')
+        .on('mouseover', function(event: MouseEvent, d: CloudWord) {
           tooltip
             .style('visibility', 'visible')
             .html(`
@@ -110,7 +110,7 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
             .style('left', `${event.pageX + 10}px`)
             .style('top', `${event.pageY + 10}px`)
         })
-        .on('mousemove', function(event) {
+        .on('mousemove', function(event: MouseEvent) {
           tooltip
             .style('left', `${event.pageX + 10}px`)
             .style('top', `${event.pageY + 10}px`)
