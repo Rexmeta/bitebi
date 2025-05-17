@@ -36,6 +36,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
           }
         )
 
+        console.log('API 응답:', channelResponse.data);
+
         if (!channelResponse.data.items?.length) {
           console.warn(`Channel ${channelId} not found`)
           continue
