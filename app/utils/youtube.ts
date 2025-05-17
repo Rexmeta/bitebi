@@ -21,6 +21,25 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     
     for (const channelId of CHANNEL_IDS) {
       try {
+        // 채널 정보 먼저 확인
+        const channelResponse = await axios.get(
+          'https://www.googleapis.com/youtube/v3/channels',
+          {
+            params: {
+              part: 'snippet',
+              id: channelId,
+              key: YOUTUBE_API_KEY
+            },
+            timeout: 5000
+          }
+        )
+
+        if (!channelResponse.data.items?.length) {
+          console.warn(`Channel ${channelId} not found`)
+          continue
+        }
+
+        // 최신 비디오 가져오기
         const response = await axios.get(
           'https://www.googleapis.com/youtube/v3/search',
           {
@@ -32,7 +51,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
               type: 'video',
               key: YOUTUBE_API_KEY
             },
-            timeout: 5000 // 5초 타임아웃 설정
+            timeout: 5000
           }
         )
 
@@ -50,7 +69,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
               id: videoIds,
               key: YOUTUBE_API_KEY
             },
-            timeout: 5000 // 5초 타임아웃 설정
+            timeout: 5000
           }
         )
 
@@ -96,6 +115,6 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     )
   } catch (error) {
     console.error('Error fetching YouTube videos:', error)
-    throw error // Re-throw to let the component handle the error
+    throw error
   }
 } 
