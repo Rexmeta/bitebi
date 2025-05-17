@@ -10,13 +10,13 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: `
-              default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://messari.io https://*.googleapis.com https://*.google.com https://*.tradingview.com https://*.tradingview-charts.com;
-              style-src 'self' 'unsafe-inline' https://*.tradingview.com;
-              img-src 'self' data: https://*.ytimg.com https://*.googleapis.com https://*.google.com https://*.tradingview.com;
-              connect-src 'self' https://*.googleapis.com https://*.google.com https://*.tradingview.com wss://*.tradingview.com;
-              frame-src 'self' https://www.youtube.com https://*.tradingview.com;
-              media-src 'self';
+              default-src 'self' https://*.tradingview.com;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://messari.io https://*.googleapis.com https://*.google.com https://*.tradingview.com https://*.tradingview-charts.com https://*.tradingview-widget.com;
+              style-src 'self' 'unsafe-inline' https://*.tradingview.com https://*.tradingview-widget.com;
+              img-src 'self' data: blob: https://*.ytimg.com https://*.googleapis.com https://*.google.com https://*.tradingview.com https://*.tradingview-widget.com;
+              connect-src 'self' https://*.googleapis.com https://*.google.com https://*.tradingview.com wss://*.tradingview.com https://*.tradingview-widget.com;
+              frame-src 'self' https://www.youtube.com https://*.tradingview.com https://*.tradingview-widget.com https://s.tradingview.com https://*.google.com https://www.google.com https://messari.io https://googleads.g.doubleclick.net;
+              media-src 'self' blob:;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
