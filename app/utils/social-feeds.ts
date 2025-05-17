@@ -111,7 +111,9 @@ async function getTelegramFeeds(): Promise<SocialFeed[]> {
 
     const bot = new Telegraf(TELEGRAM_BOT_TOKEN)
     const updates = await bot.telegram.getUpdates({
+      offset: -1,  // 마지막 업데이트부터 가져오기
       limit: 10,
+      timeout: 0,  // 타임아웃 설정
       allowed_updates: ['channel_post', 'message']
     })
 
