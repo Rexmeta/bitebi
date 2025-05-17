@@ -139,24 +139,8 @@ async function getTelegramFeeds(): Promise<SocialFeed[]> {
 
     for (const channel of TELEGRAM_CHANNELS) {
       try {
-        // 채널 정보 가져오기
-        const channelResponse = await axios.get(
-          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChat`,
-          {
-            params: {
-              chat_id: `@${channel}`
-            },
-            timeout: 5000
-          }
-        )
-
-        if (!channelResponse.data.ok) {
-          console.warn(`Failed to get channel info for @${channel}`)
-          continue
-        }
-
         // 채널의 최근 메시지 가져오기
-        const messagesResponse = await axios.get(
+        const response = await axios.get(
           `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatHistory`,
           {
             params: {
@@ -167,12 +151,12 @@ async function getTelegramFeeds(): Promise<SocialFeed[]> {
           }
         )
 
-        if (!messagesResponse.data.ok) {
+        if (!response.data.ok) {
           console.warn(`Failed to get messages for @${channel}`)
           continue
         }
 
-        const messages = messagesResponse.data.result.messages || []
+        const messages = response.data.result.messages || []
         
         messages.forEach((message: any) => {
           if (message.text && message.text.toLowerCase().includes('bitcoin')) {
