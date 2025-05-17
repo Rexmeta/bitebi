@@ -11,11 +11,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://messari.io https://*.googleapis.com https://*.google.com;
-              style-src 'self' 'unsafe-inline';
-              img-src 'self' data: https://*.ytimg.com https://*.googleapis.com https://*.google.com;
-              connect-src 'self' https://*.googleapis.com https://*.google.com;
-              frame-src 'self' https://www.youtube.com;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://pagead2.googlesyndication.com https://www.googletagmanager.com https://www.google-analytics.com https://messari.io https://*.googleapis.com https://*.google.com https://*.tradingview.com https://*.tradingview-charts.com;
+              style-src 'self' 'unsafe-inline' https://*.tradingview.com;
+              img-src 'self' data: https://*.ytimg.com https://*.googleapis.com https://*.google.com https://*.tradingview.com;
+              connect-src 'self' https://*.googleapis.com https://*.google.com https://*.tradingview.com wss://*.tradingview.com;
+              frame-src 'self' https://www.youtube.com https://*.tradingview.com;
               media-src 'self';
               object-src 'none';
               base-uri 'self';
