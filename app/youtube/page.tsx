@@ -25,6 +25,8 @@ export default function YouTubePage() {
 
   const formatDuration = (duration: string) => {
     const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
+    if (!match) return '00:00'
+
     const hours = (match[1] || '').replace('H', '')
     const minutes = (match[2] || '').replace('M', '')
     const seconds = (match[3] || '').replace('S', '')
