@@ -1,60 +1,79 @@
+import axios from 'axios'
+
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const CHANNEL_IDS = [
-  'UCqK_GSMbpiV8spgD3ZGloSw', // Coin Bureau
-  'UCdUSSt-IEUg2eq46rD7lu_g', // Crypto Daily
-  'UC6ZQ-SuhvM79X8Uq1-dV12A', // Crypto Banter
+  'UCqK_GSMbpiV8spgD3ZGloSw', // aantonop
+  'UC6rBxHpzXfV3U6o8nGpzJ8g', // Coin Bureau
   'UCqK_GSMbpiV8spgD3ZGloSw', // Bitcoin.com
-  'UCdUSSt-IEUg2eq46rD7lu_g'  // Bitcoin Magazine
+  'UCqK_GSMbpiV8spgD3ZGloSw', // Crypto Daily
+  'UCqK_GSMbpiV8spgD3ZGloSw'  // Ivan on Tech
 ]
+
+export interface YouTubeVideo {
+  id: string
+  title: string
+  description: string
+  publishedAt: string
+  channelTitle: string
+  thumbnailUrl: string
+  viewCount: number
+  likeCount: number
+  commentCount: number
+  url: string
+}
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   try {
     const videos: YouTubeVideo[] = []
     
     for (const channelId of CHANNEL_IDS) {
-      const response = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?` +
-        `part=snippet&` +
-        `channelId=${channelId}&` +
-        `maxResults=5&` +
-        `order=date&` +
-        `type=video&` +
-        `key=${YOUTUBE_API_KEY}`
-      )
-      
-      const data = await response.json()
-      
-      if (data.items) {
-        for (const item of data.items) {
-          // 비디오 상세 정보 가져오기
-          const videoResponse = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?` +
-            `part=contentDetails,statistics&` +
-            `id=${item.id.videoId}&` +
-            `key=${YOUTUBE_API_KEY}`
-          )
-          
-          const videoData = await videoResponse.json()
-          
-          if (videoData.items && videoData.items[0]) {
-            const video = videoData.items[0]
-            videos.push({
-              id: item.id.videoId,
-              title: item.snippet.title,
-              description: item.snippet.description,
-              thumbnailUrl: item.snippet.thumbnails.high.url,
-              channelTitle: item.snippet.channelTitle,
-              publishedAt: item.snippet.publishedAt,
-              viewCount: parseInt(video.statistics.viewCount),
-              duration: video.contentDetails.duration,
-              channelId: item.snippet.channelId
-            })
+      const response = await axios.get(
+        'https://www.googleapis.com/youtube/v3/search',
+        {
+          params: {
+            part: 'snippet',
+            channelId,
+            maxResults: 5,
+            order: 'date',
+            type: 'video',
+            key: YOUTUBE_API_KEY
           }
         }
-      }
+      )
+
+      const videoIds = response.data.items.map((item: any) => item.id.videoId).join(',')
+      const videoDetails = await axios.get(
+        'https://www.googleapis.com/youtube/v3/videos',
+        {
+          params: {
+            part: 'statistics',
+            id: videoIds,
+            key: YOUTUBE_API_KEY
+          }
+        }
+      )
+
+      const videoStats = videoDetails.data.items.reduce((acc: any, item: any) => {
+        acc[item.id] = item.statistics
+        return acc
+      }, {})
+
+      videos.push(
+        ...response.data.items.map((item: any) => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          description: item.snippet.description,
+          publishedAt: item.snippet.publishedAt,
+          channelTitle: item.snippet.channelTitle,
+          thumbnailUrl: item.snippet.thumbnails.high.url,
+          viewCount: parseInt(videoStats[item.id.videoId]?.viewCount || '0'),
+          likeCount: parseInt(videoStats[item.id.videoId]?.likeCount || '0'),
+          commentCount: parseInt(videoStats[item.id.videoId]?.commentCount || '0'),
+          url: `https://www.youtube.com/watch?v=${item.id.videoId}`
+        }))
+      )
     }
-    
-    // 최신순으로 정렬
+
     return videos.sort((a, b) => 
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     )
