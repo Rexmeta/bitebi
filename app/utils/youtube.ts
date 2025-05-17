@@ -5,9 +5,9 @@ const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
 const CHANNEL_IDS = [
   'UCqK_GSMbpiV8spgD3ZGloSw', // aantonop
   'UC6rBxHpzXfV3U6o8nGpzJ8g', // Coin Bureau
-  'UCqK_GSMbpiV8spgD3ZGloSw', // Bitcoin.com
-  'UCqK_GSMbpiV8spgD3ZGloSw', // Crypto Daily
-  'UCqK_GSMbpiV8spgD3ZGloSw'  // Ivan on Tech
+  'UCdUSST-9B4dPJP1s6bQxQwA', // Bitcoin.com
+  'UCYJdP1T4m3w8ZR-hKfMxXqw', // Crypto Daily
+  'UC7YjJ9Xg4XlO5YJ9JtXmXZw'  // Ivan on Tech
 ]
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
@@ -31,7 +31,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
               order: 'date',
               type: 'video',
               key: YOUTUBE_API_KEY
-            }
+            },
+            timeout: 5000 // 5초 타임아웃 설정
           }
         )
 
@@ -48,7 +49,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
               part: 'statistics,contentDetails',
               id: videoIds,
               key: YOUTUBE_API_KEY
-            }
+            },
+            timeout: 5000 // 5초 타임아웃 설정
           }
         )
 
