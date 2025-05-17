@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { YouTubeVideo } from '../types/youtube'
 
 const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const CHANNEL_IDS = [
@@ -8,19 +9,6 @@ const CHANNEL_IDS = [
   'UCqK_GSMbpiV8spgD3ZGloSw', // Crypto Daily
   'UCqK_GSMbpiV8spgD3ZGloSw'  // Ivan on Tech
 ]
-
-export interface YouTubeVideo {
-  id: string
-  title: string
-  description: string
-  publishedAt: string
-  channelTitle: string
-  thumbnailUrl: string
-  viewCount: number
-  likeCount: number
-  commentCount: number
-  url: string
-}
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   try {
@@ -46,7 +34,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
         'https://www.googleapis.com/youtube/v3/videos',
         {
           params: {
-            part: 'statistics',
+            part: 'statistics,contentDetails',
             id: videoIds,
             key: YOUTUBE_API_KEY
           }
@@ -54,22 +42,24 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
       )
 
       const videoStats = videoDetails.data.items.reduce((acc: any, item: any) => {
-        acc[item.id] = item.statistics
+        acc[item.id] = {
+          statistics: item.statistics,
+          contentDetails: item.contentDetails
+        }
         return acc
       }, {})
 
       videos.push(
-        ...response.data.items.map((item: any) => ({
+        ...response.data.items.map((item: any): YouTubeVideo => ({
           id: item.id.videoId,
           title: item.snippet.title,
           description: item.snippet.description,
           publishedAt: item.snippet.publishedAt,
           channelTitle: item.snippet.channelTitle,
           thumbnailUrl: item.snippet.thumbnails.high.url,
-          viewCount: parseInt(videoStats[item.id.videoId]?.viewCount || '0'),
-          likeCount: parseInt(videoStats[item.id.videoId]?.likeCount || '0'),
-          commentCount: parseInt(videoStats[item.id.videoId]?.commentCount || '0'),
-          url: `https://www.youtube.com/watch?v=${item.id.videoId}`
+          viewCount: parseInt(videoStats[item.id.videoId]?.statistics?.viewCount || '0'),
+          duration: videoStats[item.id.videoId]?.contentDetails?.duration || 'PT0S',
+          channelId: item.snippet.channelId
         }))
       )
     }
