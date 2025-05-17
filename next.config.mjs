@@ -10,7 +10,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: `
-              default-src 'self' https://*.tradingview.com https://*.google.com https://*.doubleclick.net;
+              default-src 'self' https://*.tradingview.com https://*.google.com https://*.doubleclick.net https://*.youtube.com;
               script-src 'self' 'unsafe-inline' 'unsafe-eval' 
                 https://pagead2.googlesyndication.com 
                 https://www.googletagmanager.com 
@@ -28,12 +28,15 @@ const nextConfig = {
                 https://*.googlesyndication.com
                 https://*.googleadservices.com
                 https://*.google.com
-                https://*.gstatic.com;
+                https://*.gstatic.com
+                https://*.youtube.com
+                https://www.youtube.com;
               style-src 'self' 'unsafe-inline' 
                 https://*.tradingview.com 
                 https://*.tradingview-widget.com
                 https://*.google.com
-                https://*.gstatic.com;
+                https://*.gstatic.com
+                https://*.youtube.com;
               img-src 'self' data: blob: 
                 https://*.ytimg.com 
                 https://*.googleapis.com 
@@ -44,7 +47,9 @@ const nextConfig = {
                 https://*.google.com
                 https://*.gstatic.com
                 https://*.google-analytics.com
-                https://*.googlesyndication.com;
+                https://*.googlesyndication.com
+                https://*.youtube.com
+                https://*.ytimg.com;
               connect-src 'self' 
                 https://*.googleapis.com 
                 https://*.google.com 
@@ -56,7 +61,10 @@ const nextConfig = {
                 https://*.google-analytics.com
                 https://*.googlesyndication.com
                 https://*.googleadservices.com
-                https://*.gstatic.com;
+                https://*.gstatic.com
+                https://*.youtube.com
+                https://www.youtube.com
+                https://youtube.googleapis.com;
               frame-src 'self' 
                 https://www.youtube.com 
                 https://*.tradingview.com 
@@ -68,8 +76,10 @@ const nextConfig = {
                 https://googleads.g.doubleclick.net
                 https://fundingchoicesmessages.google.com
                 https://*.doubleclick.net
-                https://*.googleadservices.com;
-              media-src 'self' blob: https://*.google.com;
+                https://*.googleadservices.com
+                https://*.youtube.com
+                https://youtube.com;
+              media-src 'self' blob: https://*.google.com https://*.youtube.com;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
