@@ -10,7 +10,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: `
-              default-src 'self' https://*.tradingview.com https://*.google.com https://*.doubleclick.net https://*.youtube.com https://*.messari.io https://*.googleadservices.com;
+              default-src 'self' https://*.tradingview.com https://*.google.com https://*.doubleclick.net https://*.youtube.com https://*.messari.io https://*.googleadservices.com https://*.adtrafficquality.google;
               script-src 'self' 'unsafe-inline' 'unsafe-eval' 
                 https://pagead2.googlesyndication.com 
                 https://www.googletagmanager.com 
@@ -33,7 +33,9 @@ const nextConfig = {
                 https://www.youtube.com
                 https://*.messari.io
                 https://*.adtrafficquality.google
-                https://*.googleadservices.com;
+                https://*.googleadservices.com
+                https://*.google.com
+                https://*.gstatic.com;
               style-src 'self' 'unsafe-inline' 
                 https://*.tradingview.com 
                 https://*.tradingview-widget.com
@@ -41,7 +43,8 @@ const nextConfig = {
                 https://*.gstatic.com
                 https://*.youtube.com
                 https://*.messari.io
-                https://*.googleadservices.com;
+                https://*.googleadservices.com
+                https://*.doubleclick.net;
               img-src 'self' data: blob: 
                 https://*.ytimg.com 
                 https://*.googleapis.com 
@@ -56,7 +59,8 @@ const nextConfig = {
                 https://*.youtube.com
                 https://*.ytimg.com
                 https://*.messari.io
-                https://*.googleadservices.com;
+                https://*.googleadservices.com
+                https://*.adtrafficquality.google;
               connect-src 'self' 
                 https://*.googleapis.com 
                 https://*.google.com 
@@ -74,7 +78,9 @@ const nextConfig = {
                 https://youtube.googleapis.com
                 https://*.messari.io
                 https://api.messari.io
-                https://*.adtrafficquality.google;
+                https://*.adtrafficquality.google
+                https://*.google.com
+                https://*.gstatic.com;
               frame-src 'self' 
                 https://www.youtube.com 
                 https://*.tradingview.com 
@@ -90,8 +96,14 @@ const nextConfig = {
                 https://*.youtube.com
                 https://youtube.com
                 https://*.messari.io
-                https://*.adtrafficquality.google;
-              media-src 'self' blob: https://*.google.com https://*.youtube.com https://*.messari.io https://*.googleadservices.com;
+                https://*.adtrafficquality.google
+                https://*.google.com;
+              media-src 'self' blob: 
+                https://*.google.com 
+                https://*.youtube.com 
+                https://*.messari.io 
+                https://*.googleadservices.com
+                https://*.doubleclick.net;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
