@@ -24,6 +24,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     
     for (const channelId of CHANNEL_IDS) {
       try {
+        console.log(`Fetching channel info for ${channelId}...`)
+        
         // 채널 정보 먼저 확인
         const channelResponse = await axios.get(
           'https://www.googleapis.com/youtube/v3/channels',
@@ -42,6 +44,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
           continue
         }
 
+        console.log(`Fetching videos for channel ${channelId}...`)
+        
         // 최신 비디오 가져오기
         const response = await axios.get(
           'https://www.googleapis.com/youtube/v3/search',
@@ -64,6 +68,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
         }
 
         const videoIds = response.data.items.map((item: any) => item.id.videoId).join(',')
+        console.log(`Fetching video details for ${videoIds}...`)
+        
         const videoDetails = await axios.get(
           'https://www.googleapis.com/youtube/v3/videos',
           {
@@ -89,35 +95,46 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
           return acc
         }, {})
 
-        videos.push(
-          ...response.data.items.map((item: any): YouTubeVideo => ({
-            id: item.id.videoId,
-            title: item.snippet.title,
-            description: item.snippet.description,
-            publishedAt: item.snippet.publishedAt,
-            channelTitle: item.snippet.channelTitle,
-            thumbnailUrl: item.snippet.thumbnails.high.url,
-            viewCount: parseInt(videoStats[item.id.videoId]?.statistics?.viewCount || '0'),
-            duration: videoStats[item.id.videoId]?.contentDetails?.duration || 'PT0S',
-            channelId: item.snippet.channelId
-          }))
-        )
-      } catch (channelError) {
-        console.error(`Error fetching videos for channel ${channelId}:`, channelError)
-        // Continue with next channel instead of failing completely
+        const channelVideos = response.data.items.map((item: any): YouTubeVideo => ({
+          id: item.id.videoId,
+          title: item.snippet.title,
+          description: item.snippet.description,
+          publishedAt: item.snippet.publishedAt,
+          channelTitle: item.snippet.channelTitle,
+          thumbnailUrl: item.snippet.thumbnails.high.url,
+          viewCount: parseInt(videoStats[item.id.videoId]?.statistics?.viewCount || '0'),
+          duration: videoStats[item.id.videoId]?.contentDetails?.duration || 'PT0S',
+          channelId: item.snippet.channelId
+        }))
+
+        console.log(`Successfully fetched ${channelVideos.length} videos for channel ${channelId}`)
+        videos.push(...channelVideos)
+        
+      } catch (channelError: any) {
+        console.error(`Error fetching videos for channel ${channelId}:`, {
+          message: channelError.message,
+          response: channelError.response?.data,
+          status: channelError.response?.status
+        })
         continue
       }
     }
 
     if (videos.length === 0) {
+      console.error('No videos could be fetched from any channel')
       throw new Error('No videos could be fetched from any channel')
     }
 
+    console.log(`Successfully fetched total ${videos.length} videos`)
     return videos.sort((a, b) => 
       new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     )
-  } catch (error) {
-    console.error('Error fetching YouTube videos:', error)
+  } catch (error: any) {
+    console.error('Error fetching YouTube videos:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status
+    })
     throw error
   }
 } 
