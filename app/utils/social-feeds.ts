@@ -1,7 +1,10 @@
 import axios from 'axios'
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
+const TELEGRAM_BOT_TOKEN = process.env.NEXT_PUBLIC_TELEGRAM_BOT_TOKEN
 const TWITTER_BEARER_TOKEN = process.env.TWITTER_BEARER_TOKEN
+
+// API 키 확인을 위한 로깅 추가
+console.log('Telegram Bot Token:', TELEGRAM_BOT_TOKEN ? '설정됨' : '설정되지 않음')
 
 export interface SocialFeed {
   id: string

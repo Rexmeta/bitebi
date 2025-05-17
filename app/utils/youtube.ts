@@ -2,6 +2,10 @@ import axios from 'axios'
 import { YouTubeVideo } from '../types/youtube'
 
 const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
+
+// API 키 확인을 위한 로깅 추가
+console.log('YouTube API Key:', YOUTUBE_API_KEY ? '설정됨' : '설정되지 않음')
+
 const CHANNEL_IDS = [
   'UCqK_GSMbpiV8spgD3ZGloSw', // Coin Bureau
   'UCbLhGKVY-bJPcawebgtNfbw', // Altcoin Daily
