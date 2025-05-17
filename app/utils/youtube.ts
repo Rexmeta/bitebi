@@ -3,13 +3,10 @@ import { YouTubeVideo } from '../types/youtube'
 
 const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
 const CHANNEL_IDS = [
-  'UCqK_GSMbpiV8spgD3ZGloSw', // aantonop
-  'UCnQo0kPzsvr98hM-jlJ6s0w', // Coin Bureau (2024년 6월 기준)
-  'UCZ0jIYQixcC2yE8V5bY2bJw', // Bitcoin.com Official
-  'UCbLhGKVY-bJPcawebgtNfbw', // Crypto Daily
-  'UClgRkhTL3_hImCAmdLfDE4g', // Ivan on Tech
+  'UCqK_GSMbpiV8spgD3ZGloSw', // Coin Bureau
+  'UCbLhGKVY-bJPcawebgtNfbw', // Altcoin Daily
   'UCRvqjQPSeaWn-uEx-w0XOIg', // Benjamin Cowen
-  'UCnqZ2hx679DqRi6khRUNw2g'  // Crypto Banter
+  'UCnqZ2hx679DqRi6khRUNw2g'  // TheChartGuys
 ]
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
