@@ -1,4 +1,4 @@
-import { Telegraf } from 'telegraf'
+import { Telegraf, Update } from 'telegraf'
 import axios from 'axios'
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -118,11 +118,11 @@ async function getTelegramFeeds(): Promise<SocialFeed[]> {
     })
 
     return updates
-      .filter(update => {
+      .filter((update: Update) => {
         const message = update.channel_post || update.message
         return message && message.text && message.text.toLowerCase().includes('bitcoin')
       })
-      .map(update => {
+      .map((update: Update) => {
         const message = update.channel_post || update.message
         return {
           id: message.message_id.toString(),
