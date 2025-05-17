@@ -1,4 +1,3 @@
-import { Telegraf, Update } from 'telegraf'
 import axios from 'axios'
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
@@ -109,20 +108,25 @@ async function getTelegramFeeds(): Promise<SocialFeed[]> {
   try {
     if (!TELEGRAM_BOT_TOKEN) return []
 
-    const bot = new Telegraf(TELEGRAM_BOT_TOKEN)
-    const updates = await bot.telegram.getUpdates({
-      offset: -1,  // 마지막 업데이트부터 가져오기
-      limit: 10,
-      timeout: 0,  // 타임아웃 설정
-      allowed_updates: ['channel_post', 'message']
-    })
+    // Telegram API를 직접 호출
+    const response = await axios.get(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`,
+      {
+        params: {
+          offset: -1,
+          limit: 10,
+          timeout: 0,
+          allowed_updates: ['channel_post', 'message']
+        }
+      }
+    )
 
-    return updates
-      .filter((update: Update) => {
+    return response.data.result
+      .filter((update: any) => {
         const message = update.channel_post || update.message
         return message && message.text && message.text.toLowerCase().includes('bitcoin')
       })
-      .map((update: Update) => {
+      .map((update: any) => {
         const message = update.channel_post || update.message
         return {
           id: message.message_id.toString(),
