@@ -10,7 +10,7 @@ const nextConfig = {
           {
             key: 'Content-Security-Policy',
             value: `
-              default-src 'self' https://*.tradingview.com;
+              default-src 'self' https://*.tradingview.com https://*.google.com https://*.doubleclick.net;
               script-src 'self' 'unsafe-inline' 'unsafe-eval' 
                 https://pagead2.googlesyndication.com 
                 https://www.googletagmanager.com 
@@ -23,11 +23,17 @@ const nextConfig = {
                 https://*.tradingview-widget.com
                 https://fundingchoicesmessages.google.com
                 https://ep2.adtrafficquality.google
-                https://*.doubleclick.net;
+                https://*.doubleclick.net
+                https://*.google-analytics.com
+                https://*.googlesyndication.com
+                https://*.googleadservices.com
+                https://*.google.com
+                https://*.gstatic.com;
               style-src 'self' 'unsafe-inline' 
                 https://*.tradingview.com 
                 https://*.tradingview-widget.com
-                https://*.google.com;
+                https://*.google.com
+                https://*.gstatic.com;
               img-src 'self' data: blob: 
                 https://*.ytimg.com 
                 https://*.googleapis.com 
@@ -35,7 +41,10 @@ const nextConfig = {
                 https://*.tradingview.com 
                 https://*.tradingview-widget.com
                 https://*.doubleclick.net
-                https://*.google.com;
+                https://*.google.com
+                https://*.gstatic.com
+                https://*.google-analytics.com
+                https://*.googlesyndication.com;
               connect-src 'self' 
                 https://*.googleapis.com 
                 https://*.google.com 
@@ -43,7 +52,11 @@ const nextConfig = {
                 wss://*.tradingview.com 
                 https://*.tradingview-widget.com
                 https://*.doubleclick.net
-                https://fundingchoicesmessages.google.com;
+                https://fundingchoicesmessages.google.com
+                https://*.google-analytics.com
+                https://*.googlesyndication.com
+                https://*.googleadservices.com
+                https://*.gstatic.com;
               frame-src 'self' 
                 https://www.youtube.com 
                 https://*.tradingview.com 
@@ -53,8 +66,10 @@ const nextConfig = {
                 https://www.google.com 
                 https://messari.io 
                 https://googleads.g.doubleclick.net
-                https://fundingchoicesmessages.google.com;
-              media-src 'self' blob:;
+                https://fundingchoicesmessages.google.com
+                https://*.doubleclick.net
+                https://*.googleadservices.com;
+              media-src 'self' blob: https://*.google.com;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
