@@ -6,6 +6,15 @@ const TWITTER_BEARER_TOKEN = process.env.TWITTER_BEARER_TOKEN
 // API 키 확인을 위한 로깅 추가
 console.log('Telegram Bot Token:', TELEGRAM_BOT_TOKEN ? '설정됨' : '설정되지 않음')
 
+// 주요 비트코인 텔레그램 채널 목록
+const TELEGRAM_CHANNELS = [
+  'bitcoin',
+  'cryptosignals',
+  'cryptodaily',
+  'cryptonews',
+  'bitcoinnews'
+]
+
 export interface SocialFeed {
   id: string
   content: string
@@ -24,18 +33,30 @@ export async function getSocialFeeds(): Promise<SocialFeed[]> {
   try {
     // Twitter 피드 가져오기
     if (TWITTER_BEARER_TOKEN) {
-      const twitterFeeds = await getTwitterFeeds()
-      feeds.push(...twitterFeeds)
+      try {
+        const twitterFeeds = await getTwitterFeeds()
+        feeds.push(...twitterFeeds)
+      } catch (error) {
+        console.error('Twitter feeds error:', error)
+      }
     }
 
     // Reddit 피드 가져오기
-    const redditFeeds = await getRedditFeeds()
-    feeds.push(...redditFeeds)
+    try {
+      const redditFeeds = await getRedditFeeds()
+      feeds.push(...redditFeeds)
+    } catch (error) {
+      console.error('Reddit feeds error:', error)
+    }
 
     // Telegram 피드 가져오기
     if (TELEGRAM_BOT_TOKEN) {
-      const telegramFeeds = await getTelegramFeeds()
-      feeds.push(...telegramFeeds)
+      try {
+        const telegramFeeds = await getTelegramFeeds()
+        feeds.push(...telegramFeeds)
+      } catch (error) {
+        console.error('Telegram feeds error:', error)
+      }
     }
 
     // 타임스탬프 기준으로 정렬
@@ -109,37 +130,69 @@ async function getRedditFeeds(): Promise<SocialFeed[]> {
 
 async function getTelegramFeeds(): Promise<SocialFeed[]> {
   try {
-    if (!TELEGRAM_BOT_TOKEN) return []
+    if (!TELEGRAM_BOT_TOKEN) {
+      console.error('Telegram bot token is not configured')
+      return []
+    }
 
-    // Telegram API를 직접 호출
-    const response = await axios.get(
-      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates`,
-      {
-        params: {
-          offset: -1,
-          limit: 10,
-          timeout: 0,
-          allowed_updates: ['channel_post', 'message']
+    const feeds: SocialFeed[] = []
+
+    for (const channel of TELEGRAM_CHANNELS) {
+      try {
+        // 채널 정보 가져오기
+        const channelResponse = await axios.get(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChat`,
+          {
+            params: {
+              chat_id: `@${channel}`
+            },
+            timeout: 5000
+          }
+        )
+
+        if (!channelResponse.data.ok) {
+          console.warn(`Failed to get channel info for @${channel}`)
+          continue
         }
+
+        // 채널의 최근 메시지 가져오기
+        const messagesResponse = await axios.get(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getChatHistory`,
+          {
+            params: {
+              chat_id: `@${channel}`,
+              limit: 10
+            },
+            timeout: 5000
+          }
+        )
+
+        if (!messagesResponse.data.ok) {
+          console.warn(`Failed to get messages for @${channel}`)
+          continue
+        }
+
+        const messages = messagesResponse.data.result.messages || []
+        
+        messages.forEach((message: any) => {
+          if (message.text && message.text.toLowerCase().includes('bitcoin')) {
+            feeds.push({
+              id: message.id.toString(),
+              content: message.text,
+              author: channel,
+              platform: 'telegram',
+              timestamp: new Date(message.date * 1000).toISOString(),
+              url: `https://t.me/${channel}/${message.id}`
+            })
+          }
+        })
+      } catch (channelError) {
+        console.error(`Error fetching channel @${channel}:`, channelError)
+        continue
       }
-    )
+    }
 
-    return response.data.result
-      .filter((update: any) => {
-        const message = update.channel_post || update.message
-        return message && message.text && message.text.toLowerCase().includes('bitcoin')
-      })
-      .map((update: any) => {
-        const message = update.channel_post || update.message
-        return {
-          id: message.message_id.toString(),
-          content: message.text,
-          author: message.from?.username || 'Unknown',
-          platform: 'telegram',
-          timestamp: new Date(message.date * 1000).toISOString(),
-          url: `https://t.me/${message.chat.username}/${message.message_id}`
-        }
-      })
+    return feeds
   } catch (error) {
     console.error('Error fetching Telegram feeds:', error)
     return []
