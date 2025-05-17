@@ -36,7 +36,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
           }
         )
 
-        console.log('API 응답:', channelResponse.data);
+        console.log(`Channel ${channelId} API Response:`, JSON.stringify(channelResponse.data, null, 2))
 
         if (!channelResponse.data.items?.length) {
           console.warn(`Channel ${channelId} not found`)
@@ -59,6 +59,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
           }
         )
 
+        console.log(`Videos for channel ${channelId} API Response:`, JSON.stringify(response.data, null, 2))
+
         if (!response.data.items?.length) {
           console.warn(`No videos found for channel ${channelId}`)
           continue
@@ -76,6 +78,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
             timeout: 5000
           }
         )
+
+        console.log(`Video details for channel ${channelId} API Response:`, JSON.stringify(videoDetails.data, null, 2))
 
         if (!videoDetails.data.items?.length) {
           console.warn(`No video details found for channel ${channelId}`)
