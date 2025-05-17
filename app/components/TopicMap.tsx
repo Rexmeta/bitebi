@@ -99,7 +99,7 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
 
       // 마우스 이벤트에 툴팁 추가
       g.selectAll('text')
-        .on('mouseover', function(event, d) {
+        .on('mouseover', function(event, d: CloudWord) {
           tooltip
             .style('visibility', 'visible')
             .html(`
