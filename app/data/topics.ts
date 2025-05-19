@@ -13,16 +13,31 @@ export const topicCategories: TopicCategory[] = [
         category: 'market',
         trending: 'up',
         mentionCount: 150,
-        lastMentioned: new Date()
+        lastMentioned: new Date(),
+        sentiment: 0.5,
+        relatedNews: []
       },
       {
-        id: 'market-sentiment',
-        name: '시장 심리',
-        description: '투자자 심리와 시장 분위기',
+        id: 'market-analysis',
+        name: '시장 분석',
+        description: '기술적/기본적 분석과 시장 전망',
+        category: 'market',
+        trending: 'up',
+        mentionCount: 120,
+        lastMentioned: new Date(),
+        sentiment: 0.3,
+        relatedNews: []
+      },
+      {
+        id: 'trading-volume',
+        name: '거래량',
+        description: '거래량 변화와 유동성 분석',
         category: 'market',
         trending: 'neutral',
-        mentionCount: 120,
-        lastMentioned: new Date()
+        mentionCount: 80,
+        lastMentioned: new Date(),
+        sentiment: 0.1,
+        relatedNews: []
       }
     ]
   },
