@@ -84,6 +84,9 @@ export default function RootLayout({
                 <Link href="/whale-tracker" className="text-gray-300 hover:text-white">
                   Whale Tracker
                 </Link>
+                <Link href="/stablecoin-tracker" className="text-gray-300 hover:text-white">
+                  Stablecoin
+                </Link>
                 <Link href="/topics" className="text-gray-300 hover:text-white">
                   Topics
                 </Link>
@@ -116,9 +119,9 @@ export default function RootLayout({
               <span>🐋</span>
               <span className="text-xs">Whale</span>
             </Link>
-            <Link href="/topics" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>📊</span>
-              <span className="text-xs">Topics</span>
+            <Link href="/stablecoin-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>💵</span>
+              <span className="text-xs">Stable</span>
             </Link>
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💬</span>
