@@ -1,15 +1,24 @@
 // src/app/layout.tsx
 import './globals.css'
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import Script from 'next/script'
+import Navigation from './components/Navigation'
 
 const inter = Inter({ subsets: ['latin'] })
 
+export const viewport: Viewport = {
+  themeColor: '#000000',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
-  title: 'Bitebi - 비트코인 실시간 시세',
-  description: '비트코인 실시간 시세와 뉴스를 한눈에',
+  title: 'Bitebi - Bitcoin News & Analysis',
+  description: 'Real-time Bitcoin news, market analysis, and whale tracking',
   keywords: ['비트코인', '암호화폐', '크립토', '블록체인', '뉴스', '소셜미디어', '실시간정보'],
   authors: [{ name: 'bitebi team' }],
   creator: 'bitebi',
@@ -39,17 +48,10 @@ export const metadata: Metadata = {
     description: '비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼',
     creator: '@bitebi',
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   icons: {
-    icon: '/icons/icon-192x192.png',
-    apple: '/icons/icon-192x192.png',
-  },
-  themeColor: '#0d1117',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1',
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: 'default',
-    title: 'Bitebi',
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
   },
 }
 
@@ -68,6 +70,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-[#1b1f23] text-white min-h-screen`}>
+        <Navigation />
         <header className="bg-[#161b22] border-b border-[#30363d]">
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
