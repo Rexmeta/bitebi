@@ -6,6 +6,13 @@ export interface Topic {
   trending: 'up' | 'down' | 'neutral'
   mentionCount: number
   lastMentioned: Date
+  sentiment: number // -1 to 1
+  relatedNews: {
+    title: string
+    url: string
+    publishedAt: Date
+    source: string
+  }[]
 }
 
 export interface TopicCategory {

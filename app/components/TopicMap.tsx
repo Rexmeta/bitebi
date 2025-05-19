@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as d3 from 'd3'
 import cloud from 'd3-cloud'
 import { Topic } from '../types/topic'
@@ -10,14 +10,15 @@ interface TopicMapProps {
   height: number
 }
 
-// cloud.Word를 확장하는 커스텀 Word 타입
 interface CloudWord extends cloud.Word {
   topic: Topic
   color: string
+  text: string
 }
 
 export default function TopicMap({ topics, width, height }: TopicMapProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
 
   useEffect(() => {
     if (!svgRef.current || !topics.length) return
@@ -28,12 +29,12 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
     // 언급량에 따른 크기 스케일 설정
     const mentionScale = d3.scaleLinear()
       .domain([0, d3.max(topics, d => d.mentionCount) || 0])
-      .range([12, 48]) // 폰트 크기 범위
+      .range([12, 48])
 
-    // 색상 스케일 설정
-    const colorScale = d3.scaleOrdinal()
-      .domain(['up', 'down', 'neutral'])
-      .range(['#22c55e', '#ef4444', '#6b7280'])
+    // 감성 점수에 따른 색상 스케일 설정
+    const sentimentScale = d3.scaleLinear<string>()
+      .domain([-1, 0, 1])
+      .range(['#ef4444', '#6b7280', '#22c55e'])
 
     // 워드 클라우드 레이아웃 설정
     const layout = cloud()
@@ -41,13 +42,13 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
       .words(topics.map(topic => ({
         text: topic.name,
         size: mentionScale(topic.mentionCount),
-        color: colorScale(topic.trending),
+        color: sentimentScale(topic.sentiment),
         topic: topic
       })))
       .padding(5)
       .rotate(() => ~~(Math.random() * 2) * 90)
       .font('Inter')
-      .fontSize((d: any) => d.size || 12) // any 타입 사용
+      .fontSize((d: CloudWord) => d.size || 12)
       .on('end', draw)
 
     layout.start()
@@ -69,8 +70,8 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
         .style('fill', d => d.color)
         .attr('text-anchor', 'middle')
         .attr('transform', d => `translate(${d.x},${d.y}) rotate(${d.rotate})`)
-        .text((d: CloudWord) => d.text || '') // 기본값 빈 문자열 추가
-        .on('mouseover', function(event, d) {
+        .text(d => d.text)
+        .on('mouseover', function(event: MouseEvent, d: CloudWord) {
           d3.select(this)
             .style('font-weight', 'bold')
             .style('cursor', 'pointer')
@@ -79,9 +80,8 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
           d3.select(this)
             .style('font-weight', 'normal')
         })
-        .on('click', (event, d) => {
-          // 토픽 상세 정보 표시
-          showTopicDetails(d.topic)
+        .on('click', (event: MouseEvent, d: CloudWord) => {
+          setSelectedTopic(d.topic)
         })
 
       // 툴팁 생성
@@ -96,16 +96,34 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
         .style('border-radius', '4px')
         .style('border', '1px solid #30363d')
         .style('z-index', '1000')
+        .style('max-width', '300px')
 
       // 마우스 이벤트에 툴팁 추가
       g.selectAll<SVGTextElement, CloudWord>('text')
         .on('mouseover', function(event: MouseEvent, d: CloudWord) {
+          const sentiment = d.topic.sentiment
+          const sentimentText = sentiment > 0.3 ? '긍정적' : sentiment < -0.3 ? '부정적' : '중립적'
+          
           tooltip
             .style('visibility', 'visible')
             .html(`
               <div class="font-semibold">${d.topic.name}</div>
               <div class="text-sm text-gray-400">언급: ${d.topic.mentionCount}</div>
+              <div class="text-sm text-gray-400">감성: ${sentimentText} (${sentiment.toFixed(2)})</div>
               <div class="text-sm text-gray-400">${d.topic.description}</div>
+              ${d.topic.relatedNews.length > 0 ? `
+                <div class="mt-2 text-sm">
+                  <div class="font-semibold">관련 뉴스:</div>
+                  ${d.topic.relatedNews.slice(0, 2).map(news => `
+                    <div class="mt-1">
+                      <a href="${news.url}" target="_blank" class="text-blue-400 hover:text-blue-300">
+                        ${news.title}
+                      </a>
+                      <div class="text-xs text-gray-500">${new Date(news.publishedAt).toLocaleDateString()}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : ''}
             `)
             .style('left', `${event.pageX + 10}px`)
             .style('top', `${event.pageY + 10}px`)
@@ -121,23 +139,70 @@ export default function TopicMap({ topics, width, height }: TopicMapProps) {
     }
 
     return () => {
-      // 컴포넌트 언마운트 시 툴팁 제거
       d3.select('.tooltip').remove()
     }
   }, [topics, width, height])
 
   return (
-    <svg
-      ref={svgRef}
-      width={width}
-      height={height}
-      className="bg-[#161b22] rounded-lg"
-    />
+    <div className="relative">
+      <svg
+        ref={svgRef}
+        width={width}
+        height={height}
+        className="bg-[#161b22] rounded-lg"
+      />
+      
+      {/* 선택된 토픽 상세 정보 */}
+      {selectedTopic && (
+        <div className="absolute top-0 right-0 w-80 bg-[#1b1f23] border border-[#30363d] rounded-lg p-4 m-4">
+          <div className="flex justify-between items-start mb-4">
+            <h3 className="text-lg font-semibold text-yellow-400">{selectedTopic.name}</h3>
+            <button
+              onClick={() => setSelectedTopic(null)}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </button>
+          </div>
+          
+          <div className="space-y-4">
+            <div>
+              <div className="text-sm text-gray-400">언급 횟수</div>
+              <div className="text-lg">{selectedTopic.mentionCount}</div>
+            </div>
+            
+            <div>
+              <div className="text-sm text-gray-400">감성 분석</div>
+              <div className="text-lg">
+                {selectedTopic.sentiment > 0.3 ? '긍정적' :
+                 selectedTopic.sentiment < -0.3 ? '부정적' : '중립적'}
+                ({selectedTopic.sentiment.toFixed(2)})
+              </div>
+            </div>
+            
+            <div>
+              <div className="text-sm text-gray-400">관련 뉴스</div>
+              <div className="space-y-2 mt-2">
+                {selectedTopic.relatedNews.map((news, index) => (
+                  <div key={index} className="border-t border-[#30363d] pt-2">
+                    <a
+                      href={news.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      {news.title}
+                    </a>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {news.source} • {new Date(news.publishedAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   )
-}
-
-// 토픽 상세 정보 표시 함수
-function showTopicDetails(topic: Topic) {
-  // 모달이나 사이드바로 토픽 상세 정보를 표시하는 로직
-  console.log('Topic details:', topic)
 } 
