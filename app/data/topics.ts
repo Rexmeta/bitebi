@@ -53,7 +53,9 @@ export const topicCategories: TopicCategory[] = [
         category: 'technology',
         trending: 'up',
         mentionCount: 80,
-        lastMentioned: new Date()
+        lastMentioned: new Date(),
+        sentiment: 0.6,
+        relatedNews: []
       },
       {
         id: 'taproot',
@@ -62,7 +64,9 @@ export const topicCategories: TopicCategory[] = [
         category: 'technology',
         trending: 'neutral',
         mentionCount: 60,
-        lastMentioned: new Date()
+        lastMentioned: new Date(),
+        sentiment: 0.4,
+        relatedNews: []
       }
     ]
   },
@@ -78,7 +82,9 @@ export const topicCategories: TopicCategory[] = [
         category: 'regulation',
         trending: 'up',
         mentionCount: 200,
-        lastMentioned: new Date()
+        lastMentioned: new Date(),
+        sentiment: -0.3,
+        relatedNews: []
       },
       {
         id: 'global-regulation',
@@ -87,7 +93,9 @@ export const topicCategories: TopicCategory[] = [
         category: 'regulation',
         trending: 'down',
         mentionCount: 180,
-        lastMentioned: new Date()
+        lastMentioned: new Date(),
+        sentiment: -0.4,
+        relatedNews: []
       }
     ]
   }
