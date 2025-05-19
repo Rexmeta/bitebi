@@ -4,7 +4,6 @@ import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import Link from 'next/link'
 import Script from 'next/script'
-import Navigation from './components/Navigation'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -70,24 +69,32 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.className} bg-[#1b1f23] text-white min-h-screen`}>
-        <Navigation />
         <header className="bg-[#161b22] border-b border-[#30363d]">
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
-              <div className="flex">
+              <div className="flex items-center">
                 <Link href="/" className="flex items-center">
                   <span className="text-xl font-bold text-yellow-400">Bitebi</span>
                 </Link>
               </div>
-              <div className="flex items-center space-x-4">
+              <div className="hidden md:flex items-center space-x-6">
+                <Link href="/" className="text-gray-300 hover:text-white">
+                  Home
+                </Link>
+                <Link href="/whale-tracker" className="text-gray-300 hover:text-white">
+                  Whale Tracker
+                </Link>
                 <Link href="/topics" className="text-gray-300 hover:text-white">
-                  토픽 맵
+                  Topics
+                </Link>
+                <Link href="/news" className="text-gray-300 hover:text-white">
+                  News
                 </Link>
                 <Link href="/youtube" className="text-gray-300 hover:text-white">
-                  유튜브
+                  YouTube
                 </Link>
                 <Link href="/social" className="text-gray-300 hover:text-white">
-                  SNS 피드
+                  Social
                 </Link>
               </div>
             </div>
@@ -103,15 +110,19 @@ export default function RootLayout({
           <div className="flex justify-around py-2">
             <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>🏠</span>
-              <span className="text-xs">홈</span>
+              <span className="text-xs">Home</span>
+            </Link>
+            <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>🐋</span>
+              <span className="text-xs">Whale</span>
+            </Link>
+            <Link href="/topics" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>📊</span>
+              <span className="text-xs">Topics</span>
             </Link>
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💬</span>
-              <span className="text-xs">소셜</span>
-            </Link>
-            <Link href="/social?filter=bookmarks" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>🔖</span>
-              <span className="text-xs">북마크</span>
+              <span className="text-xs">Social</span>
             </Link>
           </div>
         </nav>
