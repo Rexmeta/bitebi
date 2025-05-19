@@ -6,12 +6,36 @@ const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
 // API 키 확인을 위한 로깅 추가
 console.log('YouTube API Key:', YOUTUBE_API_KEY ? '설정됨' : '설정되지 않음')
 
-const CHANNEL_IDS = [
-  'UCqK_GSMbpiV8spgD3ZGloSw', // Coin Bureau
-  'UCbLhGKVY-bJPcawebgtNfbw', // Altcoin Daily
-  'UCRvqjQPSeaWn-uEx-w0XOIg', // Benjamin Cowen
-  'UCnqZ2hx679DqRi6khRUNw2g'  // TheChartGuys
+const CHANNEL_HANDLES = [
+  'otaverse',
+  'algoran',
+  'BitcoinMagazine',
+  'BinanceYoutube'
 ]
+
+async function getChannelIdFromHandle(handle: string): Promise<string | null> {
+  try {
+    const response = await axios.get(
+      'https://www.googleapis.com/youtube/v3/channels',
+      {
+        params: {
+          part: 'id',
+          forHandle: handle,
+          key: YOUTUBE_API_KEY
+        },
+        timeout: 5000
+      }
+    )
+
+    if (response.data.items && response.data.items.length > 0) {
+      return response.data.items[0].id
+    }
+    return null
+  } catch (error) {
+    console.error(`Error fetching channel ID for handle ${handle}:`, error)
+    return null
+  }
+}
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY) {
@@ -22,7 +46,15 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   try {
     const videos: YouTubeVideo[] = []
     
-    for (const channelId of CHANNEL_IDS) {
+    // Get channel IDs from handles
+    const channelIds = await Promise.all(
+      CHANNEL_HANDLES.map(handle => getChannelIdFromHandle(handle))
+    )
+    
+    // Filter out null values
+    const validChannelIds = channelIds.filter((id): id is string => id !== null)
+    
+    for (const channelId of validChannelIds) {
       try {
         console.log(`Fetching channel info for ${channelId}...`)
         
