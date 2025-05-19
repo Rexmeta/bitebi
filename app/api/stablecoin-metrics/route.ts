@@ -52,49 +52,34 @@ interface GroupedData {
   burns: number
 }
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
-  const coin = searchParams.get('coin') || 'USDT'
-  const timeframe = searchParams.get('timeframe') || 'daily'
+// 임시 데이터 - 실제로는 데이터베이스나 외부 API에서 가져와야 합니다
+const generateMockData = () => {
+  const data = []
+  const now = Date.now()
+  const oneDay = 24 * 60 * 60 * 1000
 
-  if (!STABLECOINS[coin]) {
-    return NextResponse.json({ error: 'Invalid coin' }, { status: 400 })
+  for (let i = 30; i >= 0; i--) {
+    const timestamp = new Date(now - i * oneDay)
+    data.push({
+      timestamp: timestamp.toISOString(),
+      totalSupply: 150000000000 + Math.random() * 10000000000,
+      marketCap: 145000000000 + Math.random() * 10000000000,
+      volume24h: 50000000000 + Math.random() * 5000000000
+    })
   }
 
+  return data
+}
+
+export async function GET() {
   try {
-    const tokenAddress = STABLECOINS[coin].address
-    const decimals = STABLECOINS[coin].decimals
-
-    // Get transfer events
-    const transferEvents = await alchemy.core.getLogs({
-      address: tokenAddress,
-      topics: [
-        '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef', // Transfer event signature
-      ],
-      fromBlock: '0x' + (Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60).toString(16), // Last 30 days
-      toBlock: 'latest',
-    }) as TransferEvent[]
-
-    // Process events
-    const events = transferEvents.map((event) => {
-      const value = BigInt(event.data)
-      const from = '0x' + event.topics[1].slice(26)
-      const to = '0x' + event.topics[2].slice(26)
-      
-      return {
-        timestamp: event.blockNumber,
-        value: Number(value) / Math.pow(10, decimals),
-        type: from === ZERO_ADDRESS ? 'mint' : to === ZERO_ADDRESS ? 'burn' : 'transfer',
-      } as ProcessedEvent
-    })
-
-    // Group by timeframe
-    const groupedData = groupByTimeframe(events, timeframe)
-
-    return NextResponse.json(groupedData)
+    const metrics = generateMockData()
+    return NextResponse.json(metrics)
   } catch (error) {
-    console.error('Error fetching stablecoin data:', error)
-    return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+    return NextResponse.json(
+      { error: '스테이블코인 데이터를 가져오는데 실패했습니다.' },
+      { status: 500 }
+    )
   }
 }
 

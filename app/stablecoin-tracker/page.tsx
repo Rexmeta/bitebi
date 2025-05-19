@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Line } from 'react-chartjs-2'
 import {
   Chart as ChartJS,
@@ -9,8 +9,7 @@ import {
   LineElement,
   Title,
   Tooltip,
-  Legend,
-  ChartOptions,
+  Legend
 } from 'chart.js'
 
 ChartJS.register(
@@ -23,80 +22,61 @@ ChartJS.register(
   Legend
 )
 
-interface StablecoinData {
-  labels: string[]
-  transfers: number[]
-  mints: number[]
-  burns: number[]
+interface StablecoinMetric {
+  timestamp: string
+  totalSupply: number
+  marketCap: number
+  volume24h: number
 }
 
-const STABLECOINS = {
-  USDT: {
-    name: 'Tether USD',
-    address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-    decimals: 6,
-  },
-  USDC: {
-    name: 'USD Coin',
-    address: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    decimals: 6,
-  },
-  DAI: {
-    name: 'Dai Stablecoin',
-    address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-    decimals: 18,
-  },
-} as const
-
-type StablecoinType = keyof typeof STABLECOINS
-
-export default function StablecoinTracker() {
-  const [selectedCoin, setSelectedCoin] = useState<StablecoinType>('USDT')
-  const [timeframe, setTimeframe] = useState('daily')
-  const [data, setData] = useState<StablecoinData | null>(null)
-  const [loading, setLoading] = useState(false)
+export default function StablecoinTrackerPage() {
+  const [metrics, setMetrics] = useState<StablecoinMetric[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchData()
-  }, [selectedCoin, timeframe])
-
-  const fetchData = async () => {
-    setLoading(true)
-    try {
-      const response = await fetch(`/api/stablecoin-metrics?coin=${selectedCoin}&timeframe=${timeframe}`)
-      const result = await response.json()
-      setData(result)
-    } catch (error) {
-      console.error('Error fetching stablecoin data:', error)
+    const fetchMetrics = async () => {
+      try {
+        const response = await fetch('/api/stablecoin-metrics')
+        const data = await response.json()
+        setMetrics(data)
+      } catch (err) {
+        setError('스테이블코인 데이터를 불러오는 중 오류가 발생했습니다.')
+      } finally {
+        setLoading(false)
+      }
     }
-    setLoading(false)
-  }
+
+    fetchMetrics()
+    const interval = setInterval(fetchMetrics, 5 * 60 * 1000) // 5분마다 업데이트
+    return () => clearInterval(interval)
+  }, [])
 
   const chartData = {
-    labels: data?.labels || [],
+    labels: metrics.map(m => new Date(m.timestamp).toLocaleDateString()),
     datasets: [
       {
-        label: 'Transfer Volume',
-        data: data?.transfers || [],
+        label: '총 공급량 (USD)',
+        data: metrics.map(m => m.totalSupply),
         borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
+        tension: 0.1
       },
       {
-        label: 'Mint Volume',
-        data: data?.mints || [],
-        borderColor: 'rgb(54, 162, 235)',
-        tension: 0.1,
-      },
-      {
-        label: 'Burn Volume',
-        data: data?.burns || [],
+        label: '시가총액 (USD)',
+        data: metrics.map(m => m.marketCap),
         borderColor: 'rgb(255, 99, 132)',
-        tension: 0.1,
+        tension: 0.1
       },
-    ],
+      {
+        label: '24시간 거래량 (USD)',
+        data: metrics.map(m => m.volume24h),
+        borderColor: 'rgb(54, 162, 235)',
+        tension: 0.1
+      }
+    ]
   }
 
-  const options: ChartOptions<'line'> = {
+  const chartOptions = {
     responsive: true,
     plugins: {
       legend: {
@@ -104,60 +84,51 @@ export default function StablecoinTracker() {
       },
       title: {
         display: true,
-        text: `${STABLECOINS[selectedCoin].name} Metrics`,
-      },
+        text: '스테이블코인 시장 지표'
+      }
     },
     scales: {
       y: {
-        type: 'linear' as const,
         beginAtZero: true,
         ticks: {
-          callback: function(value) {
-            return `$${(Number(value) / 1e6).toLocaleString()}M`
+          callback: function(value: any) {
+            return '$' + value.toLocaleString()
           }
-        },
-      },
-    },
+        }
+      }
+    }
   }
+
+  if (loading) return <div className="text-center py-8">로딩 중...</div>
+  if (error) return <div className="text-center py-8 text-red-500">{error}</div>
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-yellow-400 mb-4">Stablecoin Tracker</h1>
-        
-        <div className="flex items-center gap-4 mb-6">
-          <select
-            value={selectedCoin}
-            onChange={(e) => setSelectedCoin(e.target.value as StablecoinType)}
-            className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2 text-white"
-          >
-            {Object.keys(STABLECOINS).map((coin) => (
-              <option key={coin} value={coin}>
-                {coin}
-              </option>
-            ))}
-          </select>
+      <h1 className="text-2xl font-bold text-yellow-400 mb-6">스테이블코인 트래커</h1>
+      
+      <div className="bg-[#161b22] p-6 rounded-lg">
+        <Line data={chartData} options={chartOptions} />
+      </div>
 
-          <select
-            value={timeframe}
-            onChange={(e) => setTimeframe(e.target.value)}
-            className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2 text-white"
-          >
-            <option value="daily">Daily</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-          </select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div className="bg-[#161b22] p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">총 공급량</h3>
+          <p className="text-2xl text-yellow-400">
+            ${metrics[metrics.length - 1]?.totalSupply.toLocaleString() ?? 0}
+          </p>
         </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-400"></div>
-          </div>
-        ) : (
-          <div className="bg-[#161b22] p-4 rounded-lg">
-            <Line data={chartData} options={options} />
-          </div>
-        )}
+        <div className="bg-[#161b22] p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">시가총액</h3>
+          <p className="text-2xl text-yellow-400">
+            ${metrics[metrics.length - 1]?.marketCap.toLocaleString() ?? 0}
+          </p>
+        </div>
+        <div className="bg-[#161b22] p-4 rounded-lg">
+          <h3 className="text-lg font-semibold mb-2">24시간 거래량</h3>
+          <p className="text-2xl text-yellow-400">
+            ${metrics[metrics.length - 1]?.volume24h.toLocaleString() ?? 0}
+          </p>
+        </div>
       </div>
     </div>
   )

@@ -22,143 +22,64 @@ interface TopicMention {
   }[]
 }
 
+// 임시 데이터 - 실제로는 데이터베이스나 외부 API에서 가져와야 합니다
+const topics = [
+  {
+    id: '1',
+    name: '비트코인',
+    description: '가장 큰 시가총액을 가진 암호화폐',
+    mentions: 1500,
+    lastMentioned: new Date().toISOString(),
+    category: 'Layer 1',
+    relatedNews: [
+      {
+        title: '비트코인, 사상 최고가 경신',
+        url: 'https://example.com/news/1',
+        source: 'Crypto News',
+        publishedAt: new Date().toISOString()
+      }
+    ]
+  },
+  {
+    id: '2',
+    name: '이더리움',
+    description: '스마트 컨트랙트 플랫폼',
+    mentions: 1200,
+    lastMentioned: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+    category: 'Layer 1',
+    relatedNews: [
+      {
+        title: '이더리움 2.0 업그레이드 진행 중',
+        url: 'https://example.com/news/2',
+        source: 'ETH News',
+        publishedAt: new Date().toISOString()
+      }
+    ]
+  },
+  {
+    id: '3',
+    name: '디파이',
+    description: '탈중앙화 금융 서비스',
+    mentions: 800,
+    lastMentioned: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(),
+    category: 'DeFi',
+    relatedNews: [
+      {
+        title: '디파이 프로토콜 총 잠긴 가치 1000억 달러 돌파',
+        url: 'https://example.com/news/3',
+        source: 'DeFi Pulse',
+        publishedAt: new Date().toISOString()
+      }
+    ]
+  }
+]
+
 export async function GET() {
   try {
-    // 1. 뉴스 데이터 수집
-    const newsResponse = await fetch('https://api.coingecko.com/api/v3/news')
-    const newsData = await newsResponse.json()
-
-    // 2. 소셜 미디어 데이터 수집
-    const socialFeeds = await getSocialFeeds()
-
-    // 3. 유튜브 데이터 수집
-    const youtubeVideos = await getLatestVideos()
-
-    // 4. 토픽 추출 및 카운팅
-    const topics: { [key: string]: TopicMention } = {}
-
-    // 뉴스에서 토픽 추출
-    newsData.data.forEach((news: any) => {
-      const title = news.title.toLowerCase()
-      const description = news.description.toLowerCase()
-      
-      // 주요 키워드 추출
-      const keywords = extractKeywords(title + ' ' + description)
-      
-      keywords.forEach(keyword => {
-        if (!topics[keyword]) {
-          topics[keyword] = {
-            id: keyword,
-            name: keyword,
-            category: determineCategory(keyword),
-            mentionCount: 0,
-            lastMentioned: new Date(),
-            sources: [
-              { type: 'news', count: 0 },
-              { type: 'social', count: 0 },
-              { type: 'youtube', count: 0 }
-            ],
-            sentiment: 0,
-            relatedNews: []
-          }
-        }
-        
-        topics[keyword].mentionCount++
-        topics[keyword].sources[0].count++
-        topics[keyword].lastMentioned = new Date(news.published_at)
-        
-        // 관련 뉴스 추가
-        topics[keyword].relatedNews.push({
-          title: news.title,
-          url: news.url,
-          publishedAt: new Date(news.published_at),
-          source: news.source
-        })
-
-        // 감성 분석 추가
-        const sentiment = analyzeSentiment(title + ' ' + description)
-        topics[keyword].sentiment = (topics[keyword].sentiment + sentiment) / 2
-      })
-    })
-
-    // 소셜 미디어에서 토픽 추출
-    socialFeeds.forEach(feed => {
-      const content = feed.content.toLowerCase()
-      const keywords = extractKeywords(content)
-      
-      keywords.forEach(keyword => {
-        if (!topics[keyword]) {
-          topics[keyword] = {
-            id: keyword,
-            name: keyword,
-            category: determineCategory(keyword),
-            mentionCount: 0,
-            lastMentioned: new Date(),
-            sources: [
-              { type: 'news', count: 0 },
-              { type: 'social', count: 0 },
-              { type: 'youtube', count: 0 }
-            ],
-            sentiment: 0,
-            relatedNews: []
-          }
-        }
-        
-        topics[keyword].mentionCount++
-        topics[keyword].sources[1].count++
-        topics[keyword].lastMentioned = new Date(feed.timestamp)
-        
-        // 감성 분석 추가
-        const sentiment = analyzeSentiment(content)
-        topics[keyword].sentiment = (topics[keyword].sentiment + sentiment) / 2
-      })
-    })
-
-    // 유튜브에서 토픽 추출
-    youtubeVideos.forEach(video => {
-      const title = video.title.toLowerCase()
-      const description = video.description.toLowerCase()
-      const keywords = extractKeywords(title + ' ' + description)
-      
-      keywords.forEach(keyword => {
-        if (!topics[keyword]) {
-          topics[keyword] = {
-            id: keyword,
-            name: keyword,
-            category: determineCategory(keyword),
-            mentionCount: 0,
-            lastMentioned: new Date(),
-            sources: [
-              { type: 'news', count: 0 },
-              { type: 'social', count: 0 },
-              { type: 'youtube', count: 0 }
-            ],
-            sentiment: 0,
-            relatedNews: []
-          }
-        }
-        
-        topics[keyword].mentionCount++
-        topics[keyword].sources[2].count++
-        topics[keyword].lastMentioned = new Date(video.publishedAt)
-        
-        // 감성 분석 추가
-        const sentiment = analyzeSentiment(title + ' ' + description)
-        topics[keyword].sentiment = (topics[keyword].sentiment + sentiment) / 2
-      })
-    })
-
-    // 트렌드 계산
-    const topicsWithTrend = Object.values(topics).map(topic => ({
-      ...topic,
-      trending: calculateTrend(topic)
-    }))
-
-    return NextResponse.json(topicsWithTrend)
+    return NextResponse.json(topics)
   } catch (error) {
-    console.error('Error in topics API:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch topics' },
+      { error: '토픽 데이터를 가져오는데 실패했습니다.' },
       { status: 500 }
     )
   }

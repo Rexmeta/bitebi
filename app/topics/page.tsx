@@ -1,25 +1,51 @@
 'use client'
-import { useState, useEffect } from 'react'
-import { Topic } from '../types/topic'
+import { useEffect, useState } from 'react'
 import TopicMap from '../components/TopicMap'
+import { Topic } from '../types'
 
 export default function TopicsPage() {
   const [topics, setTopics] = useState<Topic[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
-  const [sortBy, setSortBy] = useState<'trending' | 'mentions' | 'recent'>('mentions')
+  const [sortBy, setSortBy] = useState<'recent' | 'mentions'>('recent')
   const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0
+    width: 0,
+    height: 0
   })
+
+  useEffect(() => {
+    // 클라이언트 사이드에서만 window 객체에 접근
+    if (typeof window !== 'undefined') {
+      setWindowSize({
+        width: window.innerWidth,
+        height: window.innerHeight
+      })
+
+      const handleResize = () => {
+        setWindowSize({
+          width: window.innerWidth,
+          height: window.innerHeight
+        })
+      }
+
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
+  }, [])
 
   useEffect(() => {
     const fetchTopics = async () => {
       try {
         const response = await fetch('/api/topics')
         const data = await response.json()
-        setTopics(data)
+        
+        // 날짜 문자열을 Date 객체로 변환
+        const processedData = data.map((topic: any) => ({
+          ...topic,
+          lastMentioned: new Date(topic.lastMentioned)
+        }))
+        
+        setTopics(processedData)
       } catch (err) {
         setError('토픽을 불러오는 중 오류가 발생했습니다.')
       } finally {
@@ -28,81 +54,78 @@ export default function TopicsPage() {
     }
 
     fetchTopics()
-    // 5분마다 데이터 갱신
-    const interval = setInterval(fetchTopics, 5 * 60 * 1000)
+    const interval = setInterval(fetchTopics, 5 * 60 * 1000) // 5분마다 업데이트
     return () => clearInterval(interval)
   }, [])
 
-  const filteredTopics = topics
-    .filter(topic => selectedCategory === 'all' || topic.category === selectedCategory)
-    .sort((a, b) => {
-      switch (sortBy) {
-        case 'trending':
-          return a.trending === 'up' ? -1 : b.trending === 'up' ? 1 : 0
-        case 'mentions':
-          return b.mentionCount - a.mentionCount
-        case 'recent':
-          return b.lastMentioned.getTime() - a.lastMentioned.getTime()
-        default:
-          return 0
-      }
-    })
+  const sortedTopics = [...topics].sort((a, b) => {
+    switch (sortBy) {
+      case 'recent':
+        if (a.lastMentioned && b.lastMentioned) {
+          return new Date(b.lastMentioned).getTime() - new Date(a.lastMentioned).getTime()
+        }
+        return 0
+      case 'mentions':
+        return b.mentions - a.mentions
+      default:
+        return 0
+    }
+  })
+
+  if (loading) return <div className="text-center py-8">로딩 중...</div>
+  if (error) return <div className="text-center py-8 text-red-500">{error}</div>
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-white p-4">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-yellow-400 mb-6">토픽 맵</h1>
-        
-        {/* 필터 및 정렬 옵션 */}
-        <div className="flex flex-wrap gap-4 mb-6">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2"
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold text-yellow-400">암호화폐 토픽 맵</h1>
+        <div className="flex gap-4">
+          <button
+            onClick={() => setSortBy('recent')}
+            className={`px-4 py-2 rounded ${
+              sortBy === 'recent' ? 'bg-yellow-400 text-black' : 'bg-gray-700'
+            }`}
           >
-            <option value="all">전체 카테고리</option>
-            {topics.map(topic => (
-              <option key={topic.id} value={topic.category}>
-                {topic.category}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
-            className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2"
+            최신순
+          </button>
+          <button
+            onClick={() => setSortBy('mentions')}
+            className={`px-4 py-2 rounded ${
+              sortBy === 'mentions' ? 'bg-yellow-400 text-black' : 'bg-gray-700'
+            }`}
           >
-            <option value="trending">트렌딩 순</option>
-            <option value="mentions">언급 순</option>
-            <option value="recent">최신 순</option>
-          </select>
+            언급순
+          </button>
         </div>
+      </div>
 
-        {/* 토픽 그리드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTopics.map((topic: Topic) => (
-            <div
-              key={topic.id}
-              className="bg-[#161b22] border border-[#30363d] rounded-lg p-4 hover:border-yellow-400 transition-colors"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-yellow-400">{topic.name}</h3>
-                <span className={`px-2 py-1 rounded text-sm ${
-                  topic.trending === 'up' ? 'bg-green-900 text-green-400' :
-                  topic.trending === 'down' ? 'bg-red-900 text-red-400' :
-                  'bg-gray-700 text-gray-400'
-                }`}>
-                  {topic.trending === 'up' ? '상승' : topic.trending === 'down' ? '하락' : '중립'}
-                </span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+          <TopicMap
+            topics={topics}
+            width={windowSize.width * 0.8}
+            height={windowSize.height * 0.7}
+          />
+        </div>
+        <div className="bg-[#161b22] p-4 rounded-lg">
+          <h2 className="text-xl font-semibold mb-4">인기 토픽</h2>
+          <div className="space-y-4">
+            {sortedTopics.map((topic) => (
+              <div
+                key={topic.id}
+                className="p-4 bg-[#1c2128] rounded-lg border border-[#30363d]"
+              >
+                <h3 className="font-medium text-yellow-400">{topic.name}</h3>
+                <p className="text-sm text-gray-400 mt-1">{topic.description}</p>
+                <div className="mt-2 flex justify-between text-sm">
+                  <span>언급: {topic.mentions}회</span>
+                  {topic.lastMentioned && (
+                    <span>최근: {new Date(topic.lastMentioned).toLocaleDateString()}</span>
+                  )}
+                </div>
               </div>
-              <p className="text-gray-400 mb-3">{topic.description}</p>
-              <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>언급: {topic.mentionCount}</span>
-                <span>최근: {topic.lastMentioned.toLocaleDateString()}</span>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
