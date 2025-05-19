@@ -17,25 +17,37 @@ const Navigation = () => {
                   href="/"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  홈
+                  Home
                 </Link>
                 <Link
                   href="/whale-tracker"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  고래 트래커
+                  Whale Tracker
                 </Link>
                 <Link
                   href="/topics"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  토픽
+                  Topics
                 </Link>
                 <Link
                   href="/news"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  뉴스
+                  News
+                </Link>
+                <Link
+                  href="/market"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Market
+                </Link>
+                <Link
+                  href="/analysis"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  Analysis
                 </Link>
               </div>
             </div>
