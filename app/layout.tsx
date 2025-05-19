@@ -84,7 +84,7 @@ export default function RootLayout({
                 <Link href="/whale-tracker" className="text-gray-300 hover:text-white">
                   Whale Tracker
                 </Link>
-                <Link href="/stablecoin-tracker" className="text-gray-300 hover:text-white">
+                <Link href="/stablecoin" className="text-gray-300 hover:text-white">
                   Stablecoin
                 </Link>
                 <Link href="/topics" className="text-gray-300 hover:text-white">
