@@ -48,9 +48,13 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
 
   for (let i = 0; i < retries; i++) {
     try {
+      console.log(`Attempting API call (${i + 1}/${retries}): ${url}`)
       const response = await fetch(url)
       
-      if (response.ok) return response
+      if (response.ok) {
+        console.log('API call successful')
+        return response
+      }
       
       const error: YouTubeApiError = await response.json()
       console.error(`YouTube API Error (attempt ${i + 1}/${retries}):`, error)
@@ -66,8 +70,11 @@ async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
       lastError = new Error(error.message)
       
       // 지수 백오프로 재시도
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000))
+      const delay = Math.pow(2, i) * 1000
+      console.log(`Retrying in ${delay}ms...`)
+      await new Promise(resolve => setTimeout(resolve, delay))
     } catch (error) {
+      console.error(`Error during API call (attempt ${i + 1}/${retries}):`, error)
       lastError = error instanceof Error ? error : new Error('Unknown error')
       if (i === retries - 1) break
     }
@@ -125,9 +132,11 @@ export async function fetchChannelVideos(
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY) {
+    console.error('YouTube API key is not configured')
     throw new Error('YouTube API key is not configured')
   }
 
+  console.log('Starting to fetch latest videos...')
   const videos: YouTubeVideo[] = []
   let successCount = 0
   
@@ -135,23 +144,24 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     try {
       console.log(`Fetching videos for channel ${channelId}...`)
       
-      const response = await fetchWithRetry(
-        `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`
-      )
-
+      const searchUrl = `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`
+      console.log('Search URL:', searchUrl)
+      
+      const response = await fetchWithRetry(searchUrl)
       const data = await response.json()
+      
       if (!data.items?.length) {
         console.log(`No videos found for channel ${channelId}`)
         continue
       }
 
       const videoIds = data.items.map((item: any) => item.id.videoId).join(',')
+      const detailsUrl = `${YOUTUBE_API_BASE_URL}/videos?part=statistics,contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`
+      console.log('Details URL:', detailsUrl)
       
-      const videoDetailsResponse = await fetchWithRetry(
-        `${YOUTUBE_API_BASE_URL}/videos?part=statistics,contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`
-      )
-
+      const videoDetailsResponse = await fetchWithRetry(detailsUrl)
       const videoDetails = await videoDetailsResponse.json()
+      
       if (!videoDetails.items?.length) {
         console.log(`No video details found for channel ${channelId}`)
         continue
@@ -196,13 +206,16 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   }
 
   if (successCount === 0) {
+    console.error('Failed to fetch videos from any channel')
     throw new Error('Failed to fetch videos from any channel')
   }
 
   if (videos.length === 0) {
+    console.error('No videos could be fetched from any channel')
     throw new Error('No videos could be fetched from any channel')
   }
 
+  console.log(`Successfully fetched total ${videos.length} videos`)
   return videos.sort((a, b) => 
     new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
   )
