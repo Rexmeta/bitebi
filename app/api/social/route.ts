@@ -1,6 +1,19 @@
 import { NextResponse } from 'next/server'
 import { XMLParser } from 'fast-xml-parser'
 
+// 소셜 피드 타입 정의
+interface SocialFeed {
+  id: string
+  title: string
+  content: string
+  url: string
+  author: string
+  publishedAt: string
+  source: string
+  category: string
+  formattedDate: string
+}
+
 // 소셜 피드 소스
 const SOCIAL_SOURCES = [
   {
@@ -36,7 +49,7 @@ const SOCIAL_SOURCES = [
 ]
 
 // RSS 피드 파싱
-async function parseRSSFeed(feedUrl: string, source: any) {
+async function parseRSSFeed(feedUrl: string, source: any): Promise<SocialFeed[]> {
   try {
     const response = await fetch(feedUrl, {
       headers: {
@@ -111,7 +124,11 @@ async function parseRSSFeed(feedUrl: string, source: any) {
       }
       
       return null
-    }).filter(Boolean)
+    }).filter((item): item is SocialFeed => 
+      item !== null && 
+      typeof item.publishedAt === 'string' &&
+      !isNaN(new Date(item.publishedAt).getTime())
+    )
   } catch (error) {
     console.error('Error parsing RSS feed:', error)
     return []
@@ -120,7 +137,7 @@ async function parseRSSFeed(feedUrl: string, source: any) {
 
 export async function GET() {
   try {
-    const feeds = []
+    const feeds: SocialFeed[] = []
     let successCount = 0
     
     for (const source of SOCIAL_SOURCES) {
