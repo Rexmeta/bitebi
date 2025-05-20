@@ -1,23 +1,51 @@
-import { useEffect, useCallback } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
 
-export function useInfiniteScroll(
-  callback: () => void,
+interface UseInfiniteScrollOptions {
+  onLoadMore: () => void
   hasMore: boolean
-) {
-  const handleScroll = useCallback(() => {
-    if (!hasMore) return
+  threshold?: number
+  rootMargin?: string
+}
 
-    const scrollTop = window.scrollY || document.documentElement.scrollTop
-    const windowHeight = window.innerHeight
-    const documentHeight = document.documentElement.scrollHeight
+export function useInfiniteScroll({
+  onLoadMore,
+  hasMore,
+  threshold = 0.5,
+  rootMargin = '0px'
+}: UseInfiniteScrollOptions) {
+  const observer = useRef<IntersectionObserver | null>(null)
+  const lastElementRef = useCallback(
+    (node: HTMLElement | null) => {
+      if (observer.current) {
+        observer.current.disconnect()
+      }
 
-    if (windowHeight + scrollTop >= documentHeight - 1000) {
-      callback()
-    }
-  }, [callback, hasMore])
+      observer.current = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore) {
+            onLoadMore()
+          }
+        },
+        {
+          threshold,
+          rootMargin
+        }
+      )
+
+      if (node) {
+        observer.current.observe(node)
+      }
+    },
+    [hasMore, onLoadMore, threshold, rootMargin]
+  )
 
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [handleScroll])
+    return () => {
+      if (observer.current) {
+        observer.current.disconnect()
+      }
+    }
+  }, [])
+
+  return lastElementRef
 } 
