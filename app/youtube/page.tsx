@@ -10,17 +10,24 @@ export default function YouTubePage() {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
+        setLoading(true)
+        setError(null)
+        
         const response = await fetch('/api/youtube')
         const data = await response.json()
         
         if (!data.success) {
-          throw new Error(data.error)
+          throw new Error(data.error || 'Failed to fetch videos')
+        }
+        
+        if (!data.videos || data.videos.length === 0) {
+          throw new Error('No videos available')
         }
         
         setVideos(data.videos)
       } catch (err) {
-        setError('비디오를 불러오는 중 오류가 발생했습니다.')
         console.error('Error fetching videos:', err)
+        setError(err instanceof Error ? err.message : 'Failed to fetch videos')
       } finally {
         setLoading(false)
       }
@@ -73,7 +80,10 @@ export default function YouTubePage() {
     return (
       <div className="min-h-screen bg-[#0d1117] text-white p-4">
         <div className="max-w-7xl mx-auto">
-          <div className="text-red-400">{error}</div>
+          <div className="bg-red-900/50 border border-red-500 rounded-lg p-4">
+            <h2 className="text-xl font-semibold text-red-400 mb-2">Error</h2>
+            <p className="text-red-200">{error}</p>
+          </div>
         </div>
       </div>
     )

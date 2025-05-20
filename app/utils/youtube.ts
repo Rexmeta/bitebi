@@ -44,25 +44,36 @@ export const formatDate = (date: string): string => {
 
 // API 함수
 async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+  let lastError: Error | null = null
+
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url)
+      
       if (response.ok) return response
       
       const error: YouTubeApiError = await response.json()
+      console.error(`YouTube API Error (attempt ${i + 1}/${retries}):`, error)
+      
       if (error.status === 'quotaExceeded') {
         throw new Error('YouTube API quota exceeded')
       }
       
-      if (i === retries - 1) throw new Error(error.message)
+      if (error.status === 'forbidden') {
+        throw new Error('Invalid YouTube API key')
+      }
+      
+      lastError = new Error(error.message)
       
       // 지수 백오프로 재시도
       await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000))
     } catch (error) {
-      if (i === retries - 1) throw error
+      lastError = error instanceof Error ? error : new Error('Unknown error')
+      if (i === retries - 1) break
     }
   }
-  throw new Error('Failed to fetch after retries')
+  
+  throw lastError || new Error('Failed to fetch after retries')
 }
 
 export async function fetchChannelInfo(channelId: string): Promise<YouTubeApiChannel> {
@@ -118,15 +129,21 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   }
 
   const videos: YouTubeVideo[] = []
+  let successCount = 0
   
   for (const channelId of CHANNEL_IDS) {
     try {
+      console.log(`Fetching videos for channel ${channelId}...`)
+      
       const response = await fetchWithRetry(
         `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`
       )
 
       const data = await response.json()
-      if (!data.items?.length) continue
+      if (!data.items?.length) {
+        console.log(`No videos found for channel ${channelId}`)
+        continue
+      }
 
       const videoIds = data.items.map((item: any) => item.id.videoId).join(',')
       
@@ -135,7 +152,10 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
       )
 
       const videoDetails = await videoDetailsResponse.json()
-      if (!videoDetails.items?.length) continue
+      if (!videoDetails.items?.length) {
+        console.log(`No video details found for channel ${channelId}`)
+        continue
+      }
 
       const videoStats = videoDetails.items.reduce((acc: any, item: any) => {
         acc[item.id] = {
@@ -166,11 +186,17 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
       })
 
       videos.push(...channelVideos)
+      successCount++
+      console.log(`Successfully fetched ${channelVideos.length} videos from channel ${channelId}`)
       
     } catch (error) {
       console.error(`Error fetching videos for channel ${channelId}:`, error)
       continue
     }
+  }
+
+  if (successCount === 0) {
+    throw new Error('Failed to fetch videos from any channel')
   }
 
   if (videos.length === 0) {
