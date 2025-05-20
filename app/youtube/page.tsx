@@ -95,9 +95,11 @@ export default function YouTubePage() {
                   alt={video.title}
                   className="w-full aspect-video object-cover"
                 />
-                <span className="absolute bottom-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-sm">
-                  {formatDuration(video.duration)}
-                </span>
+                {video.duration && (
+                  <span className="absolute bottom-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-sm">
+                    {formatDuration(video.duration)}
+                  </span>
+                )}
               </a>
               
               <div className="p-4">
@@ -113,14 +115,18 @@ export default function YouTubePage() {
                 </h3>
                 
                 <div className="flex items-center text-sm text-gray-400 mb-2">
-                  <a
-                    href={`https://www.youtube.com/channel/${video.channelId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-yellow-400"
-                  >
-                    {video.channelTitle}
-                  </a>
+                  {video.channelId ? (
+                    <a
+                      href={`https://www.youtube.com/channel/${video.channelId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-yellow-400"
+                    >
+                      {video.channelTitle}
+                    </a>
+                  ) : (
+                    <span>{video.channelTitle}</span>
+                  )}
                 </div>
                 
                 <div className="flex items-center justify-between text-sm text-gray-500">
