@@ -99,7 +99,7 @@ export async function GET() {
       success: true, 
       videos: videos.sort((a, b) => 
         new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-      ).slice(0, 20)
+      ).slice(0, 30)
     })
   } catch (error) {
     console.error('Error in YouTube API route:', error)
