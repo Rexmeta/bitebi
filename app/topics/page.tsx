@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import TopicMap from '../components/TopicMap'
-import { Topic } from '../types'
+import { Topic } from '../types/topic'
 
 export default function TopicsPage() {
   const [topics, setTopics] = useState<Topic[]>([])
@@ -66,7 +66,7 @@ export default function TopicsPage() {
         }
         return 0
       case 'mentions':
-        return b.mentions - a.mentions
+        return b.mentionCount - a.mentionCount
       default:
         return 0
     }
@@ -118,7 +118,7 @@ export default function TopicsPage() {
                 <h3 className="font-medium text-yellow-400">{topic.name}</h3>
                 <p className="text-sm text-gray-400 mt-1">{topic.description}</p>
                 <div className="mt-2 flex justify-between text-sm">
-                  <span>언급: {topic.mentions}회</span>
+                  <span>언급: {topic.mentionCount}회</span>
                   {topic.lastMentioned && (
                     <span>최근: {new Date(topic.lastMentioned).toLocaleDateString()}</span>
                   )}
