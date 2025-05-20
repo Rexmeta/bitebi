@@ -9,43 +9,43 @@ const SOCIAL_SOURCES: SocialSource[] = [
     name: 'Elon Musk',
     type: 'twitter',
     url: 'https://nitter.net/elonmusk/rss',
-    category: 'news'
+    category: 'influencer'
   },
   {
     name: 'CZ (Binance CEO)',
     type: 'twitter',
     url: 'https://nitter.net/cz_binance/rss',
-    category: 'news'
+    category: 'influencer'
   },
   {
     name: 'Anthony "Pomp" Pompliano',
     type: 'twitter',
     url: 'https://nitter.net/APompliano/rss',
-    category: 'news'
+    category: 'influencer'
   },
   {
     name: 'Michael Saylor',
     type: 'twitter',
     url: 'https://nitter.net/michael_saylor/rss',
-    category: 'news'
+    category: 'influencer'
   },
   {
     name: 'PlanB',
     type: 'twitter',
     url: 'https://nitter.net/100trillionUSD/rss',
-    category: 'news'
+    category: 'influencer'
   },
   {
     name: 'The Bitcoin Express',
     type: 'twitter',
     url: 'https://nitter.net/rss/TheBitcoinExpress',
-    category: 'news'
+    category: 'influencer'
   },
   {
     name: 'Andreas Antonopoulos',
     type: 'twitter',
     url: 'https://nitter.net/rss/aantonop',
-    category: 'education'
+    category: 'influencer'
   },
 
   // 커뮤니티 (Reddit)
@@ -60,26 +60,6 @@ const SOCIAL_SOURCES: SocialSource[] = [
     type: 'reddit',
     url: 'https://www.reddit.com/r/CryptoCurrency/.rss',
     category: 'community'
-  },
-
-  // 기술 뉴스
-  {
-    name: 'Hacker News (Front Page)',
-    type: 'news',
-    url: 'https://hnrss.org/frontpage',
-    category: 'news'
-  },
-  {
-    name: 'Hacker News (Newest)',
-    type: 'news',
-    url: 'https://hnrss.org/newest',
-    category: 'news'
-  },
-  {
-    name: 'Bitcoin Magazine',
-    type: 'medium',
-    url: 'https://medium.com/feed/bitcoin-magazine',
-    category: 'news'
   }
 ]
 
@@ -123,6 +103,33 @@ function cleanRedditContent(content: string): string {
   content = content.replace(/\s+/g, ' ')
   
   return content.trim()
+}
+
+// 작성자 정보 정리
+function cleanAuthor(author: any, source: SocialSource): string {
+  if (!author) return source.name
+
+  // Reddit 작성자
+  if (source.type === 'reddit') {
+    if (typeof author === 'string') {
+      return author.replace(/\/u\//, '')
+    }
+    if (author.name) {
+      return author.name.replace(/\/u\//, '')
+    }
+  }
+
+  // Twitter 작성자
+  if (source.type === 'twitter') {
+    if (typeof author === 'string') {
+      return author.replace(/@/, '')
+    }
+    if (author.name) {
+      return author.name.replace(/@/, '')
+    }
+  }
+
+  return source.name
 }
 
 // 객체를 문자열로 변환하는 헬퍼 함수
@@ -180,13 +187,14 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
         const title = toString(item.title)
         const rawContent = toString(item.content || item.description || '')
         const content = cleanRedditContent(rawContent)
+        const author = cleanAuthor(item.author, source)
         
         return {
           id: toString(item.id || item.guid),
           title: title,
           content: content,
           url: toString(item.link),
-          author: toString(item.author?.name || item.author || 'Unknown'),
+          author: author,
           publishedAt: toString(item.published || item.pubDate),
           source: source.name,
           category: source.category,
@@ -195,60 +203,23 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
         }
       }
       
-      // Medium 포스트
-      if (source.type === 'medium') {
-        const title = toString(item.title)
-        const content = toString(item['content:encoded'] || item.content || item.description || '')
-        
-        return {
-          id: toString(item.guid),
-          title: title,
-          content: content,
-          url: toString(item.link),
-          author: toString(item.author?.name || item.author || 'Unknown'),
-          publishedAt: toString(item.published || item.pubDate),
-          source: source.name,
-          category: source.category,
-          formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
-          platform: 'medium'
-        }
-      }
-      
       // Twitter 포스트
       if (source.type === 'twitter') {
         const title = toString(item.title)
         const content = toString(item.description || item.content || '')
+        const author = cleanAuthor(item.author, source)
         
         return {
           id: toString(item.id || item.guid),
           title: title,
           content: content,
           url: toString(item.link),
-          author: toString(item.author?.name || item.author || 'Unknown'),
+          author: author,
           publishedAt: toString(item.published || item.pubDate),
           source: source.name,
           category: source.category,
           formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
           platform: 'twitter'
-        }
-      }
-
-      // Hacker News
-      if (source.type === 'news') {
-        const title = toString(item.title)
-        const content = toString(item.description || item.content || '')
-        
-        return {
-          id: toString(item.id || item.guid),
-          title: title,
-          content: content,
-          url: toString(item.link),
-          author: toString(item.author?.name || item.author || 'Unknown'),
-          publishedAt: toString(item.published || item.pubDate),
-          source: source.name,
-          category: source.category,
-          formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
-          platform: 'news'
         }
       }
       

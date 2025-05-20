@@ -81,15 +81,6 @@ export default function RootLayout({
                 <Link href="/" className="text-gray-300 hover:text-white">
                   Home
                 </Link>
-                <Link href="/whale-tracker" className="text-gray-300 hover:text-white">
-                  Whale Tracker
-                </Link>
-                <Link href="/stablecoin" className="text-gray-300 hover:text-white">
-                  Stablecoin
-                </Link>
-                <Link href="/topics" className="text-gray-300 hover:text-white">
-                  Topics
-                </Link>
                 <Link href="/news" className="text-gray-300 hover:text-white">
                   News
                 </Link>
@@ -98,6 +89,15 @@ export default function RootLayout({
                 </Link>
                 <Link href="/social" className="text-gray-300 hover:text-white">
                   Social
+                </Link>
+                <Link href="/whale-tracker" className="text-gray-300 hover:text-white">
+                  Whale Tracker
+                </Link>
+                <Link href="/stablecoin" className="text-gray-300 hover:text-white">
+                  Stablecoin
+                </Link>
+                <Link href="/topics" className="text-gray-300 hover:text-white">
+                  Topics
                 </Link>
               </div>
             </div>
@@ -115,13 +115,13 @@ export default function RootLayout({
               <span>🏠</span>
               <span className="text-xs">Home</span>
             </Link>
-            <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>🐋</span>
-              <span className="text-xs">Whale</span>
+            <Link href="/news" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>📰</span>
+              <span className="text-xs">News</span>
             </Link>
-            <Link href="/stablecoin-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>💵</span>
-              <span className="text-xs">Stable</span>
+            <Link href="/youtube" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>🎥</span>
+              <span className="text-xs">YouTube</span>
             </Link>
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💬</span>

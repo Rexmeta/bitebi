@@ -6,14 +6,14 @@ export interface SocialFeed {
   author: string
   publishedAt: string
   source: string
-  category: 'community' | 'news' | 'education'
+  category: 'community' | 'influencer'
   formattedDate: string
-  platform: 'reddit' | 'medium' | 'twitter' | 'news'
+  platform: 'reddit' | 'twitter'
 }
 
 export interface SocialSource {
   name: string
-  type: 'reddit' | 'medium' | 'twitter' | 'news'
+  type: 'reddit' | 'twitter'
   url: string
-  category: 'community' | 'news' | 'education'
+  category: 'community' | 'influencer'
 } 
