@@ -8,7 +8,7 @@ export interface SocialFeed {
   source: string
   category: 'community' | 'news' | 'education'
   formattedDate: string
-  platform: 'reddit' | 'medium' | 'twitter'
+  platform: 'reddit' | 'medium' | 'twitter' | 'news'
 }
 
 export interface SocialSource {
