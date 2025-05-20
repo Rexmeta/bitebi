@@ -1,21 +1,9 @@
 import { NextResponse } from 'next/server'
 import { XMLParser } from 'fast-xml-parser'
-
-// 소셜 피드 타입 정의
-interface SocialFeed {
-  id: string
-  title: string
-  content: string
-  url: string
-  author: string
-  publishedAt: string
-  source: string
-  category: string
-  formattedDate: string
-}
+import { SocialFeed, SocialSource } from '@/app/types/social'
 
 // 소셜 피드 소스
-const SOCIAL_SOURCES = [
+const SOCIAL_SOURCES: SocialSource[] = [
   {
     name: 'Bitcoin Subreddit',
     type: 'reddit',
@@ -49,7 +37,7 @@ const SOCIAL_SOURCES = [
 ]
 
 // RSS 피드 파싱
-async function parseRSSFeed(feedUrl: string, source: any): Promise<SocialFeed[]> {
+async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<SocialFeed[]> {
   try {
     const response = await fetch(feedUrl, {
       headers: {
@@ -89,7 +77,8 @@ async function parseRSSFeed(feedUrl: string, source: any): Promise<SocialFeed[]>
           publishedAt: item.pubDate,
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.pubDate).toLocaleDateString()
+          formattedDate: new Date(item.pubDate).toLocaleDateString(),
+          platform: 'reddit'
         }
       }
       
@@ -104,7 +93,8 @@ async function parseRSSFeed(feedUrl: string, source: any): Promise<SocialFeed[]>
           publishedAt: item.pubDate,
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.pubDate).toLocaleDateString()
+          formattedDate: new Date(item.pubDate).toLocaleDateString(),
+          platform: 'medium'
         }
       }
       
@@ -119,7 +109,8 @@ async function parseRSSFeed(feedUrl: string, source: any): Promise<SocialFeed[]>
           publishedAt: item.pubDate,
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.pubDate).toLocaleDateString()
+          formattedDate: new Date(item.pubDate).toLocaleDateString(),
+          platform: 'twitter'
         }
       }
       
@@ -135,12 +126,26 @@ async function parseRSSFeed(feedUrl: string, source: any): Promise<SocialFeed[]>
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const platform = searchParams.get('platform')
+    const category = searchParams.get('category')
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = 30
+    const offset = (page - 1) * limit
+
     const feeds: SocialFeed[] = []
     let successCount = 0
     
-    for (const source of SOCIAL_SOURCES) {
+    // 필터링된 소스 목록
+    const filteredSources = SOCIAL_SOURCES.filter(source => {
+      if (platform && source.type !== platform) return false
+      if (category && source.category !== category) return false
+      return true
+    })
+    
+    for (const source of filteredSources) {
       try {
         const sourceFeeds = await parseRSSFeed(source.url, source)
         
@@ -164,11 +169,19 @@ export async function GET() {
       )
     }
 
+    // 날짜순 정렬 및 페이지네이션
+    const sortedFeeds = feeds.sort((a, b) => 
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
+    )
+
+    const paginatedFeeds = sortedFeeds.slice(offset, offset + limit)
+    const hasMore = offset + limit < sortedFeeds.length
+
     return NextResponse.json({ 
       success: true, 
-      feeds: feeds.sort((a, b) => 
-        new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-      ).slice(0, 30)
+      feeds: paginatedFeeds,
+      hasMore,
+      total: sortedFeeds.length
     })
   } catch (error) {
     console.error('Error in Social API route:', error)

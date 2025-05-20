@@ -7,28 +7,14 @@ import { storage } from '../utils/storage'
 import AdBanner from '../components/AdBanner'
 import debounce from 'lodash/debounce'
 import { SocialFeedJsonLd } from '../components/JsonLd'
-
-interface SocialPost {
-  id: string
-  platform: 'twitter' | 'reddit' | 'telegram' | 'discord'
-  author: string
-  content: string
-  timestamp: string
-  link: string
-  engagement?: {
-    likes?: number
-    comments?: number
-    shares?: number
-    views?: number
-  }
-  keywords?: string[]
-}
+import { SocialFeed } from '../types/social'
 
 export default function SocialFeedPage() {
-  const [posts, setPosts] = useState<SocialPost[]>([])
+  const [posts, setPosts] = useState<SocialFeed[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [filter, setFilter] = useState<'all' | 'twitter' | 'reddit' | 'telegram'>('all')
+  const [filter, setFilter] = useState<'all' | 'reddit' | 'medium' | 'twitter'>('all')
+  const [category, setCategory] = useState<'all' | 'community' | 'news' | 'education'>('all')
   const [keyword, setKeyword] = useState('')
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -41,14 +27,15 @@ export default function SocialFeedPage() {
       const params = new URLSearchParams({
         page: pageNum.toString(),
         ...(filter !== 'all' && { platform: filter }),
+        ...(category !== 'all' && { category }),
         ...(keyword && { keyword })
       })
       
-      const res = await fetch(`/api/social-feeds?${params}`)
+      const res = await fetch(`/api/social?${params}`)
       const data = await res.json()
       
       if (data.success) {
-        setPosts(prev => reset ? data.posts : [...prev, ...data.posts])
+        setPosts(prev => reset ? data.feeds : [...prev, ...data.feeds])
         setHasMore(data.hasMore)
       } else {
         throw new Error(data.error)
@@ -59,7 +46,7 @@ export default function SocialFeedPage() {
     } finally {
       setIsLoading(false)
     }
-  }, [filter, keyword])
+  }, [filter, category, keyword])
 
   // 무한 스크롤
   const lastElementRef = useInfiniteScroll({
@@ -75,21 +62,26 @@ export default function SocialFeedPage() {
   // 초기 로드 및 필터 변경 시
   useEffect(() => {
     // URL 파라미터 처리
-    const params = new URLSearchParams(window.location.search);
-    const platformParam = params.get('platform');
-    const filterParam = params.get('filter');
+    const params = new URLSearchParams(window.location.search)
+    const platformParam = params.get('platform')
+    const categoryParam = params.get('category')
+    const filterParam = params.get('filter')
     
-    if (platformParam && ['twitter', 'reddit', 'telegram'].includes(platformParam)) {
-      setFilter(platformParam as 'twitter' | 'reddit' | 'telegram');
+    if (platformParam && ['reddit', 'medium', 'twitter'].includes(platformParam)) {
+      setFilter(platformParam as 'reddit' | 'medium' | 'twitter')
+    }
+    
+    if (categoryParam && ['community', 'news', 'education'].includes(categoryParam)) {
+      setCategory(categoryParam as 'community' | 'news' | 'education')
     }
     
     if (filterParam === 'bookmarks') {
-      setShowBookmarksOnly(true);
+      setShowBookmarksOnly(true)
     }
     
-    setPage(1);
-    fetchPosts(1, true);
-  }, [filter, fetchPosts]);
+    setPage(1)
+    fetchPosts(1, true)
+  }, [filter, category, fetchPosts])
 
   // 키워드 검색 디바운스
   const debouncedSearch = debounce((value: string) => {
@@ -123,20 +115,27 @@ export default function SocialFeedPage() {
         return <span className="text-blue-400">𝕏</span>
       case 'reddit':
         return <span className="text-orange-500">📱</span>
-      case 'telegram':
-        return <span className="text-blue-500">✈️</span>
+      case 'medium':
+        return <span className="text-green-500">📝</span>
       default:
         return null
     }
   }
 
-  // URL 변경 처리를 위한 함수 추가
+  // URL 변경 처리를 위한 함수
   const handleFilterChange = (newFilter: typeof filter) => {
-    setFilter(newFilter);
-    const url = new URL(window.location.href);
-    url.searchParams.set('platform', newFilter);
-    window.history.pushState({}, '', url);
-  };
+    setFilter(newFilter)
+    const url = new URL(window.location.href)
+    url.searchParams.set('platform', newFilter)
+    window.history.pushState({}, '', url)
+  }
+
+  const handleCategoryChange = (newCategory: typeof category) => {
+    setCategory(newCategory)
+    const url = new URL(window.location.href)
+    url.searchParams.set('category', newCategory)
+    window.history.pushState({}, '', url)
+  }
 
   if (error) {
     return (
@@ -155,28 +154,14 @@ export default function SocialFeedPage() {
   return (
     <>
       <SocialFeedJsonLd />
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-yellow-400 mb-2">
-            💬 암호화폐 소셜 피드
-          </h1>
-          <p className="text-gray-400 text-sm">
-            주요 인플루언서와 커뮤니티의 실시간 업데이트
-          </p>
-        </div>
-
-        {/* 상단 광고 */}
-        <AdBanner 
-          slot="5844761428"
-          format="horizontal"
-          style={{ minHeight: '100px', marginBottom: '1rem' }}
-        />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8 text-yellow-400">소셜 피드</h1>
 
         <div className="flex flex-col gap-4 mb-6">
           {/* 플랫폼 필터 */}
           <div className="flex flex-wrap gap-2">
             <button
-              onClick={() => setFilter('all')}
+              onClick={() => handleFilterChange('all')}
               className={`px-3 py-1 rounded-full text-sm ${
                 filter === 'all' 
                   ? 'bg-yellow-400 text-black' 
@@ -196,7 +181,7 @@ export default function SocialFeedPage() {
               Twitter
             </button>
             <button
-              onClick={() => setFilter('reddit')}
+              onClick={() => handleFilterChange('reddit')}
               className={`px-3 py-1 rounded-full text-sm ${
                 filter === 'reddit'
                   ? 'bg-orange-500 text-black'
@@ -206,14 +191,58 @@ export default function SocialFeedPage() {
               Reddit
             </button>
             <button
-              onClick={() => setFilter('telegram')}
+              onClick={() => handleFilterChange('medium')}
               className={`px-3 py-1 rounded-full text-sm ${
-                filter === 'telegram'
+                filter === 'medium'
+                  ? 'bg-green-500 text-black'
+                  : 'border border-green-500 text-green-500'
+              }`}
+            >
+              Medium
+            </button>
+          </div>
+
+          {/* 카테고리 필터 */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => handleCategoryChange('all')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                category === 'all' 
+                  ? 'bg-yellow-400 text-black' 
+                  : 'border border-yellow-400 text-yellow-400'
+              }`}
+            >
+              전체
+            </button>
+            <button
+              onClick={() => handleCategoryChange('community')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                category === 'community'
+                  ? 'bg-purple-500 text-black'
+                  : 'border border-purple-500 text-purple-500'
+              }`}
+            >
+              커뮤니티
+            </button>
+            <button
+              onClick={() => handleCategoryChange('news')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                category === 'news'
                   ? 'bg-blue-500 text-black'
                   : 'border border-blue-500 text-blue-500'
               }`}
             >
-              Telegram
+              뉴스
+            </button>
+            <button
+              onClick={() => handleCategoryChange('education')}
+              className={`px-3 py-1 rounded-full text-sm ${
+                category === 'education'
+                  ? 'bg-green-500 text-black'
+                  : 'border border-green-500 text-green-500'
+              }`}
+            >
+              교육
             </button>
           </div>
 
@@ -250,7 +279,7 @@ export default function SocialFeedPage() {
                       {post.author}
                     </span>
                     <span className="text-sm text-gray-400">
-                      {formatDistanceToNow(new Date(post.timestamp), {
+                      {formatDistanceToNow(new Date(post.publishedAt), {
                         addSuffix: true,
                         locale: ko
                       })}
@@ -264,41 +293,26 @@ export default function SocialFeedPage() {
                   </button>
                 </div>
 
+                <h2 className="text-lg font-semibold text-white mb-2">{post.title}</h2>
                 <p className="text-white mb-2">{post.content}</p>
 
-                {/* 키워드 태그 */}
-                {post.keywords && (
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {post.keywords.map((kw, i) => (
-                      <span
-                        key={i}
-                        className="px-2 py-0.5 text-xs bg-[#2d333b] text-gray-300 rounded-full"
-                      >
-                        #{kw}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                {/* 카테고리 태그 */}
+                <div className="flex flex-wrap gap-1 mb-2">
+                  <span className="px-2 py-0.5 text-xs bg-[#2d333b] text-gray-300 rounded-full">
+                    #{post.category}
+                  </span>
+                  <span className="px-2 py-0.5 text-xs bg-[#2d333b] text-gray-300 rounded-full">
+                    #{post.source}
+                  </span>
+                </div>
 
-                {/* 인게이지먼트 메트릭스 */}
-                <div className="flex gap-4 text-sm text-gray-400">
-                  {post.engagement?.likes && (
-                    <span>❤️ {post.engagement.likes}</span>
-                  )}
-                  {post.engagement?.comments && (
-                    <span>💬 {post.engagement.comments}</span>
-                  )}
-                  {post.engagement?.shares && (
-                    <span>🔄 {post.engagement.shares}</span>
-                  )}
-                  {post.engagement?.views && (
-                    <span>👁️ {post.engagement.views}</span>
-                  )}
+                {/* 링크 */}
+                <div className="flex justify-end">
                   <a
-                    href={post.link}
+                    href={post.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-auto text-blue-400 hover:underline"
+                    className="text-blue-400 hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     원본 보기 →
