@@ -17,11 +17,6 @@ function extractVideoId(url: string): string {
   return match ? match[1] : ''
 }
 
-// 날짜 포맷팅
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString()
-}
-
 // RSS 피드 파싱
 async function parseRSSFeed(feedUrl: string) {
   try {
@@ -64,7 +59,7 @@ async function parseRSSFeed(feedUrl: string) {
         publishedAt: item.published,
         channelTitle: item.author?.name || 'Unknown Channel',
         thumbnailUrl: thumbnail.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-        formattedDate: formatDate(item.published)
+        formattedDate: new Date(item.published).toLocaleDateString()
       }
     })
   } catch (error) {

@@ -1,6 +1,15 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { YouTubeVideo } from '../types/youtube'
+
+interface YouTubeVideo {
+  id: string
+  title: string
+  description: string
+  publishedAt: string
+  channelTitle: string
+  thumbnailUrl: string
+  formattedDate: string
+}
 
 export default function YouTubePage() {
   const [videos, setVideos] = useState<YouTubeVideo[]>([])
