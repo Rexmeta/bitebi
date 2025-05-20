@@ -4,22 +4,35 @@ import { SocialFeed, SocialSource } from '@/app/types/social'
 
 // 소셜 피드 소스
 const SOCIAL_SOURCES: SocialSource[] = [
+  // 인플루언서 (Twitter via Nitter)
   {
-    name: 'Bitcoin Subreddit',
-    type: 'reddit',
-    url: 'https://www.reddit.com/r/bitcoin/hot/.rss',
-    category: 'community'
+    name: 'Elon Musk',
+    type: 'twitter',
+    url: 'https://nitter.net/elonmusk/rss',
+    category: 'news'
   },
   {
-    name: 'Cryptocurrency Subreddit',
-    type: 'reddit',
-    url: 'https://www.reddit.com/r/cryptocurrency/hot/.rss',
-    category: 'community'
+    name: 'CZ (Binance CEO)',
+    type: 'twitter',
+    url: 'https://nitter.net/cz_binance/rss',
+    category: 'news'
   },
   {
-    name: 'Bitcoin Magazine',
-    type: 'medium',
-    url: 'https://medium.com/feed/bitcoin-magazine',
+    name: 'Anthony "Pomp" Pompliano',
+    type: 'twitter',
+    url: 'https://nitter.net/APompliano/rss',
+    category: 'news'
+  },
+  {
+    name: 'Michael Saylor',
+    type: 'twitter',
+    url: 'https://nitter.net/michael_saylor/rss',
+    category: 'news'
+  },
+  {
+    name: 'PlanB',
+    type: 'twitter',
+    url: 'https://nitter.net/100trillionUSD/rss',
     category: 'news'
   },
   {
@@ -33,17 +46,93 @@ const SOCIAL_SOURCES: SocialSource[] = [
     type: 'twitter',
     url: 'https://nitter.net/rss/aantonop',
     category: 'education'
+  },
+
+  // 커뮤니티 (Reddit)
+  {
+    name: 'Bitcoin Subreddit',
+    type: 'reddit',
+    url: 'https://www.reddit.com/r/Bitcoin/.rss',
+    category: 'community'
+  },
+  {
+    name: 'Cryptocurrency Subreddit',
+    type: 'reddit',
+    url: 'https://www.reddit.com/r/CryptoCurrency/.rss',
+    category: 'community'
+  },
+
+  // 기술 뉴스
+  {
+    name: 'Hacker News (Front Page)',
+    type: 'news',
+    url: 'https://hnrss.org/frontpage',
+    category: 'news'
+  },
+  {
+    name: 'Hacker News (Newest)',
+    type: 'news',
+    url: 'https://hnrss.org/newest',
+    category: 'news'
+  },
+  {
+    name: 'Bitcoin Magazine',
+    type: 'medium',
+    url: 'https://medium.com/feed/bitcoin-magazine',
+    category: 'news'
   }
 ]
+
+// HTML 태그 제거
+function stripHtml(html: string): string {
+  if (!html) return ''
+  return html
+    .replace(/<[^>]*>/g, '') // HTML 태그 제거
+    .replace(/&nbsp;/g, ' ') // &nbsp;를 공백으로 변환
+    .replace(/&amp;/g, '&') // &amp;를 &로 변환
+    .replace(/&lt;/g, '<') // &lt;를 <로 변환
+    .replace(/&gt;/g, '>') // &gt;를 >로 변환
+    .replace(/&quot;/g, '"') // &quot;를 "로 변환
+    .replace(/\s+/g, ' ') // 연속된 공백을 하나로 변환
+    .trim()
+}
+
+// Reddit 컨텐츠 정리
+function cleanRedditContent(content: string): string {
+  if (!content) return ''
+  
+  // HTML 테이블 제거
+  content = content.replace(/<table[^>]*>[\s\S]*?<\/table>/g, '')
+  
+  // 이미지 링크 제거
+  content = content.replace(/\[link\]/g, '')
+  
+  // 댓글 링크 제거
+  content = content.replace(/\[comments\]/g, '')
+  
+  // submitted by 제거
+  content = content.replace(/submitted by/g, '')
+  
+  // 사용자 링크 제거
+  content = content.replace(/\/u\/[^\s]+/g, '')
+  
+  // HTML 태그 제거
+  content = stripHtml(content)
+  
+  // 연속된 공백 제거
+  content = content.replace(/\s+/g, ' ')
+  
+  return content.trim()
+}
 
 // 객체를 문자열로 변환하는 헬퍼 함수
 function toString(value: any): string {
   if (value === null || value === undefined) return ''
-  if (typeof value === 'string') return value
+  if (typeof value === 'string') return stripHtml(value)
   if (typeof value === 'object') {
-    if (value['#text']) return value['#text']
-    if (value['@_type'] === 'text') return value['#text'] || ''
-    return JSON.stringify(value)
+    if (value['#text']) return stripHtml(value['#text'])
+    if (value['@_type'] === 'text') return stripHtml(value['#text'] || '')
+    return stripHtml(JSON.stringify(value))
   }
   return String(value)
 }
@@ -88,10 +177,14 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
     return entries.map((item: any) => {
       // Reddit 포스트
       if (source.type === 'reddit') {
+        const title = toString(item.title)
+        const rawContent = toString(item.content || item.description || '')
+        const content = cleanRedditContent(rawContent)
+        
         return {
           id: toString(item.id || item.guid),
-          title: toString(item.title),
-          content: toString(item.content || item.description || ''),
+          title: title,
+          content: content,
           url: toString(item.link),
           author: toString(item.author?.name || item.author || 'Unknown'),
           publishedAt: toString(item.published || item.pubDate),
@@ -104,10 +197,13 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       
       // Medium 포스트
       if (source.type === 'medium') {
+        const title = toString(item.title)
+        const content = toString(item['content:encoded'] || item.content || item.description || '')
+        
         return {
           id: toString(item.guid),
-          title: toString(item.title),
-          content: toString(item['content:encoded'] || item.content || item.description || ''),
+          title: title,
+          content: content,
           url: toString(item.link),
           author: toString(item.author?.name || item.author || 'Unknown'),
           publishedAt: toString(item.published || item.pubDate),
@@ -120,10 +216,13 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       
       // Twitter 포스트
       if (source.type === 'twitter') {
+        const title = toString(item.title)
+        const content = toString(item.description || item.content || '')
+        
         return {
           id: toString(item.id || item.guid),
-          title: toString(item.title),
-          content: toString(item.description || item.content || ''),
+          title: title,
+          content: content,
           url: toString(item.link),
           author: toString(item.author?.name || item.author || 'Unknown'),
           publishedAt: toString(item.published || item.pubDate),
@@ -131,6 +230,25 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
           category: source.category,
           formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
           platform: 'twitter'
+        }
+      }
+
+      // Hacker News
+      if (source.type === 'news') {
+        const title = toString(item.title)
+        const content = toString(item.description || item.content || '')
+        
+        return {
+          id: toString(item.id || item.guid),
+          title: title,
+          content: content,
+          url: toString(item.link),
+          author: toString(item.author?.name || item.author || 'Unknown'),
+          publishedAt: toString(item.published || item.pubDate),
+          source: source.name,
+          category: source.category,
+          formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
+          platform: 'news'
         }
       }
       

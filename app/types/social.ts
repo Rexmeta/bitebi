@@ -13,7 +13,7 @@ export interface SocialFeed {
 
 export interface SocialSource {
   name: string
-  type: 'reddit' | 'medium' | 'twitter'
+  type: 'reddit' | 'medium' | 'twitter' | 'news'
   url: string
   category: 'community' | 'news' | 'education'
 } 
