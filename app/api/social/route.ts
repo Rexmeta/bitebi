@@ -7,13 +7,13 @@ const SOCIAL_SOURCES: SocialSource[] = [
   {
     name: 'Bitcoin Subreddit',
     type: 'reddit',
-    url: 'https://www.reddit.com/r/bitcoin/.rss',
+    url: 'https://www.reddit.com/r/bitcoin/hot/.rss',
     category: 'community'
   },
   {
     name: 'Cryptocurrency Subreddit',
     type: 'reddit',
-    url: 'https://www.reddit.com/r/cryptocurrency/.rss',
+    url: 'https://www.reddit.com/r/cryptocurrency/hot/.rss',
     category: 'community'
   },
   {
@@ -39,26 +39,33 @@ const SOCIAL_SOURCES: SocialSource[] = [
 // RSS 피드 파싱
 async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<SocialFeed[]> {
   try {
+    console.log(`Fetching RSS feed from: ${feedUrl}`)
     const response = await fetch(feedUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+      },
+      cache: 'no-store' // 캐시 비활성화
     })
     
     if (!response.ok) {
-      console.error('Failed to fetch RSS feed:', response.status, response.statusText)
+      console.error(`Failed to fetch RSS feed: ${response.status} ${response.statusText}`)
       return []
     }
     
     const xml = await response.text()
     const parser = new XMLParser({
       ignoreAttributes: false,
-      attributeNamePrefix: '@_'
+      attributeNamePrefix: '@_',
+      parseAttributeValue: true,
+      parseTagValue: true,
+      trimValues: true
     })
     
     const result = parser.parse(xml)
+    console.log(`Parsed RSS feed structure:`, Object.keys(result))
     
     if (!result.feed?.entry && !result.rss?.channel?.item) {
+      console.error('No feed entries found in RSS feed')
       return []
     }
     
@@ -69,15 +76,15 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       // Reddit 포스트
       if (source.type === 'reddit') {
         return {
-          id: item.id,
+          id: item.id || item.guid,
           title: item.title,
-          content: item.content,
+          content: item.content || item.description || '',
           url: item.link,
-          author: item.author,
-          publishedAt: item.pubDate,
+          author: item.author?.name || item.author || 'Unknown',
+          publishedAt: item.published || item.pubDate,
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.pubDate).toLocaleDateString(),
+          formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
           platform: 'reddit'
         }
       }
@@ -87,13 +94,13 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
         return {
           id: item.guid,
           title: item.title,
-          content: item['content:encoded'],
+          content: item['content:encoded'] || item.content || item.description || '',
           url: item.link,
-          author: item.author,
-          publishedAt: item.pubDate,
+          author: item.author?.name || item.author || 'Unknown',
+          publishedAt: item.published || item.pubDate,
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.pubDate).toLocaleDateString(),
+          formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
           platform: 'medium'
         }
       }
@@ -101,15 +108,15 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       // Twitter 포스트
       if (source.type === 'twitter') {
         return {
-          id: item.id,
+          id: item.id || item.guid,
           title: item.title,
-          content: item.description,
+          content: item.description || item.content || '',
           url: item.link,
-          author: item.author,
-          publishedAt: item.pubDate,
+          author: item.author?.name || item.author || 'Unknown',
+          publishedAt: item.published || item.pubDate,
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.pubDate).toLocaleDateString(),
+          formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
           platform: 'twitter'
         }
       }
@@ -126,6 +133,7 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
   }
 }
 
+// API 라우트 핸들러
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
@@ -145,21 +153,29 @@ export async function GET(request: Request) {
       return true
     })
     
-    for (const source of filteredSources) {
+    // 병렬로 피드 가져오기
+    const feedPromises = filteredSources.map(async (source) => {
       try {
+        console.log(`Processing source: ${source.name}`)
         const sourceFeeds = await parseRSSFeed(source.url, source)
         
         if (sourceFeeds.length > 0) {
           feeds.push(...sourceFeeds)
           successCount++
+          console.log(`Successfully fetched ${sourceFeeds.length} feeds from ${source.name}`)
+        } else {
+          console.warn(`No feeds found for ${source.name}`)
         }
       } catch (error) {
         console.error(`Error fetching feeds for ${source.name}:`, error)
-        continue
       }
-    }
+    })
+
+    // 모든 피드 가져오기 완료 대기
+    await Promise.all(feedPromises)
 
     if (successCount === 0) {
+      console.error('Failed to fetch feeds from any source')
       return NextResponse.json(
         { 
           success: false, 
