@@ -18,5 +18,17 @@
   "regions": ["iad1"],
   "env": {
     "ALCHEMY_API_KEY": "@alchemy_api_key"
-  }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": true,
+      "develop": true
+    }
+  },
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ]
 } 
