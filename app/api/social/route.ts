@@ -36,6 +36,18 @@ const SOCIAL_SOURCES: SocialSource[] = [
   }
 ]
 
+// 객체를 문자열로 변환하는 헬퍼 함수
+function toString(value: any): string {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'string') return value
+  if (typeof value === 'object') {
+    if (value['#text']) return value['#text']
+    if (value['@_type'] === 'text') return value['#text'] || ''
+    return JSON.stringify(value)
+  }
+  return String(value)
+}
+
 // RSS 피드 파싱
 async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<SocialFeed[]> {
   try {
@@ -44,7 +56,7 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
       },
-      cache: 'no-store' // 캐시 비활성화
+      cache: 'no-store'
     })
     
     if (!response.ok) {
@@ -58,7 +70,8 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       attributeNamePrefix: '@_',
       parseAttributeValue: true,
       parseTagValue: true,
-      trimValues: true
+      trimValues: true,
+      textNodeName: '#text'
     })
     
     const result = parser.parse(xml)
@@ -76,15 +89,15 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       // Reddit 포스트
       if (source.type === 'reddit') {
         return {
-          id: item.id || item.guid,
-          title: item.title,
-          content: item.content || item.description || '',
-          url: item.link,
-          author: item.author?.name || item.author || 'Unknown',
-          publishedAt: item.published || item.pubDate,
+          id: toString(item.id || item.guid),
+          title: toString(item.title),
+          content: toString(item.content || item.description || ''),
+          url: toString(item.link),
+          author: toString(item.author?.name || item.author || 'Unknown'),
+          publishedAt: toString(item.published || item.pubDate),
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
+          formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
           platform: 'reddit'
         }
       }
@@ -92,15 +105,15 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       // Medium 포스트
       if (source.type === 'medium') {
         return {
-          id: item.guid,
-          title: item.title,
-          content: item['content:encoded'] || item.content || item.description || '',
-          url: item.link,
-          author: item.author?.name || item.author || 'Unknown',
-          publishedAt: item.published || item.pubDate,
+          id: toString(item.guid),
+          title: toString(item.title),
+          content: toString(item['content:encoded'] || item.content || item.description || ''),
+          url: toString(item.link),
+          author: toString(item.author?.name || item.author || 'Unknown'),
+          publishedAt: toString(item.published || item.pubDate),
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
+          formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
           platform: 'medium'
         }
       }
@@ -108,15 +121,15 @@ async function parseRSSFeed(feedUrl: string, source: SocialSource): Promise<Soci
       // Twitter 포스트
       if (source.type === 'twitter') {
         return {
-          id: item.id || item.guid,
-          title: item.title,
-          content: item.description || item.content || '',
-          url: item.link,
-          author: item.author?.name || item.author || 'Unknown',
-          publishedAt: item.published || item.pubDate,
+          id: toString(item.id || item.guid),
+          title: toString(item.title),
+          content: toString(item.description || item.content || ''),
+          url: toString(item.link),
+          author: toString(item.author?.name || item.author || 'Unknown'),
+          publishedAt: toString(item.published || item.pubDate),
           source: source.name,
           category: source.category,
-          formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
+          formattedDate: new Date(toString(item.published || item.pubDate)).toLocaleDateString(),
           platform: 'twitter'
         }
       }
