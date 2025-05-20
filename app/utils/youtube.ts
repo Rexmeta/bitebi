@@ -8,7 +8,13 @@ const CHANNEL_IDS = [
   'UCtOV5M-T3GcsJAq8QKaf0lg', // otaverse
   'UCJ5v_MCY6GNUBTO8-D3XoAg', // algoran
   'UCdU1KXQFD2T9QlPR-5mG5tA', // BitcoinMagazine
-  'UCWZ_8TWTJ3J6z8TzU-Ih1Cg'  // BinanceYoutube
+  'UCWZ_8TWTJ3J6z8TzU-Ih1Cg', // BinanceYoutube
+  'UCqK_GSMbpiV8spgD3ZGloSw', // aantonop
+  'UC6rBzSz6qQbWnaG3SAkZgOA', // Bitcoin
+  'UC6rBzSz6qQbWnaG3SAkZgOA', // Bitcoin.com
+  'UC6rBzSz6qQbWnaG3SAkZgOA', // Bitcoin.com News
+  'UC6rBzSz6qQbWnaG3SAkZgOA', // Bitcoin.com TV
+  'UC6rBzSz6qQbWnaG3SAkZgOA'  // Bitcoin.com Podcast
 ]
 
 // 유틸리티 함수
@@ -144,7 +150,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
     try {
       console.log(`Fetching videos for channel ${channelId}...`)
       
-      const searchUrl = `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`
+      const searchUrl = `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=10&order=date&type=video&key=${YOUTUBE_API_KEY}`
       console.log('Search URL:', searchUrl)
       
       const response = await fetchWithRetry(searchUrl)
@@ -218,5 +224,5 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   console.log(`Successfully fetched total ${videos.length} videos`)
   return videos.sort((a, b) => 
     new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
-  )
+  ).slice(0, 20) // 최대 20개의 비디오만 반환
 } 
