@@ -8,12 +8,12 @@ export interface SocialFeed {
   source: string
   category: 'community' | 'influencer'
   formattedDate: string
-  platform: 'reddit' | 'twitter'
+  platform: 'reddit' | 'twitter' | 'news'
 }
 
 export interface SocialSource {
   name: string
-  type: 'reddit' | 'twitter'
+  type: 'reddit' | 'twitter' | 'news'
   url: string
   category: 'community' | 'influencer'
 } 

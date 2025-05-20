@@ -58,7 +58,7 @@ async function parseRSSFeed(feedUrl: string): Promise<SocialFeed[]> {
       author: item.author?.name || item.author || 'Unknown',
       publishedAt: item.published || item.pubDate,
       source: item.source?.name || 'Unknown Source',
-      category: 'news',
+      category: 'community',
       formattedDate: new Date(item.published || item.pubDate).toLocaleDateString(),
       platform: 'news'
     }))
