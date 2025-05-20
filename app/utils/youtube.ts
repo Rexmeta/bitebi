@@ -6,36 +6,13 @@ const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
 // API 키 확인을 위한 로깅 추가
 console.log('YouTube API Key:', YOUTUBE_API_KEY ? '설정됨' : '설정되지 않음')
 
-const CHANNEL_HANDLES = [
-  'otaverse',
-  'algoran',
-  'BitcoinMagazine',
-  'BinanceYoutube'
+// 채널 ID를 직접 사용하도록 변경
+const CHANNEL_IDS = [
+  'UCtOV5M-T3GcsJAq8QKaf0lg', // otaverse
+  'UCJ5v_MCY6GNUBTO8-D3XoAg', // algoran
+  'UCdU1KXQFD2T9QlPR-5mG5tA', // BitcoinMagazine
+  'UCWZ_8TWTJ3J6z8TzU-Ih1Cg'  // BinanceYoutube
 ]
-
-async function getChannelIdFromHandle(handle: string): Promise<string | null> {
-  try {
-    const response = await axios.get(
-      'https://www.googleapis.com/youtube/v3/channels',
-      {
-        params: {
-          part: 'id',
-          forHandle: handle,
-          key: YOUTUBE_API_KEY
-        },
-        timeout: 5000
-      }
-    )
-
-    if (response.data.items && response.data.items.length > 0) {
-      return response.data.items[0].id
-    }
-    return null
-  } catch (error) {
-    console.error(`Error fetching channel ID for handle ${handle}:`, error)
-    return null
-  }
-}
 
 export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   if (!YOUTUBE_API_KEY) {
@@ -46,36 +23,8 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   try {
     const videos: YouTubeVideo[] = []
     
-    // Get channel IDs from handles
-    const channelIds = await Promise.all(
-      CHANNEL_HANDLES.map(handle => getChannelIdFromHandle(handle))
-    )
-    
-    // Filter out null values
-    const validChannelIds = channelIds.filter((id): id is string => id !== null)
-    
-    for (const channelId of validChannelIds) {
+    for (const channelId of CHANNEL_IDS) {
       try {
-        console.log(`Fetching channel info for ${channelId}...`)
-        
-        // 채널 정보 먼저 확인
-        const channelResponse = await axios.get(
-          'https://www.googleapis.com/youtube/v3/channels',
-          {
-            params: {
-              part: 'snippet',
-              id: channelId,
-              key: YOUTUBE_API_KEY
-            },
-            timeout: 5000
-          }
-        )
-
-        if (!channelResponse.data.items?.length) {
-          console.warn(`Channel ${channelId} not found`)
-          continue
-        }
-
         console.log(`Fetching videos for channel ${channelId}...`)
         
         // 최신 비디오 가져오기
@@ -90,7 +39,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
               type: 'video',
               key: YOUTUBE_API_KEY
             },
-            timeout: 5000
+            timeout: 10000 // 타임아웃 증가
           }
         )
 
@@ -100,7 +49,6 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
         }
 
         const videoIds = response.data.items.map((item: any) => item.id.videoId).join(',')
-        console.log(`Fetching video details for ${videoIds}...`)
         
         const videoDetails = await axios.get(
           'https://www.googleapis.com/youtube/v3/videos',
@@ -110,7 +58,7 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
               id: videoIds,
               key: YOUTUBE_API_KEY
             },
-            timeout: 5000
+            timeout: 10000 // 타임아웃 증가
           }
         )
 
