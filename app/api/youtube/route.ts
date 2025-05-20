@@ -3,12 +3,16 @@ import { XMLParser } from 'fast-xml-parser'
 
 // 채널 ID 목록
 const CHANNEL_IDS = [
-  'UCtOV5M-T3GcsJAq8QKaf0lg', // otaverse
-  'UCJ5v_MCY6GNUBTO8-D3XoAg', // algoran
-  'UCdU1KXQFD2T9QlPR-5mG5tA', // BitcoinMagazine
-  'UCWZ_8TWTJ3J6z8TzU-Ih1Cg', // BinanceYoutube
-  'UCqK_GSMbpiV8spgD3ZGloSw', // aantonop
-  'UC6rBzSz6qQbWnaG3SAkZgOA'  // Bitcoin.com
+  'UCdU1KXQFD2T9QlPR-5mG5tA', // Bitcoin Magazine
+  'UCqK_GSMbpiV8spgD3ZGloSw', // Andreas Antonopoulos
+  'UC6rBzSz6qQbWnaG3SAkZgOA', // Bitcoin.com
+  'UCWZ_8TWTJ3J6z8TzU-Ih1Cg', // Binance
+  'UCJ5v_MCY6GNUBTO8-D3XoAg', // Algoran
+  'UCtOV5M-T3GcsJAq8QKaf0lg', // OtaVerse
+  'UC2pmfLm7iq6Ov1UwYrWYkZA', // Coin Bureau
+  'UC7vVhkEfw4nOGp8TyDk7RcQ', // Crypto Daily
+  'UCvlV2kyuQpG8P9t8HGQhEug', // Crypto Banter
+  'UCYFdH3jN1UNIXCSX1A_Am1A'  // Crypto Jebb
 ]
 
 // RSS 피드 파싱
