@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { YouTubeVideo } from '../types/youtube'
-import { getLatestVideos } from '../utils/youtube'
 
 export default function YouTubePage() {
   const [videos, setVideos] = useState<YouTubeVideo[]>([])
@@ -11,10 +10,17 @@ export default function YouTubePage() {
   useEffect(() => {
     const fetchVideos = async () => {
       try {
-        const data = await getLatestVideos()
-        setVideos(data)
+        const response = await fetch('/api/youtube')
+        const data = await response.json()
+        
+        if (!data.success) {
+          throw new Error(data.error)
+        }
+        
+        setVideos(data.videos)
       } catch (err) {
         setError('비디오를 불러오는 중 오류가 발생했습니다.')
+        console.error('Error fetching videos:', err)
       } finally {
         setLoading(false)
       }
@@ -95,9 +101,9 @@ export default function YouTubePage() {
                   alt={video.title}
                   className="w-full aspect-video object-cover"
                 />
-                {video.duration && (
+                {video.formattedDuration && (
                   <span className="absolute bottom-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-sm">
-                    {formatDuration(video.duration)}
+                    {video.formattedDuration}
                   </span>
                 )}
               </a>
@@ -130,8 +136,8 @@ export default function YouTubePage() {
                 </div>
                 
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{formatViewCount(video.viewCount)} views</span>
-                  <span>{new Date(video.publishedAt).toLocaleDateString()}</span>
+                  <span>{video.formattedViewCount} views</span>
+                  <span>{video.formattedDate}</span>
                 </div>
               </div>
             </div>

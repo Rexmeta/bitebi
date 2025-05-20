@@ -1,6 +1,6 @@
 import { YouTubeApiResponse, YouTubeApiVideo, YouTubeApiChannel, YouTubeApiError, YouTubeVideo } from '../types/youtube'
 
-const YOUTUBE_API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY
+const YOUTUBE_API_KEY = process.env.YOUTUBE_API_KEY
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3'
 
 // 채널 ID 목록
@@ -43,15 +43,32 @@ export const formatDate = (date: string): string => {
 }
 
 // API 함수
+async function fetchWithRetry(url: string, retries = 3): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await fetch(url)
+      if (response.ok) return response
+      
+      const error: YouTubeApiError = await response.json()
+      if (error.status === 'quotaExceeded') {
+        throw new Error('YouTube API quota exceeded')
+      }
+      
+      if (i === retries - 1) throw new Error(error.message)
+      
+      // 지수 백오프로 재시도
+      await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000))
+    } catch (error) {
+      if (i === retries - 1) throw error
+    }
+  }
+  throw new Error('Failed to fetch after retries')
+}
+
 export async function fetchChannelInfo(channelId: string): Promise<YouTubeApiChannel> {
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `${YOUTUBE_API_BASE_URL}/channels?part=snippet,statistics&id=${channelId}&key=${YOUTUBE_API_KEY}`
   )
-  
-  if (!response.ok) {
-    const error: YouTubeApiError = await response.json()
-    throw new Error(`Failed to fetch channel info: ${error.message}`)
-  }
 
   const data = await response.json()
   const channel = data.items[0]
@@ -72,14 +89,9 @@ export async function fetchChannelVideos(
   maxResults: number = 10,
   pageToken?: string
 ): Promise<YouTubeApiResponse> {
-  const response = await fetch(
+  const response = await fetchWithRetry(
     `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=${maxResults}&order=date&type=video&key=${YOUTUBE_API_KEY}${pageToken ? `&pageToken=${pageToken}` : ''}`
   )
-
-  if (!response.ok) {
-    const error: YouTubeApiError = await response.json()
-    throw new Error(`Failed to fetch videos: ${error.message}`)
-  }
 
   const data = await response.json()
   
@@ -109,22 +121,18 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   
   for (const channelId of CHANNEL_IDS) {
     try {
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${YOUTUBE_API_BASE_URL}/search?part=snippet&channelId=${channelId}&maxResults=5&order=date&type=video&key=${YOUTUBE_API_KEY}`
       )
-
-      if (!response.ok) continue
 
       const data = await response.json()
       if (!data.items?.length) continue
 
       const videoIds = data.items.map((item: any) => item.id.videoId).join(',')
       
-      const videoDetailsResponse = await fetch(
+      const videoDetailsResponse = await fetchWithRetry(
         `${YOUTUBE_API_BASE_URL}/videos?part=statistics,contentDetails&id=${videoIds}&key=${YOUTUBE_API_KEY}`
       )
-
-      if (!videoDetailsResponse.ok) continue
 
       const videoDetails = await videoDetailsResponse.json()
       if (!videoDetails.items?.length) continue
