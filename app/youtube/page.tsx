@@ -29,10 +29,6 @@ export default function YouTubePage() {
           throw new Error(data.error || 'Failed to fetch videos')
         }
         
-        if (!data.videos || data.videos.length === 0) {
-          throw new Error('No videos available')
-        }
-        
         setVideos(data.videos)
       } catch (err) {
         console.error('Error fetching videos:', err)
@@ -44,32 +40,6 @@ export default function YouTubePage() {
 
     fetchVideos()
   }, [])
-
-  const formatDuration = (duration: string) => {
-    const match = duration.match(/PT(\d+H)?(\d+M)?(\d+S)?/)
-    if (!match) return '00:00'
-
-    const hours = (match[1] || '').replace('H', '')
-    const minutes = (match[2] || '').replace('M', '')
-    const seconds = (match[3] || '').replace('S', '')
-    
-    let result = ''
-    if (hours) result += `${hours}:`
-    result += `${minutes.padStart(2, '0')}:`
-    result += seconds.padStart(2, '0')
-    
-    return result
-  }
-
-  const formatViewCount = (count: number) => {
-    if (count >= 1000000) {
-      return `${(count / 1000000).toFixed(1)}M`
-    }
-    if (count >= 1000) {
-      return `${(count / 1000).toFixed(1)}K`
-    }
-    return count.toString()
-  }
 
   if (loading) {
     return (
