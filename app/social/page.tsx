@@ -62,12 +62,15 @@ export default function SocialFeedPage() {
   }, [filter, keyword])
 
   // 무한 스크롤
-  useInfiniteScroll(() => {
-    if (!isLoading && hasMore) {
-      setPage(prev => prev + 1)
-      fetchPosts(page + 1)
-    }
-  }, hasMore)
+  const lastElementRef = useInfiniteScroll({
+    onLoadMore: () => {
+      if (!isLoading && hasMore) {
+        setPage(prev => prev + 1)
+        fetchPosts(page + 1)
+      }
+    },
+    hasMore
+  })
 
   // 초기 로드 및 필터 변경 시
   useEffect(() => {
