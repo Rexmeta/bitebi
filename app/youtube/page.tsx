@@ -111,11 +111,6 @@ export default function YouTubePage() {
                   alt={video.title}
                   className="w-full aspect-video object-cover"
                 />
-                {video.formattedDuration && (
-                  <span className="absolute bottom-2 right-2 bg-black bg-opacity-80 px-2 py-1 rounded text-sm">
-                    {video.formattedDuration}
-                  </span>
-                )}
               </a>
               
               <div className="p-4">
@@ -131,22 +126,10 @@ export default function YouTubePage() {
                 </h3>
                 
                 <div className="flex items-center text-sm text-gray-400 mb-2">
-                  {video.channelId ? (
-                    <a
-                      href={`https://www.youtube.com/channel/${video.channelId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-yellow-400"
-                    >
-                      {video.channelTitle}
-                    </a>
-                  ) : (
-                    <span>{video.channelTitle}</span>
-                  )}
+                  <span>{video.channelTitle}</span>
                 </div>
                 
                 <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>{video.formattedViewCount} views</span>
                   <span>{video.formattedDate}</span>
                 </div>
               </div>

@@ -60,13 +60,6 @@ async function parseRSSFeed(feedUrl: string): Promise<YouTubeVideo[]> {
         publishedAt: item.published,
         channelTitle: item.author?.name || 'Unknown Channel',
         thumbnailUrl: thumbnail.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-        viewCount: 0,
-        likeCount: 0,
-        commentCount: 0,
-        duration: '',
-        channelId: '',
-        formattedDuration: '',
-        formattedViewCount: '0',
         formattedDate: formatDate(item.published)
       }
     })
@@ -84,7 +77,6 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   for (const channelId of CHANNEL_IDS) {
     try {
       console.log(`Fetching videos for channel ${channelId}...`)
-      // YouTube 채널 RSS 피드 URL 형식 수정
       const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
       
       const channelVideos = await parseRSSFeed(feedUrl)

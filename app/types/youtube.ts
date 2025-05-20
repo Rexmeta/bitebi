@@ -39,10 +39,14 @@ export interface YouTubeApiError {
 }
 
 // 컴포넌트에서 사용하는 타입
-export interface YouTubeVideo extends YouTubeApiVideo {
-  formattedDuration?: string
-  formattedViewCount?: string
-  formattedDate?: string
+export interface YouTubeVideo {
+  id: string
+  title: string
+  description: string
+  publishedAt: string
+  channelTitle: string
+  thumbnailUrl: string
+  formattedDate: string
 }
 
 export interface YouTubeChannel extends YouTubeApiChannel {
