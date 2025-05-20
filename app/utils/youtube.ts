@@ -25,21 +25,41 @@ function extractVideoId(url: string): string {
 // RSS 피드 파싱
 async function parseRSSFeed(feedUrl: string): Promise<YouTubeVideo[]> {
   try {
+    console.log('Fetching RSS feed:', feedUrl)
     const response = await fetch(feedUrl)
-    const xml = await response.text()
-    const parser = new XMLParser()
-    const result = parser.parse(xml)
     
-    const items = result.feed.entry || []
+    if (!response.ok) {
+      console.error('Failed to fetch RSS feed:', response.status, response.statusText)
+      return []
+    }
+    
+    const xml = await response.text()
+    const parser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: '@_'
+    })
+    
+    const result = parser.parse(xml)
+    console.log('RSS feed parsed successfully')
+    
+    if (!result.feed?.entry) {
+      console.log('No entries found in RSS feed')
+      return []
+    }
+    
+    const items = Array.isArray(result.feed.entry) ? result.feed.entry : [result.feed.entry]
     return items.map((item: any) => {
       const videoId = extractVideoId(item.link.href)
+      const mediaGroup = item['media:group'] || {}
+      const thumbnail = mediaGroup['media:thumbnail'] || {}
+      
       return {
         id: videoId,
         title: item.title,
-        description: item['media:group']['media:description'],
+        description: mediaGroup['media:description'] || '',
         publishedAt: item.published,
-        channelTitle: item.author.name,
-        thumbnailUrl: item['media:group']['media:thumbnail'].url,
+        channelTitle: item.author?.name || 'Unknown Channel',
+        thumbnailUrl: thumbnail.url || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
         viewCount: 0,
         likeCount: 0,
         commentCount: 0,
@@ -64,13 +84,16 @@ export async function getLatestVideos(): Promise<YouTubeVideo[]> {
   for (const channelId of CHANNEL_IDS) {
     try {
       console.log(`Fetching videos for channel ${channelId}...`)
-      const feedUrl = `https://www.youtube.com/xml/feeds/videos.xml?channel_id=${channelId}`
+      // YouTube 채널 RSS 피드 URL 형식 수정
+      const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`
       
       const channelVideos = await parseRSSFeed(feedUrl)
       if (channelVideos.length > 0) {
         videos.push(...channelVideos)
         successCount++
         console.log(`Successfully fetched ${channelVideos.length} videos from channel ${channelId}`)
+      } else {
+        console.log(`No videos found for channel ${channelId}`)
       }
     } catch (error) {
       console.error(`Error fetching videos for channel ${channelId}:`, error)
