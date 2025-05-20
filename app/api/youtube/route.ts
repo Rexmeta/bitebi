@@ -7,12 +7,22 @@ const CHANNEL_IDS = [
   'UCqK_GSMbpiV8spgD3ZGloSw', // Andreas Antonopoulos
   'UC6rBzSz6qQbWnaG3SAkZgOA', // Bitcoin.com
   'UCWZ_8TWTJ3J6z8TzU-Ih1Cg', // Binance
-  'UCJ5v_MCY6GNUBTO8-D3XoAg', // Algoran
-  'UCtOV5M-T3GcsJAq8QKaf0lg', // OtaVerse
   'UC2pmfLm7iq6Ov1UwYrWYkZA', // Coin Bureau
   'UC7vVhkEfw4nOGp8TyDk7RcQ', // Crypto Daily
   'UCvlV2kyuQpG8P9t8HGQhEug', // Crypto Banter
-  'UCYFdH3jN1UNIXCSX1A_Am1A'  // Crypto Jebb
+  'UCYFdH3jN1UNIXCSX1A_Am1A', // Crypto Jebb
+  'UCxM6bQ2z3GooKU4aWEAsYCw', // The Bitcoin Express
+  'UC6vxUxW-aXxqF17SkGp2AYg', // Bitcoin University
+  'UCLnQ34ZBSjy2JQjeRudFEDw', // BitBoy Crypto
+  'UCiUnrCUGCJTCC7KjuW493Ww', // Crypto Crow
+  'UCSuHzQ3GrHSzoBbwrIq3LLA', // Naomi Brockwell
+  'UCavTvSwEoRABvnPtLg0e6LQ', // Crypto Zombie
+  'UCRvqjQPSeaWn-uEx-w0XOIg', // Crypto Tips
+  'UCMtJYS0PrtiUwlk6zjGDEMA', // DataDash
+  'UCbLhGKVY-bJPcawebgtNfbw', // Crypto Daily Update
+  'UC4nXWTjZqK4bv7feoRntSog', // The Crypto Lark
+  'UCCatR7nWbYrkVXdxXb4cGXw', // Anthony Pompliano
+  'UCZ4WRgQiQbysnzwGTdapt2w'  // Ivan on Tech
 ]
 
 // RSS 피드 파싱
