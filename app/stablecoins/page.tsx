@@ -27,20 +27,33 @@ export default function StablecoinsPage() {
   const [sortBy, setSortBy] = useState<'rank' | 'marketCap' | 'volume'>('rank')
 
   useEffect(() => {
-    fetch('/api/stablecoins')
-      .then(res => {
-        if (!res.ok) throw new Error(`스테이블코인 데이터를 가져오는데 실패했습니다 (${res.status})`)
-        return res.json()
-      })
-      .then(data => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        
+        const response = await fetch('/api/stablecoin')
+        const data = await response.json()
+        
+        if (!response.ok) {
+          throw new Error(data.details || `스테이블코인 데이터를 가져오는데 실패했습니다 (${response.status})`)
+        }
+        
+        if (!Array.isArray(data) || data.length === 0) {
+          throw new Error('스테이블코인 데이터가 없습니다')
+        }
+        
+        console.log('Received stablecoin data:', data)
         setStablecoins(data)
-        setIsLoading(false)
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('스테이블코인 데이터 로딩 오류:', err)
-        setError(err.message || '데이터를 불러올 수 없습니다')
+        setError(err instanceof Error ? err.message : '데이터를 불러올 수 없습니다')
+      } finally {
         setIsLoading(false)
-      })
+      }
+    }
+
+    fetchData()
   }, [])
 
   const sortedStablecoins = [...stablecoins].sort((a, b) => {

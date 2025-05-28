@@ -173,6 +173,8 @@ async function getBlockTimestamp(blockNumber: number): Promise<number> {
 
 export async function GET() {
   try {
+    console.log('Fetching stablecoin data from CoinGecko...')
+    
     const response = await fetch(
       `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${STABLECOIN_IDS.join(',')}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`,
       {
@@ -184,22 +186,39 @@ export async function GET() {
     )
 
     if (!response.ok) {
-      throw new Error(`CoinGecko API error: ${response.status}`)
+      const errorText = await response.text()
+      console.error('CoinGecko API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText
+      })
+      throw new Error(`CoinGecko API error: ${response.status} - ${errorText}`)
     }
 
     const data = await response.json()
+    console.log('Received data from CoinGecko:', data)
     
     // 추가 정보 병합
-    const enrichedData = data.map((coin: any) => ({
-      ...coin,
-      ...STABLECOIN_INFO[coin.id]
-    }))
+    const enrichedData = data.map((coin: any) => {
+      const info = STABLECOIN_INFO[coin.id]
+      if (!info) {
+        console.warn(`No additional info found for coin: ${coin.id}`)
+      }
+      return {
+        ...coin,
+        ...info
+      }
+    })
 
+    console.log('Enriched data:', enrichedData)
     return NextResponse.json(enrichedData)
   } catch (error) {
-    console.error('Error fetching stablecoin data:', error)
+    console.error('Error in stablecoin API:', error)
     return NextResponse.json(
-      { error: 'Failed to fetch stablecoin data' },
+      { 
+        error: 'Failed to fetch stablecoin data',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     )
   }
