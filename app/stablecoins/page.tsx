@@ -2,25 +2,17 @@
 import { useEffect, useState } from 'react'
 import AdBanner from '../components/AdBanner'
 
-interface ChainVolume {
-  chain: string
-  volume: number
-}
-
 interface Stablecoin {
   id: string
   name: string
   symbol: string
-  gecko_id: string
-  pegMechanism: string
   current_price: number
   market_cap: number
   total_volume: number
   circulating_supply: number
   price_change_percentage_24h: number
-  price_change_percentage_7d: number
-  price_change_percentage_30d: number
-  chain_volumes: ChainVolume[]
+  volume_change_percentage_24h: number
+  circulation_change_percentage_24h: number
   last_updated: string
 }
 
@@ -155,12 +147,12 @@ export default function StablecoinsPage() {
                   <tr>
                     <th className="text-left px-4 py-2">이름</th>
                     <th className="text-right px-4 py-2">가격</th>
-                    <th className="text-right px-4 py-2">24h 변동</th>
-                    <th className="text-right px-4 py-2">7d 변동</th>
-                    <th className="text-right px-4 py-2">30d 변동</th>
+                    <th className="text-right px-4 py-2">24h 가격 변동</th>
+                    <th className="text-right px-4 py-2">24h 거래량 변동</th>
+                    <th className="text-right px-4 py-2">24h 유통량 변동</th>
                     <th className="text-right px-4 py-2">시가총액</th>
+                    <th className="text-right px-4 py-2">24h 거래량</th>
                     <th className="text-right px-4 py-2">유통량</th>
-                    <th className="text-right px-4 py-2">담보 방식</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -178,19 +170,15 @@ export default function StablecoinsPage() {
                       <td className={`px-4 py-3 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {coin.price_change_percentage_24h.toFixed(2)}%
                       </td>
-                      <td className={`px-4 py-3 text-right ${coin.price_change_percentage_7d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {coin.price_change_percentage_7d.toFixed(2)}%
+                      <td className={`px-4 py-3 text-right ${coin.volume_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {coin.volume_change_percentage_24h.toFixed(2)}%
                       </td>
-                      <td className={`px-4 py-3 text-right ${coin.price_change_percentage_30d >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {coin.price_change_percentage_30d.toFixed(2)}%
+                      <td className={`px-4 py-3 text-right ${coin.circulation_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {coin.circulation_change_percentage_24h.toFixed(2)}%
                       </td>
                       <td className="px-4 py-3 text-right">${formatLargeNumber(coin.market_cap)}</td>
+                      <td className="px-4 py-3 text-right">${formatLargeNumber(coin.total_volume)}</td>
                       <td className="px-4 py-3 text-right">${formatLargeNumber(coin.circulating_supply)}</td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="text-xs bg-[#2d333b] px-2 py-1 rounded">
-                          {coin.pegMechanism}
-                        </span>
-                      </td>
                     </tr>
                   ))}
                 </tbody>
