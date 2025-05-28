@@ -1,7 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
 import AdBanner from '../components/AdBanner'
-import Image from 'next/image'
 
 interface StablecoinStats {
   circulation: number
@@ -82,16 +81,8 @@ export default function StablecoinsPage() {
     return num.toString()
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ko-KR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
-
   return (
-    <div className="min-h-screen bg-white text-gray-900">
+    <main className="min-h-screen bg-white text-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Stablecoin Stats</h1>
@@ -210,6 +201,6 @@ export default function StablecoinsPage() {
           />
         </div>
       </div>
-    </div>
+    </main>
   )
 }
