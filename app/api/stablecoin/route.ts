@@ -40,6 +40,26 @@ interface Stablecoin {
   }
 }
 
+interface ProcessedStablecoin {
+  id: string
+  name: string
+  symbol: string
+  gecko_id: string
+  pegMechanism: string
+  current_price: number
+  market_cap: number
+  total_volume: number
+  circulating_supply: number
+  price_change_percentage_24h: number
+  price_change_percentage_7d: number
+  price_change_percentage_30d: number
+  chain_volumes: Array<{
+    chain: string
+    volume: number
+  }>
+  last_updated: string
+}
+
 export async function GET() {
   try {
     const response = await fetch('https://stablecoins.llama.fi/stablecoins', {
@@ -58,7 +78,7 @@ export async function GET() {
     // 필요한 데이터만 추출하고 정렬
     const stablecoins = data.peggedAssets
       .filter((coin: Stablecoin) => coin.pegType === 'peggedUSD')
-      .map((coin: Stablecoin) => {
+      .map((coin: Stablecoin): ProcessedStablecoin => {
         const totalCirculating = coin.circulating.peggedUSD
         const prevDayCirculating = coin.circulatingPrevDay.peggedUSD
         const prevWeekCirculating = coin.circulatingPrevWeek.peggedUSD
@@ -92,7 +112,7 @@ export async function GET() {
           last_updated: new Date().toISOString()
         }
       })
-      .sort((a, b) => b.market_cap - a.market_cap) // 시가총액 기준 정렬
+      .sort((a: ProcessedStablecoin, b: ProcessedStablecoin) => b.market_cap - a.market_cap) // 시가총액 기준 정렬
 
     return NextResponse.json(stablecoins)
   } catch (error) {
