@@ -81,8 +81,32 @@ export default function StablecoinsPage() {
     return num.toString()
   }
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+          <p>⚠️ {error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-2 text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded"
+          >
+            Refresh
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <main className="min-h-screen bg-white text-gray-900">
+    <div className="min-h-screen bg-white text-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Stablecoin Stats</h1>
@@ -114,68 +138,52 @@ export default function StablecoinsPage() {
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {isLoading ? (
-            <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-            </div>
-          ) : error ? (
-            <div className="bg-red-50 text-red-700 p-4 rounded-lg my-4">
-              <p>⚠️ {error}</p>
-              <button 
-                onClick={() => window.location.reload()} 
-                className="mt-2 text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded"
-              >
-                Refresh
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Circulation</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Change (24h)</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (24h)</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedStablecoins.map((coin) => (
-                    <tr key={coin.symbol} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8 relative bg-gray-100 rounded-full flex items-center justify-center">
-                            <span className="text-sm font-medium text-gray-600">
-                              {coin.symbol.slice(0, 2)}
-                            </span>
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">
-                              {coin.name}
-                            </div>
-                            <div className="text-sm text-gray-500">{coin.symbol}</div>
-                          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Circulation</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Change (24h)</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (24h)</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {sortedStablecoins.map((coin) => (
+                  <tr key={coin.symbol} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <div className="flex-shrink-0 h-8 w-8 relative bg-gray-100 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-gray-600">
+                            {coin.symbol.slice(0, 2)}
+                          </span>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        ${formatLargeNumber(coin.circulation)}
-                      </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-right text-sm ${coin.circulation_percent_change_24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {coin.circulation_percent_change_24h.toFixed(2)}%
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        {formatNumber(coin.price)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        ${formatLargeNumber(coin.volume)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                        <div className="ml-4">
+                          <div className="text-sm font-medium text-gray-900">
+                            {coin.name}
+                          </div>
+                          <div className="text-sm text-gray-500">{coin.symbol}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      ${formatLargeNumber(coin.circulation)}
+                    </td>
+                    <td className={`px-6 py-4 whitespace-nowrap text-right text-sm ${coin.circulation_percent_change_24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {coin.circulation_percent_change_24h.toFixed(2)}%
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      {formatNumber(coin.price)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                      ${formatLargeNumber(coin.volume)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="mt-8 bg-gray-50 rounded-lg p-6">
@@ -201,6 +209,6 @@ export default function StablecoinsPage() {
           />
         </div>
       </div>
-    </main>
+    </div>
   )
 }

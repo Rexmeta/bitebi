@@ -36,6 +36,14 @@ const nextConfig = {
   },
   async headers() {
     return []
+  },
+  async rewrites() {
+    return [
+      {
+        source: '/stablecoin',
+        destination: '/stablecoins'
+      }
+    ]
   }
 }
 
