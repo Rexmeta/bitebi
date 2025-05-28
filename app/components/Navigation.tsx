@@ -26,12 +26,6 @@ const Navigation = () => {
                   Whale Tracker
                 </Link>
                 <Link
-                  href="/topics"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Topics
-                </Link>
-                <Link
                   href="/news"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >

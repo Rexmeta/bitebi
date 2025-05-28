@@ -96,9 +96,6 @@ export default function RootLayout({
                 <Link href="/stablecoin" className="text-gray-300 hover:text-white">
                   Stablecoin
                 </Link>
-                <Link href="/topics" className="text-gray-300 hover:text-white">
-                  Topics
-                </Link>
               </div>
             </div>
           </nav>
