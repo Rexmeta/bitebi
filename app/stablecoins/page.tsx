@@ -3,7 +3,20 @@ import { useEffect, useState } from 'react'
 import AdBanner from '../components/AdBanner'
 import Image from 'next/image'
 
-interface Stablecoin {
+interface StablecoinStats {
+  circulation: number
+  circulation_change_24h: number
+  circulation_percent_change_24h: number
+  name: string
+  price: number
+  price_percent_change_24h: number
+  symbol: string
+  volume: number
+  volume_change_24h: number
+  volume_percent_change_24h: number
+}
+
+interface ProcessedStablecoin {
   id: string
   name: string
   symbol: string
@@ -18,7 +31,7 @@ interface Stablecoin {
 }
 
 export default function StablecoinsPage() {
-  const [stablecoins, setStablecoins] = useState<Stablecoin[]>([])
+  const [stablecoins, setStablecoins] = useState<ProcessedStablecoin[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'rank' | 'marketCap' | 'volume'>('rank')
@@ -221,5 +234,4 @@ export default function StablecoinsPage() {
       </div>
     </div>
   )
-} 
-} 
+}
