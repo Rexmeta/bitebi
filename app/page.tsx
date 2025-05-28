@@ -61,7 +61,7 @@ export default function HomePage() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
     
-    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1', {
+    fetch('/api/coin-market', {
       signal: controller.signal
     })
       .then(res => {
