@@ -173,52 +173,51 @@ async function getBlockTimestamp(blockNumber: number): Promise<number> {
 
 export async function GET() {
   try {
-    console.log('Fetching stablecoin data from CoinGecko...')
-    
     const response = await fetch(
       `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${STABLECOIN_IDS.join(',')}&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h`,
       {
         headers: {
           'Accept': 'application/json',
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        }
+        },
+        next: { revalidate: 60 } // 1분마다 캐시 갱신
       }
     )
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error('CoinGecko API error:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText
-      })
-      throw new Error(`CoinGecko API error: ${response.status} - ${errorText}`)
+      throw new Error(`CoinGecko API error: ${response.status}`)
     }
 
     const data = await response.json()
-    console.log('Received data from CoinGecko:', data)
     
-    // 추가 정보 병합
-    const enrichedData = data.map((coin: any) => {
-      const info = STABLECOIN_INFO[coin.id]
-      if (!info) {
-        console.warn(`No additional info found for coin: ${coin.id}`)
-      }
-      return {
-        ...coin,
-        ...info
-      }
-    })
+    // 필요한 데이터만 추출
+    const stablecoins = data.map((coin: any) => ({
+      id: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      image: coin.image,
+      current_price: coin.current_price,
+      market_cap: coin.market_cap,
+      market_cap_rank: coin.market_cap_rank,
+      total_volume: coin.total_volume,
+      price_change_percentage_24h: coin.price_change_percentage_24h,
+      circulating_supply: coin.circulating_supply,
+      total_supply: coin.total_supply,
+      max_supply: coin.max_supply,
+      ath: coin.ath,
+      ath_change_percentage: coin.ath_change_percentage,
+      ath_date: coin.ath_date,
+      atl: coin.atl,
+      atl_change_percentage: coin.atl_change_percentage,
+      atl_date: coin.atl_date,
+      last_updated: coin.last_updated
+    }))
 
-    console.log('Enriched data:', enrichedData)
-    return NextResponse.json(enrichedData)
+    return NextResponse.json(stablecoins)
   } catch (error) {
-    console.error('Error in stablecoin API:', error)
+    console.error('Error fetching stablecoin data:', error)
     return NextResponse.json(
-      { 
-        error: 'Failed to fetch stablecoin data',
-        details: error instanceof Error ? error.message : 'Unknown error'
-      },
+      { error: 'Failed to fetch stablecoin data' },
       { status: 500 }
     )
   }
