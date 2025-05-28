@@ -16,25 +16,15 @@ interface StablecoinStats {
   volume_percent_change_24h: number
 }
 
-interface ProcessedStablecoin {
-  id: string
-  name: string
-  symbol: string
-  current_price: number
-  market_cap: number
-  total_volume: number
-  circulating_supply: number
-  price_change_percentage_24h: number
-  volume_change_percentage_24h: number
-  circulation_change_percentage_24h: number
-  last_updated: string
+interface StablecoinData {
+  [key: string]: StablecoinStats
 }
 
 export default function StablecoinsPage() {
-  const [stablecoins, setStablecoins] = useState<ProcessedStablecoin[]>([])
+  const [stablecoins, setStablecoins] = useState<StablecoinStats[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sortBy, setSortBy] = useState<'rank' | 'marketCap' | 'volume'>('rank')
+  const [sortBy, setSortBy] = useState<'circulation' | 'volume'>('circulation')
   const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
@@ -43,17 +33,14 @@ export default function StablecoinsPage() {
         setIsLoading(true)
         setError(null)
         
-        const response = await fetch('/api/stablecoin')
+        const response = await fetch('https://stablecoinstats.com/api/summary')
         if (!response.ok) {
           throw new Error(`스테이블코인 데이터를 가져오는데 실패했습니다 (${response.status})`)
         }
         
-        const data = await response.json()
-        if (!Array.isArray(data) || data.length === 0) {
-          throw new Error('스테이블코인 데이터가 없습니다')
-        }
-        
-        setStablecoins(data)
+        const data: StablecoinData = await response.json()
+        const stablecoinArray = Object.values(data)
+        setStablecoins(stablecoinArray)
       } catch (err) {
         console.error('스테이블코인 데이터 로딩 오류:', err)
         setError(err instanceof Error ? err.message : '데이터를 불러올 수 없습니다')
@@ -72,12 +59,10 @@ export default function StablecoinsPage() {
 
   const sortedStablecoins = [...filteredStablecoins].sort((a, b) => {
     switch (sortBy) {
-      case 'marketCap':
-        return b.market_cap - a.market_cap
       case 'volume':
-        return b.total_volume - a.total_volume
+        return b.volume - a.volume
       default:
-        return a.market_cap - b.market_cap
+        return b.circulation - a.circulation
     }
   })
 
@@ -123,8 +108,7 @@ export default function StablecoinsPage() {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="rank">Market Cap Rank</option>
-              <option value="marketCap">Market Cap</option>
+              <option value="circulation">Circulation</option>
               <option value="volume">Volume</option>
             </select>
           </div>
@@ -162,12 +146,12 @@ export default function StablecoinsPage() {
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Circulation</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Change (24h)</th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tracked Volume (24h)</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Volume (24h)</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {sortedStablecoins.map((coin) => (
-                    <tr key={coin.id} className="hover:bg-gray-50">
+                    <tr key={coin.symbol} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-8 w-8 relative">
@@ -181,25 +165,23 @@ export default function StablecoinsPage() {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
-                              <a href={`/coin/${coin.symbol}`} className="hover:text-blue-600">
-                                {coin.name}
-                              </a>
+                              {coin.name}
                             </div>
                             <div className="text-sm text-gray-500">{coin.symbol}</div>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        ${formatLargeNumber(coin.circulating_supply)}
+                        ${formatLargeNumber(coin.circulation)}
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-right text-sm ${coin.circulation_change_percentage_24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {coin.circulation_change_percentage_24h.toFixed(2)}%
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        {formatNumber(coin.current_price)}
+                      <td className={`px-6 py-4 whitespace-nowrap text-right text-sm ${coin.circulation_percent_change_24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        {coin.circulation_percent_change_24h.toFixed(2)}%
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
-                        ${formatLargeNumber(coin.total_volume)}
+                        {formatNumber(coin.price)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                        ${formatLargeNumber(coin.volume)}
                       </td>
                     </tr>
                   ))}
