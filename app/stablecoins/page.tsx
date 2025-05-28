@@ -1,6 +1,10 @@
 'use client'
 import { useEffect, useState } from 'react'
 import AdBanner from '../components/AdBanner'
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
+import { Pie } from 'react-chartjs-2'
+
+ChartJS.register(ArcElement, Tooltip, Legend)
 
 interface StablecoinStats {
   circulation: number
@@ -17,6 +21,16 @@ interface StablecoinStats {
 
 interface StablecoinData {
   [key: string]: StablecoinStats
+}
+
+const COLORS = {
+  USDT: '#26A17B',
+  USDC: '#2775CA',
+  DAI: '#F5AC37',
+  BUSD: '#F0B90B',
+  TUSD: '#2B2F7E',
+  USDP: '#0052FF',
+  GUSD: '#00DCFA'
 }
 
 export default function StablecoinsPage() {
@@ -81,6 +95,41 @@ export default function StablecoinsPage() {
     return num.toString()
   }
 
+  const chartData = {
+    labels: sortedStablecoins.map(coin => coin.symbol),
+    datasets: [
+      {
+        data: sortedStablecoins.map(coin => coin.circulation),
+        backgroundColor: sortedStablecoins.map(coin => COLORS[coin.symbol as keyof typeof COLORS] || '#999999'),
+        borderWidth: 1,
+      },
+    ],
+  }
+
+  const chartOptions = {
+    plugins: {
+      legend: {
+        position: 'right' as const,
+        labels: {
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            const label = context.label || ''
+            const value = context.raw || 0
+            const total = context.dataset.data.reduce((a: number, b: number) => a + b, 0)
+            const percentage = ((value / total) * 100).toFixed(2)
+            return `${label}: $${formatLargeNumber(value)} (${percentage}%)`
+          }
+        }
+      }
+    }
+  }
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -135,6 +184,35 @@ export default function StablecoinsPage() {
             format="horizontal"
             style={{ minHeight: '100px' }}
           />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Market Share by Circulation</h2>
+              <div className="h-[400px]">
+                <Pie data={chartData} options={chartOptions} />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold mb-4">Market Share by Volume (24h)</h2>
+              <div className="h-[400px]">
+                <Pie 
+                  data={{
+                    ...chartData,
+                    datasets: [{
+                      ...chartData.datasets[0],
+                      data: sortedStablecoins.map(coin => coin.volume)
+                    }]
+                  }} 
+                  options={chartOptions} 
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
