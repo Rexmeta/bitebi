@@ -13,6 +13,11 @@ interface Stablecoin {
   total_volume: number
   circulating_supply: number
   image: string
+  description: string
+  website: string
+  whitepaper: string
+  blockchain: string
+  collateral: string
 }
 
 export default function StablecoinsPage() {
@@ -137,6 +142,49 @@ export default function StablecoinsPage() {
                   ))}
                 </tbody>
               </table>
+
+              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {sortedStablecoins.map((coin) => (
+                  <div key={coin.id} className="bg-[#1c2128] p-4 rounded-lg border border-[#2d333b]">
+                    <div className="flex items-center gap-3 mb-3">
+                      <img src={coin.image} alt={coin.name} className="w-8 h-8" />
+                      <div>
+                        <h3 className="font-semibold">{coin.name}</h3>
+                        <p className="text-gray-400 text-sm">{coin.symbol.toUpperCase()}</p>
+                      </div>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-3">{coin.description}</p>
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="text-gray-400">블록체인:</span>
+                        <span className="ml-2">{coin.blockchain}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-400">담보:</span>
+                        <span className="ml-2">{coin.collateral}</span>
+                      </div>
+                      <div className="flex gap-2 mt-3">
+                        <a
+                          href={coin.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-yellow-400 hover:text-yellow-300 text-sm"
+                        >
+                          웹사이트
+                        </a>
+                        <a
+                          href={coin.whitepaper}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-yellow-400 hover:text-yellow-300 text-sm"
+                        >
+                          백서
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
