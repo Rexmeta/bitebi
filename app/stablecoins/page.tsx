@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import AdBanner from '../components/AdBanner'
+import Image from 'next/image'
 
 interface Stablecoin {
   id: string
@@ -92,11 +93,31 @@ export default function StablecoinsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0d1117] text-white p-4">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-2xl font-bold text-yellow-400 mb-6">💵 스테이블코인 시장</h1>
+    <div className="min-h-screen bg-white text-gray-900">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold">Stablecoin Stats</h1>
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              placeholder="Search stablecoins..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as any)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="rank">Market Cap Rank</option>
+              <option value="marketCap">Market Cap</option>
+              <option value="volume">Volume</option>
+            </select>
+          </div>
+        </div>
 
-        <div className="mb-4">
+        <div className="mb-8">
           <AdBanner 
             slot="3574861290"
             format="horizontal"
@@ -104,81 +125,69 @@ export default function StablecoinsPage() {
           />
         </div>
 
-        <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <div className="w-full md:w-64">
-              <input
-                type="text"
-                placeholder="스테이블코인 검색..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-[#0d1117] text-white px-3 py-2 rounded border border-[#2d333b] focus:outline-none focus:border-yellow-400"
-              />
-            </div>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="w-full md:w-auto bg-[#0d1117] text-white px-3 py-2 rounded border border-[#2d333b]"
-            >
-              <option value="rank">시가총액 순위</option>
-              <option value="marketCap">시가총액</option>
-              <option value="volume">거래량</option>
-            </select>
-          </div>
-
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
           {isLoading ? (
             <div className="flex justify-center items-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           ) : error ? (
-            <div className="bg-red-900/30 text-red-200 p-4 rounded border border-red-700 my-4">
+            <div className="bg-red-50 text-red-700 p-4 rounded-lg my-4">
               <p>⚠️ {error}</p>
               <button 
                 onClick={() => window.location.reload()} 
-                className="mt-2 text-xs bg-red-800 hover:bg-red-700 px-3 py-1 rounded"
+                className="mt-2 text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded"
               >
-                새로고침
+                Refresh
               </button>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="sticky top-0 bg-[#161b22] border-b border-[#2d333b]">
+              <table className="w-full">
+                <thead className="bg-gray-50">
                   <tr>
-                    <th className="text-left px-4 py-2">이름</th>
-                    <th className="text-right px-4 py-2">가격</th>
-                    <th className="text-right px-4 py-2">24h 가격 변동</th>
-                    <th className="text-right px-4 py-2">24h 거래량 변동</th>
-                    <th className="text-right px-4 py-2">24h 유통량 변동</th>
-                    <th className="text-right px-4 py-2">시가총액</th>
-                    <th className="text-right px-4 py-2">24h 거래량</th>
-                    <th className="text-right px-4 py-2">유통량</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Circulation</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Change (24h)</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tracked Volume (24h)</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="bg-white divide-y divide-gray-200">
                   {sortedStablecoins.map((coin) => (
-                    <tr key={coin.id} className="border-b border-[#2d333b] hover:bg-[#2a2e35]">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <div>
-                            <div className="font-medium">{coin.name}</div>
-                            <div className="text-gray-400 text-xs">{coin.symbol.toUpperCase()}</div>
+                    <tr key={coin.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-8 w-8 relative">
+                            <Image
+                              src={`/images/stablecoins/${coin.symbol.toLowerCase()}.png`}
+                              alt={coin.name}
+                              width={32}
+                              height={32}
+                              className="rounded-full"
+                            />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              <a href={`/coin/${coin.symbol}`} className="hover:text-blue-600">
+                                {coin.name}
+                              </a>
+                            </div>
+                            <div className="text-sm text-gray-500">{coin.symbol}</div>
                           </div>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-right">{formatNumber(coin.current_price)}</td>
-                      <td className={`px-4 py-3 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {coin.price_change_percentage_24h.toFixed(2)}%
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                        ${formatLargeNumber(coin.circulating_supply)}
                       </td>
-                      <td className={`px-4 py-3 text-right ${coin.volume_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                        {coin.volume_change_percentage_24h.toFixed(2)}%
-                      </td>
-                      <td className={`px-4 py-3 text-right ${coin.circulation_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      <td className={`px-6 py-4 whitespace-nowrap text-right text-sm ${coin.circulation_change_percentage_24h >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {coin.circulation_change_percentage_24h.toFixed(2)}%
                       </td>
-                      <td className="px-4 py-3 text-right">${formatLargeNumber(coin.market_cap)}</td>
-                      <td className="px-4 py-3 text-right">${formatLargeNumber(coin.total_volume)}</td>
-                      <td className="px-4 py-3 text-right">${formatLargeNumber(coin.circulating_supply)}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                        {formatNumber(coin.current_price)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-900">
+                        ${formatLargeNumber(coin.total_volume)}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -187,7 +196,22 @@ export default function StablecoinsPage() {
           )}
         </div>
 
-        <div className="mt-4">
+        <div className="mt-8 bg-gray-50 rounded-lg p-6">
+          <h2 className="text-xl font-semibold mb-4">Methodology</h2>
+          <ul className="list-disc list-inside space-y-2 text-gray-600">
+            <li>Volume weighted BTC and ETH benchmark pricing from Coinbase, Bitstamp, Gemini, and Kraken</li>
+            <li>Only BTC, ETH, and USD pairs are tracked from listed exchanges</li>
+            <li>Tracked USD pairs on Bitfinex are treated as USDT</li>
+            <li>Tracked exchanges determined by BTI Exchange Rankings</li>
+            <li>Live updates ~10 minutes</li>
+            <li>Historical snapshots every hour</li>
+          </ul>
+          <p className="mt-4 text-sm text-gray-500">
+            Data sources: Ethplorer, Etherscan, Omniexplorer, Tronscan, and all listed exchanges.
+          </p>
+        </div>
+
+        <div className="mt-8">
           <AdBanner 
             slot="5844761427" 
             format="horizontal"
@@ -197,4 +221,5 @@ export default function StablecoinsPage() {
       </div>
     </div>
   )
+} 
 } 
