@@ -33,7 +33,7 @@ export default function StablecoinsPage() {
         setIsLoading(true)
         setError(null)
         
-        const response = await fetch('https://stablecoinstats.com/api/summary')
+        const response = await fetch('/api/stablecoin')
         if (!response.ok) {
           throw new Error(`스테이블코인 데이터를 가져오는데 실패했습니다 (${response.status})`)
         }
@@ -154,14 +154,10 @@ export default function StablecoinsPage() {
                     <tr key={coin.symbol} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8 relative">
-                            <Image
-                              src={`/images/stablecoins/${coin.symbol.toLowerCase()}.png`}
-                              alt={coin.name}
-                              width={32}
-                              height={32}
-                              className="rounded-full"
-                            />
+                          <div className="flex-shrink-0 h-8 w-8 relative bg-gray-100 rounded-full flex items-center justify-center">
+                            <span className="text-sm font-medium text-gray-600">
+                              {coin.symbol.slice(0, 2)}
+                            </span>
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">
