@@ -167,8 +167,8 @@ export default function HomePage() {
       <HomeJsonLd />
       <div className="min-h-screen bg-[#0d1117] text-white p-4">
         <nav className="mb-6 flex gap-4">
-          <Link href="/">홈</Link>
-          <Link href="/with-ai">with AI</Link>
+          <Link href="/">Home</Link>
+
         </nav>
         <main className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-1/2">

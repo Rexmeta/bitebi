@@ -38,6 +38,12 @@ const Navigation = () => {
                   Market
                 </Link>
                 <Link
+                  href="/money-tracker"
+                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  머니트래커
+                </Link>
+                <Link
                   href="/analysis"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >

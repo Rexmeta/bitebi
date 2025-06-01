@@ -96,6 +96,9 @@ export default function RootLayout({
                 <Link href="/stablecoin" className="text-gray-300 hover:text-white">
                   Stablecoin
                 </Link>
+                <Link href="/money-tracker" className="text-gray-300 hover:text-white">
+                  머니트래커
+                </Link>
               </div>
             </div>
           </nav>
@@ -123,6 +126,10 @@ export default function RootLayout({
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💬</span>
               <span className="text-xs">Social</span>
+            </Link>
+            <Link href="/money-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>💸</span>
+              <span className="text-xs">머니트래커</span>
             </Link>
           </div>
         </nav>
