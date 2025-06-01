@@ -74,6 +74,10 @@ export default function HomePage() {
         clearTimeout(timeoutId);
       })
       .catch(err => {
+        if (err.name === 'AbortError') {
+          // 타임아웃 또는 언마운트로 인한 abort는 무시
+          return;
+        }
         console.error('코인 데이터 로딩 오류:', err)
         setError(prev => ({ ...prev, coins: err.message || '데이터를 불러올 수 없습니다' }))
         setIsLoading(prev => ({ ...prev, coins: false }))
@@ -99,6 +103,10 @@ export default function HomePage() {
         setIsLoading(prev => ({ ...prev, articles: false }))
       })
       .catch(err => {
+        if (err.name === 'AbortError') {
+          // 타임아웃 또는 언마운트로 인한 abort는 무시
+          return;
+        }
         console.error('뉴스 데이터 로딩 오류:', err)
         setError(prev => ({ ...prev, articles: err.message || '뉴스를 불러올 수 없습니다' }))
         setIsLoading(prev => ({ ...prev, articles: false }))
