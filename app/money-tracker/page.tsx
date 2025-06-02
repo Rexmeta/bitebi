@@ -25,7 +25,30 @@ const MoneyTrackerPage = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [notification, setNotification] = useState<{ message: string; type: string } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  const [stablecoinData, setStablecoinData] = useState<any>(null);
+  const [monetaryData, setMonetaryData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const chartRefs = useRef<Record<string, Chart | null>>({});
+
+  // 실시간 데이터 fetch
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const [stableRes, monetaryRes] = await Promise.all([
+          fetch('/api/stablecoins').then(r => r.json()),
+          fetch('/api/monetary').then(r => r.json()),
+        ]);
+        setStablecoinData(stableRes);
+        setMonetaryData(monetaryRes);
+      } catch (e) {
+        setNotification({ message: '실시간 데이터 불러오기 실패', type: 'warning' });
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, []);
 
   // 차트 생성
   useEffect(() => {
@@ -227,9 +250,9 @@ const MoneyTrackerPage = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab />;
+        return <OverviewTab stablecoinData={stablecoinData} loading={loading} />;
       case 'money-supply':
-        return <MoneySupplyTab />;
+        return <MoneySupplyTab stablecoinData={stablecoinData} monetaryData={monetaryData} loading={loading} />;
       case 'metrics':
         return <MetricsTab />;
       case 'analysis':
@@ -307,30 +330,52 @@ const MoneyTrackerPage = () => {
 
 // --- 탭별 컴포넌트 (아래는 예시, 실제로는 각 탭별로 위 HTML 구조를 React로 변환해 구현) ---
 
-function OverviewTab() {
+type OverviewTabProps = {
+  stablecoinData: any;
+  loading: boolean;
+};
+function OverviewTab({ stablecoinData, loading }: OverviewTabProps) {
+  // 실시간 데이터 추출
+  let totalSupply = null;
+  let usdtDominance = null;
+  let ethShare = null;
+  if (stablecoinData && Array.isArray(stablecoinData)) {
+    // CoinGecko API 구조 기준
+    totalSupply = stablecoinData.reduce((sum, coin) => sum + (coin.circulating_supply || 0), 0);
+    const usdt = stablecoinData.find(coin => coin.symbol?.toUpperCase() === 'USDT');
+    const eth = stablecoinData.find(coin => coin.symbol?.toUpperCase() === 'USDT'); // 예시: 실제 체인별 비중은 별도 API 필요
+    usdtDominance = usdt && totalSupply ? ((usdt.circulating_supply / totalSupply) * 100).toFixed(1) : null;
+    ethShare = 55; // 실제 체인별 비중은 별도 API 필요 (임시)
+  }
   return (
-    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
+    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
       {/* 시장 현황 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all border border-white/20 backdrop-blur h-full flex flex-col">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📊</span>시장 현황</h2>
         <div className="metric-grid grid grid-cols-3 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">$189B</div>
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : totalSupply ? `$${(totalSupply/1e9).toFixed(1)}B` : '$-'}
+            </div>
             <div className="metric-label text-xs text-gray-500">총 스테이블코인 공급량</div>
           </div>
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">66%</div>
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : usdtDominance ? `${usdtDominance}%` : '-'}
+            </div>
             <div className="metric-label text-xs text-gray-500">USDT 점유율</div>
           </div>
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">55%</div>
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : ethShare !== null ? `${ethShare}%` : '-'}
+            </div>
             <div className="metric-label text-xs text-gray-500">이더리움 체인 비중</div>
           </div>
         </div>
         <div className="chart-container relative h-48"><canvas id="marketChart"></canvas></div>
       </div>
       {/* CBDC vs 스테이블코인 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🏦</span>CBDC vs 스테이블코인</h2>
         <div className="metric-grid grid grid-cols-3 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
@@ -352,7 +397,7 @@ function OverviewTab() {
         <p className="text-center mt-3 text-gray-700">전세계 GDP의 98% 국가가 CBDC 연구 중</p>
       </div>
       {/* 거래량 분석 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">💰</span>거래량 분석</h2>
         <div className="metric-grid grid grid-cols-2 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
@@ -367,49 +412,72 @@ function OverviewTab() {
         <div className="chart-container relative h-48"><canvas id="volumeChart"></canvas></div>
       </div>
       {/* 위험 신호 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col col-span-1 md:col-span-2">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">⚠️</span>위험 신호</h2>
         <div className="alert-system warning bg-gradient-to-r from-yellow-100 to-yellow-200 border-l-4 border-yellow-400 p-4 rounded-lg mb-4">
-          <h3 className="font-bold mb-1">⚠️ 주의 신호</h3>
-          <p>• 규제 불확실성 증가<br />• CBDC 경쟁 심화<br />• 기술적 리스크 잠재</p>
+          <h3 className="font-bold mb-1 text-yellow-900">⚠️ 주의 신호</h3>
+          <p className="text-gray-700">• 규제 불확실성 증가<br />• CBDC 경쟁 심화<br />• 기술적 리스크 잠재</p>
         </div>
         <div className="alert-system success bg-gradient-to-r from-green-100 to-green-200 border-l-4 border-green-400 p-4 rounded-lg">
-          <h3 className="font-bold mb-1">✅ 긍정 신호</h3>
-          <p>• 기관 채택 확산<br />• 인프라 발전<br />• 실사용 증가</p>
+          <h3 className="font-bold mb-1 text-green-900">✅ 긍정 신호</h3>
+          <p className="text-gray-700">• 기관 채택 확산<br />• 인프라 발전<br />• 실사용 증가</p>
         </div>
       </div>
     </div>
   );
 }
 
-function MoneySupplyTab() {
+type MoneySupplyTabProps = {
+  stablecoinData: any;
+  monetaryData: any;
+  loading: boolean;
+};
+function MoneySupplyTab({ stablecoinData, monetaryData, loading }: MoneySupplyTabProps) {
+  // 실시간 데이터 추출
+  let usM2 = null, euroM2 = null, cnM2 = null, totalSupply = null;
+  if (monetaryData) {
+    usM2 = monetaryData.usM2;
+    // 유로존, 중국 등은 monetaryData에 맞게 추출 필요
+  }
+  if (stablecoinData && Array.isArray(stablecoinData)) {
+    totalSupply = stablecoinData.reduce((sum, coin) => sum + (coin.circulating_supply || 0), 0);
+  }
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
       {/* 주요국 M2 통화량 현황 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🏛️</span>주요국 M2 통화량 현황</h2>
         <div className="metric-grid grid grid-cols-2 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">$21.9T</div>
-            <div className="metric-label text-xs text-gray-500">미국 M2 (2025.4)</div>
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : usM2 ? `$${(usM2/1e12).toFixed(1)}T` : '$-'}
+            </div>
+            <div className="metric-label text-xs text-gray-500">미국 M2</div>
+          </div>
+          {/* 유로존, 중국, 스테이블코인 등도 동일하게 실시간 데이터로 대체 */}
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : euroM2 ? `€${(euroM2/1e12).toFixed(1)}T` : '€-'}
+            </div>
+            <div className="metric-label text-xs text-gray-500">유로존 M2</div>
           </div>
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">€15.6T</div>
-            <div className="metric-label text-xs text-gray-500">유로존 M2 (2024.12)</div>
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : cnM2 ? `¥${(cnM2/1e12).toFixed(1)}T` : '¥-'}
+            </div>
+            <div className="metric-label text-xs text-gray-500">중국 M2</div>
           </div>
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">¥325T</div>
-            <div className="metric-label text-xs text-gray-500">중국 M2 (2025.4)</div>
-          </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">$189B</div>
+            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+              {loading ? '로딩중...' : totalSupply ? `$${(totalSupply/1e9).toFixed(1)}B` : '$-'}
+            </div>
             <div className="metric-label text-xs text-gray-500">스테이블코인 총량</div>
           </div>
         </div>
         <div className="chart-container relative h-48"><canvas id="globalM2Chart"></canvas></div>
       </div>
       {/* 통화량 vs 스테이블코인 비교 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📊</span>통화량 vs 스테이블코인 비교</h2>
         <div className="metric-grid grid grid-cols-2 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
@@ -435,7 +503,7 @@ function MoneySupplyTab() {
         </div>
       </div>
       {/* 통화량 증가율 트렌드 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📈</span>통화량 증가율 트렌드</h2>
         <div className="mb-4">
           <div className="flex justify-between mb-2"><span>미국 M2 증가율 (YoY)</span><span className="text-red-500">-2.1%</span></div>
@@ -450,7 +518,7 @@ function MoneySupplyTab() {
         <div className="chart-container relative h-48"><canvas id="growthRateChart"></canvas></div>
       </div>
       {/* 지역별 통화량 분석 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🌍</span>지역별 통화량 분석</h2>
         <div className="metric-grid grid grid-cols-2 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
@@ -473,7 +541,7 @@ function MoneySupplyTab() {
         <div className="chart-container relative h-48"><canvas id="regionalShareChart"></canvas></div>
       </div>
       {/* 통화량 대비 스테이블코인 침투도 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">⚖️</span>통화량 대비 스테이블코인 침투도</h2>
         <div className="alert-system success bg-gradient-to-r from-green-100 to-green-200 border-l-4 border-green-400 p-4 rounded-lg mb-4">
           <h3 className="font-bold mb-1">✅ 주요 발견사항</h3>
@@ -493,7 +561,7 @@ function MoneySupplyTab() {
         </div>
       </div>
       {/* 유동성 순환 분석 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🔄</span>유동성 순환 분석</h2>
         <h3 className="font-bold mb-2">전통 통화 → 스테이블코인 이동</h3>
         <div className="metric-grid grid grid-cols-2 gap-4 mb-4">
@@ -526,7 +594,7 @@ function MetricsTab() {
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
       {/* 선행 지표 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📈</span>선행 지표</h2>
         <div className="metric-grid grid grid-cols-3 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
@@ -545,7 +613,7 @@ function MetricsTab() {
         <p className="text-gray-700"><strong>해석:</strong> 공급량 대비 실사용 증가로 건전한 성장 패턴 확인</p>
       </div>
       {/* 후행 지표 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📉</span>후행 지표</h2>
         <div className="metric-grid grid grid-cols-3 gap-4 mb-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
@@ -564,7 +632,7 @@ function MetricsTab() {
         <div className="chart-container relative h-48"><canvas id="adoptionChart"></canvas></div>
       </div>
       {/* 지역별 채택률 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🌍</span>지역별 채택률</h2>
         <div className="mb-4">
           <div className="flex justify-between mb-2"><span>아시아-태평양</span><span>67%</span></div>
@@ -576,7 +644,7 @@ function MetricsTab() {
         </div>
       </div>
       {/* 임계점 지표 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🎯</span>임계점 지표</h2>
         <div className="alert-system bg-gradient-to-r from-yellow-100 to-yellow-200 border-l-4 border-yellow-400 p-4 rounded-lg mb-4">
           <h3 className="font-bold mb-1">🚨 임계점 모니터링</h3>
@@ -595,7 +663,7 @@ function AnalysisTab() {
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
       {/* 분석 방법론 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🔬</span>분석 방법론</h2>
         <h3 className="font-bold mb-2">1. 양적 분석</h3>
         <div className="api-code bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-xs mb-4 overflow-x-auto">
@@ -605,7 +673,7 @@ function AnalysisTab() {
         <p>• 정책 충격 분석 (Event Study)<br />• 네트워크 효과 분석 (Metcalfe's Law)<br />• 지정학적 리스크 평가</p>
       </div>
       {/* 투자 신호 해석 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📊</span>투자 신호 해석</h2>
         <div className="alert-system success bg-gradient-to-r from-green-100 to-green-200 border-l-4 border-green-400 p-4 rounded-lg mb-4">
           <h3 className="font-bold mb-1">🟢 강세 신호</h3>
@@ -617,7 +685,7 @@ function AnalysisTab() {
         </div>
       </div>
       {/* 포트폴리오 전략 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">💼</span>포트폴리오 전략</h2>
         <h3 className="font-bold mb-2">단계별 익스포저</h3>
         <div className="mb-4">
@@ -636,7 +704,7 @@ function AnalysisTab() {
         </div>
       </div>
       {/* 모니터링 주기 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">⏰</span>모니터링 주기</h2>
         <h3 className="font-bold mb-2">일간 모니터링</h3>
         <p>• 거래량 및 발행량 추적<br />• 디페깅 사건 모니터링<br />• 규제 뉴스 수집</p>
@@ -653,7 +721,7 @@ function ApisTab() {
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
       {/* 주요 데이터 소스 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🔗</span>주요 데이터 소스</h2>
         <div className="data-sources grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
           <div className="data-source bg-gray-100 rounded-lg p-4 text-center hover:bg-gray-200 transition"><h3>FRED API</h3><p>미국 M1/M2 통화량</p></div>
@@ -667,8 +735,8 @@ function ApisTab() {
         </div>
       </div>
       {/* API 활용 예시 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">💻</span>API 활용 예시</h2>
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">��</span>API 활용 예시</h2>
         <h3 className="font-bold mb-2">전세계 통화량 데이터 수집</h3>
         <div className="api-code bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-xs mb-4 overflow-x-auto">
           {'# 주요국 M2 통화량 수집\nimport requests\nfrom fredapi import Fred\n\n# 미국 M2 (FRED API)\nfred = Fred(api_key=\'your_fred_key\')\nus_m2 = fred.get_series(\'M2SL\', start=\'2020-01-01\')\n\n# 유로존 M2 (ECB API)\necb_url = "https://data.ecb.europa.eu/data/data-categories/money-credit-and-banking/monetary-aggregates/m2-and-components"\neurozone_m2 = requests.get(ecb_url).json()\n\n# 중국 M2 (Trading Economics API)  \ncn_url = "https://api.tradingeconomics.com/country/china/indicator/money-supply-m2"\nchina_m2 = requests.get(cn_url, params={\'c\': \'your_key\'}).json()\n\n# 스테이블코인과 비교 분석\ndef compare_with_stablecoins():\n    stablecoin_supply = get_stablecoin_supply()\n    penetration_rate = stablecoin_supply / (us_m2.iloc[-1] * 1e9)\n    return penetration_rate\n'}
@@ -679,7 +747,7 @@ function ApisTab() {
         </div>
       </div>
       {/* 실시간 모니터링 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📡</span>실시간 모니터링</h2>
         <h3 className="font-bold mb-2">자동화 시스템 구축</h3>
         <div className="api-code bg-gray-900 text-gray-100 rounded-lg p-4 font-mono text-xs mb-4 overflow-x-auto">
@@ -691,7 +759,7 @@ function ApisTab() {
         </div>
       </div>
       {/* 데이터 수집 체크리스트 카드 */}
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3">
+      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
         <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4"><span className="card-icon inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📋</span>데이터 수집 체크리스트</h2>
         <div style={{ lineHeight: 2 }} className="text-gray-700">
           <p>✅ 주요국 M1/M2 통화량 데이터<br />
