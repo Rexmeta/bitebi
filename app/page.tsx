@@ -60,7 +60,7 @@ export default function HomePage() {
     // CoinGecko API 호출
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
-    
+
     fetch('/api/coin-market', {
       signal: controller.signal
     })
@@ -340,7 +340,9 @@ export default function HomePage() {
                                 {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
                               </td>
                               <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>
-                              <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}> {coin.price_change_percentage_24h.toFixed(2)}%</td>
+                              <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h !== null && coin.price_change_percentage_24h !== undefined ? (coin.price_change_percentage_24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400' : ''}`}>
+                                {coin.price_change_percentage_24h !== null && coin.price_change_percentage_24h !== undefined ? coin.price_change_percentage_24h.toFixed(2) : '0.00'}%
+                              </td>
                               <td className="px-2 py-1 text-right">${coin.market_cap.toLocaleString()}</td>
                             </tr>
                           ))
