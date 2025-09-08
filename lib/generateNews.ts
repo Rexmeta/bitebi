@@ -14,11 +14,11 @@ export async function fetchAndGenerateNews(): Promise<NewsItem[]> {
   try {
     const market = await axios.get('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin')
     const btc = market.data[0]
-    if (Math.abs(btc.price_change_percentage_24h) > 2) {
+    if (btc.price_change_percentage_24h !== null && Math.abs(btc.price_change_percentage_24h) > 2) {
       const direction = btc.price_change_percentage_24h > 0 ? '상승' : '하락'
       articles.push({
         title: `📊 비트코인 ${direction} ${btc.price_change_percentage_24h.toFixed(2)}%`,
-        summary: `비트코인 가격은 현재 $${btc.current_price.toLocaleString()}이며, 24시간 동안 ${direction}했습니다. 거래량: $${btc.total_volume.toLocaleString()}.`,
+        summary: `비트코인 가격은 현재 $${btc.current_price?.toLocaleString() || 'N/A'}이며, 24시간 동안 ${direction}했습니다. 거래량: $${btc.total_volume?.toLocaleString() || 'N/A'}.`,
         date,
       })
     }
