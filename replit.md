@@ -47,7 +47,8 @@ app/
 ├── social/              # 소셜 피드 페이지 (layout.tsx 메타데이터 포함)
 ├── whale-tracker/       # 고래 트래커 페이지 (layout.tsx 메타데이터 포함)
 ├── stablecoin-tracker/  # 스테이블코인 차트
-├── stablecoins/         # 스테이블코인 통계 (layout.tsx 메타데이터 포함)
+├── stablecoins/         # 스테이블코인 시장 현황 (비교 도구, 뉴스 연동, 일일 요약)
+│   └── [symbol]/        # 개별 코인 상세 (소개, 리스크 분석, 체인, SEO 메타데이터)
 ├── trending/            # 트렌딩 페이지 (layout.tsx 메타데이터 포함)
 ├── aggregator/          # 뉴스 애그리게이터
 ├── money-tracker/       # 머니 트래커 대시보드 (layout.tsx 메타데이터 포함)

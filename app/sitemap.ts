@@ -28,22 +28,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/trending`,
-      lastModified: new Date(),
-      changeFrequency: 'hourly',
-      priority: 0.8,
-    },
-    {
       url: `${SITE_URL}/social`,
       lastModified: new Date(),
       changeFrequency: 'hourly',
       priority: 0.8,
-    },
-    {
-      url: `${SITE_URL}/whale-tracker`,
-      lastModified: new Date(),
-      changeFrequency: 'always',
-      priority: 0.7,
     },
     {
       url: `${SITE_URL}/stablecoins`,
@@ -72,5 +60,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }))
 
-  return [...staticPages, ...coinPages]
+  const stablecoinSymbols = ['usdt', 'usdc', 'dai', 'busd', 'tusd', 'usdp', 'gusd']
+  const stablecoinPages: MetadataRoute.Sitemap = stablecoinSymbols.map((symbol) => ({
+    url: `${SITE_URL}/stablecoins/${symbol}`,
+    lastModified: new Date(),
+    changeFrequency: 'daily' as const,
+    priority: 0.7,
+  }))
+
+  return [...staticPages, ...coinPages, ...stablecoinPages]
 }
