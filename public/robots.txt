@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://bitebi.vercel.app/sitemap.xml 

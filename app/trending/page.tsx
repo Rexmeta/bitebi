@@ -129,7 +129,7 @@ export default function TrendingPage() {
       <div className="lg:w-1/2">
         {!selectedSymbol ? (
           <div className="bg-[#161b22] p-4 rounded border border-[#2d333b] max-h-[600px] overflow-y-scroll">
-            <h3 className="text-yellow-300 font-semibold mb-3">💯 시총 TOP 100</h3>
+            <h2 className="text-yellow-300 font-semibold mb-3">암호화폐 시가총액 TOP 100</h2>
             <div className="flex justify-between items-center mb-2">
               <input
                 type="text"

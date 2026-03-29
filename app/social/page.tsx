@@ -137,7 +137,7 @@ export default function SocialFeedPage() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-yellow-400">소셜 피드</h1>
+        <h1 className="text-3xl font-bold mb-8 text-yellow-400">암호화폐 소셜 피드</h1>
         <ErrorMessage message={error} />
       </div>
     )
@@ -147,7 +147,8 @@ export default function SocialFeedPage() {
     <>
       <SocialFeedJsonLd />
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-8 text-yellow-400">소셜 피드</h1>
+        <h1 className="text-3xl font-bold mb-4 text-yellow-400">암호화폐 소셜 피드</h1>
+        <p className="text-gray-400 text-sm mb-6">Twitter, Reddit, Medium의 암호화폐 관련 소셜 미디어 게시물을 실시간으로 확인하세요.</p>
 
         <div className="flex flex-col gap-4 mb-6">
           <div className="flex flex-wrap gap-2">

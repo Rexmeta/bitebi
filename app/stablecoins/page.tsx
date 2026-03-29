@@ -145,7 +145,7 @@ export default function StablecoinsPage() {
     <div className="min-h-screen bg-white text-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold">Stablecoin Stats</h1>
+          <h1 className="text-3xl font-bold">스테이블코인 시장 현황</h1>
           <div className="flex items-center gap-4">
             <input
               type="text"
@@ -176,7 +176,7 @@ export default function StablecoinsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Market Share by Circulation</h2>
+              <h2 className="text-xl font-semibold mb-4">유통량 기준 시장 점유율</h2>
               <div className="h-[400px]">
                 <Pie data={chartData} options={chartOptions} />
               </div>
@@ -185,7 +185,7 @@ export default function StablecoinsPage() {
 
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Market Share by Volume (24h)</h2>
+              <h2 className="text-xl font-semibold mb-4">24시간 거래량 기준 시장 점유율</h2>
               <div className="h-[400px]">
                 <Pie 
                   data={{
@@ -252,7 +252,7 @@ export default function StablecoinsPage() {
         </div>
 
         <div className="mt-8 bg-gray-50 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Methodology</h2>
+          <h2 className="text-xl font-semibold mb-4">데이터 수집 방법론</h2>
           <ul className="list-disc list-inside space-y-2 text-gray-600">
             <li>Volume weighted BTC and ETH benchmark pricing from Coinbase, Bitstamp, Gemini, and Kraken</li>
             <li>Only BTC, ETH, and USD pairs are tracked from listed exchanges</li>

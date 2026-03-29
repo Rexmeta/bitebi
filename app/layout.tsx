@@ -16,9 +16,12 @@ export const viewport: Viewport = {
 }
 
 export const metadata: Metadata = {
-  title: 'Bitebi - Bitcoin News & Analysis',
-  description: 'Real-time Bitcoin news, market analysis, and whale tracking',
-  keywords: ['비트코인', '암호화폐', '크립토', '블록체인', '뉴스', '소셜미디어', '실시간정보'],
+  title: {
+    default: 'Bitebi — 실시간 비트코인 시세, 암호화폐 뉴스 및 분석',
+    template: '%s | Bitebi',
+  },
+  description: '비트코인 시세, 이더리움 가격, 암호화폐 뉴스, 고래 거래 추적, 스테이블코인 분석을 실시간으로 제공하는 한국어 암호화폐 정보 플랫폼',
+  keywords: ['비트코인 시세', '비트코인 가격', '이더리움 가격', '암호화폐 뉴스', '코인 시세', '크립토', '블록체인', '실시간 시세', '고래 거래', '스테이블코인'],
   authors: [{ name: 'bitebi team' }],
   creator: 'bitebi',
   publisher: 'bitebi',
@@ -37,14 +40,14 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'ko_KR',
     url: 'https://bitebi.vercel.app',
-    title: 'bitebi - 실시간 암호화폐 뉴스 및 소셜 피드',
-    description: '비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼',
-    siteName: 'bitebi',
+    title: 'Bitebi — 실시간 비트코인 시세, 암호화폐 뉴스 및 분석',
+    description: '비트코인 시세, 이더리움 가격, 암호화폐 뉴스, 고래 거래 추적을 실시간으로 제공하는 한국어 정보 플랫폼',
+    siteName: 'Bitebi',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'bitebi - 실시간 암호화폐 뉴스 및 소셜 피드',
-    description: '비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼',
+    title: 'Bitebi — 실시간 비트코인 시세, 암호화폐 뉴스 및 분석',
+    description: '비트코인 시세, 이더리움 가격, 암호화폐 뉴스, 고래 거래 추적을 실시간으로 제공하는 한국어 정보 플랫폼',
     creator: '@bitebi',
   },
   manifest: '/manifest.webmanifest',

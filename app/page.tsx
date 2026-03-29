@@ -128,7 +128,7 @@ export default function HomePage() {
       <div className="min-h-screen bg-[#0d1117] text-white p-4">
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-1/2">
-            <h2 className="text-lg font-semibold text-yellow-400 mb-3">📰 실시간 뉴스</h2>
+            <h2 className="text-lg font-semibold text-yellow-400 mb-3">실시간 암호화폐 뉴스</h2>
 
             <div className="mb-4">
               <AdBanner 
@@ -231,7 +231,7 @@ export default function HomePage() {
               </div>
             ) : (
               <div className="bg-[#161b22] p-4 rounded border border-[#2d333b]">
-                <h3 className="text-yellow-300 font-semibold mb-3">💯 시총 TOP 100</h3>
+                <h2 className="text-yellow-300 font-semibold mb-3">암호화폐 시가총액 TOP 100</h2>
 
                 <div className="mb-4">
                   <AdBanner 
@@ -291,7 +291,10 @@ export default function HomePage() {
                               <td className="px-2 py-1">{coin.market_cap_rank}</td>
                               <td className="px-2 py-1 flex items-center gap-2">
                                 <Image src={coin.image} alt={coin.name} width={16} height={16} className="w-4 h-4" />
-                                {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
+                                <Link href={`/coin/${coin.id}`} className="hover:text-yellow-400" onClick={(e) => e.stopPropagation()}>
+                                  {coin.name}
+                                </Link>
+                                <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
                               </td>
                               <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>
                               <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h !== null && coin.price_change_percentage_24h !== undefined ? (coin.price_change_percentage_24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400' : ''}`}>

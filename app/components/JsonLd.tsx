@@ -4,9 +4,10 @@ export function HomeJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": "bitebi",
+    "name": "Bitebi",
     "url": "https://bitebi.vercel.app",
-    "description": "비트코인과 암호화폐 관련 뉴스, 소셜 미디어 업데이트를 실시간으로 제공하는 통합 정보 플랫폼",
+    "description": "비트코인 시세, 이더리움 가격, 암호화폐 뉴스, 고래 거래 추적을 실시간으로 제공하는 한국어 암호화폐 정보 플랫폼",
+    "inLanguage": "ko",
     "potentialAction": {
       "@type": "SearchAction",
       "target": "https://bitebi.vercel.app/search?q={search_term_string}",
@@ -25,12 +26,13 @@ export function SocialFeedJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
-    "name": "암호화폐 소셜 피드 - bitebi",
-    "description": "Twitter, Reddit, Telegram의 실시간 암호화폐 관련 소셜 미디어 업데이트",
+    "name": "암호화폐 소셜 피드 — Bitebi",
+    "description": "Twitter, Reddit, Medium의 실시간 암호화폐 관련 소셜 미디어 게시물을 모아서 보여줍니다.",
     "url": "https://bitebi.vercel.app/social",
+    "inLanguage": "ko",
     "isPartOf": {
       "@type": "WebSite",
-      "name": "bitebi",
+      "name": "Bitebi",
       "url": "https://bitebi.vercel.app"
     }
   }
@@ -40,4 +42,4 @@ export function SocialFeedJsonLd() {
       {JSON.stringify(jsonLd)}
     </Script>
   )
-} 
+}

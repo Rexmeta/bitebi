@@ -41,7 +41,7 @@ export default function NewsPage() {
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-lg font-semibold mb-3 text-yellow-400">📡 실시간 뉴스</h2>
+        <h1 className="text-2xl font-bold mb-3 text-yellow-400">실시간 암호화폐 뉴스</h1>
         <LoadingSpinner message="뉴스를 불러오는 중..." />
       </div>
     )
@@ -50,7 +50,7 @@ export default function NewsPage() {
   if (error) {
     return (
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-lg font-semibold mb-3 text-yellow-400">📡 실시간 뉴스</h2>
+        <h1 className="text-2xl font-bold mb-3 text-yellow-400">실시간 암호화폐 뉴스</h1>
         <ErrorMessage message={error} />
       </div>
     )
@@ -59,7 +59,7 @@ export default function NewsPage() {
   if (articles.length === 0) {
     return (
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-lg font-semibold mb-3 text-yellow-400">📡 실시간 뉴스</h2>
+        <h1 className="text-2xl font-bold mb-3 text-yellow-400">실시간 암호화폐 뉴스</h1>
         <EmptyState message="표시할 뉴스가 없습니다." icon="📰" />
       </div>
     )
@@ -67,7 +67,8 @@ export default function NewsPage() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-lg font-semibold mb-3 text-yellow-400">📡 실시간 뉴스</h2>
+      <h1 className="text-2xl font-bold mb-3 text-yellow-400">실시간 암호화폐 뉴스</h1>
+      <p className="text-gray-400 text-sm mb-4">비트코인, 이더리움 등 주요 암호화폐 뉴스를 실시간으로 전달합니다.</p>
       <ul className="space-y-2">
         {articles.map((a, i) => (
           <li

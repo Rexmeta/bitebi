@@ -33,16 +33,19 @@ app/
 │   ├── youtube/         # YouTube 영상
 │   ├── stablecoin/      # 스테이블코인 데이터
 │   └── stablecoins/     # 스테이블코인 목록
+├── sitemap.ts           # 동적 sitemap.xml 생성
+├── robots.ts            # robots.txt 생성
 ├── page.tsx             # 홈 (뉴스 + 시총 TOP 100)
-├── news/                # 뉴스 페이지
+├── coin/[id]/           # 개별 코인 상세 페이지 (SSR, JSON-LD)
+├── news/                # 뉴스 페이지 (layout.tsx 메타데이터 포함)
 ├── youtube/             # YouTube 페이지
-├── social/              # 소셜 피드 페이지
-├── whale-tracker/       # 고래 트래커 페이지
+├── social/              # 소셜 피드 페이지 (layout.tsx 메타데이터 포함)
+├── whale-tracker/       # 고래 트래커 페이지 (layout.tsx 메타데이터 포함)
 ├── stablecoin-tracker/  # 스테이블코인 차트
-├── stablecoins/         # 스테이블코인 통계
-├── trending/            # 트렌딩 페이지
+├── stablecoins/         # 스테이블코인 통계 (layout.tsx 메타데이터 포함)
+├── trending/            # 트렌딩 페이지 (layout.tsx 메타데이터 포함)
 ├── aggregator/          # 뉴스 애그리게이터
-├── money-tracker/       # 머니 트래커 대시보드
+├── money-tracker/       # 머니 트래커 대시보드 (layout.tsx 메타데이터 포함)
 └── layout.tsx           # 루트 레이아웃 (네비게이션 포함)
 ```
 

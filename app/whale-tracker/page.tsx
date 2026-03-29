@@ -8,7 +8,8 @@ export default function WhaleTrackerPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-yellow-400 mb-4">고래 트랜잭션 트래커</h1>
+        <h1 className="text-2xl font-bold text-yellow-400 mb-2">고래 거래 추적기 — 실시간 대규모 트랜잭션 모니터링</h1>
+        <p className="text-gray-400 text-sm mb-4">이더리움 고래 지갑의 대규모 거래를 실시간으로 추적합니다.</p>
         <div className="flex items-center gap-4">
           <label htmlFor="minAmount" className="text-gray-400">
             최소 금액 (ETH):
