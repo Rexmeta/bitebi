@@ -1,28 +1,12 @@
-// src/app/page.tsx
 'use client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import AdBanner from './components/AdBanner'
 import { HomeJsonLd } from './components/JsonLd'
-
-interface Article {
-  title: string
-  link: string
-  pubDate: string
-  source: string
-  keywords?: string[]
-}
-
-interface Coin {
-  id: string
-  symbol: string
-  name: string
-  market_cap_rank: number
-  current_price: number
-  price_change_percentage_24h: number
-  market_cap: number
-  image: string
-}
+import LoadingSpinner from './components/common/LoadingSpinner'
+import ErrorMessage from './components/common/ErrorMessage'
+import EmptyState from './components/common/EmptyState'
+import type { Article, Coin } from './types'
 
 function timeAgo(dateString: string): string {
   const now = new Date()
@@ -57,9 +41,8 @@ export default function HomePage() {
   })
 
   useEffect(() => {
-    // CoinGecko API 호출
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10초 타임아웃
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     fetch('/api/coin-market', {
       signal: controller.signal
@@ -75,7 +58,6 @@ export default function HomePage() {
       })
       .catch(err => {
         if (err.name === 'AbortError') {
-          // 타임아웃 또는 언마운트로 인한 abort는 무시
           return;
         }
         console.error('코인 데이터 로딩 오류:', err)
@@ -84,7 +66,6 @@ export default function HomePage() {
         clearTimeout(timeoutId);
       })
 
-    // 뉴스 API 호출
     fetch('/api/aggregate-news')
       .then(res => {
         if (!res.ok) throw new Error(`뉴스 데이터를 가져오는데 실패했습니다 (${res.status})`)
@@ -104,7 +85,6 @@ export default function HomePage() {
       })
       .catch(err => {
         if (err.name === 'AbortError') {
-          // 타임아웃 또는 언마운트로 인한 abort는 무시
           return;
         }
         console.error('뉴스 데이터 로딩 오류:', err)
@@ -112,7 +92,6 @@ export default function HomePage() {
         setIsLoading(prev => ({ ...prev, articles: false }))
       })
 
-    // 컴포넌트 언마운트 시 타임아웃 정리
     return () => {
       clearTimeout(timeoutId);
       controller.abort();
@@ -141,26 +120,6 @@ export default function HomePage() {
     const coin = coins.find(c => c.name.toLowerCase() === nameOrSymbol.toLowerCase() || c.symbol.toLowerCase() === nameOrSymbol.toLowerCase())
     if (coin) setSelectedSymbol(`${coin.symbol.toUpperCase()}USDT`)
   }
-
-  // 로딩 컴포넌트
-  const LoadingSpinner = () => (
-    <div className="flex justify-center items-center py-8">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
-    </div>
-  )
-
-  // 에러 컴포넌트
-  const ErrorMessage = ({ message }: { message: string }) => (
-    <div className="bg-red-900/30 text-red-200 p-4 rounded border border-red-700 my-4">
-      <p>⚠️ {message}</p>
-      <button 
-        onClick={() => window.location.reload()} 
-        className="mt-2 text-xs bg-red-800 hover:bg-red-700 px-3 py-1 rounded"
-      >
-        새로고침
-      </button>
-    </div>
-  )
 
   return (
     <>
@@ -211,13 +170,11 @@ export default function HomePage() {
               </div>
             )}
 
-            {isLoading.articles && <LoadingSpinner />}
+            {isLoading.articles && <LoadingSpinner message="뉴스를 불러오는 중..." />}
             {error.articles && <ErrorMessage message={error.articles} />}
 
             {!isLoading.articles && !error.articles && filteredArticles.length === 0 && (
-              <div className="bg-gray-800/50 rounded p-4 text-gray-400 text-center">
-                표시할 뉴스가 없습니다.
-              </div>
+              <EmptyState message="표시할 뉴스가 없습니다." icon="📰" />
             )}
 
             {!isLoading.articles && !error.articles && filteredArticles.length > 0 && (
@@ -307,7 +264,7 @@ export default function HomePage() {
                   </select>
                 </div>
 
-                {isLoading.coins && <LoadingSpinner />}
+                {isLoading.coins && <LoadingSpinner message="코인 데이터를 불러오는 중..." />}
                 {error.coins && <ErrorMessage message={error.coins} />}
 
                 {!isLoading.coins && !error.coins && (

@@ -11,6 +11,10 @@ import {
   Tooltip,
   Legend
 } from 'chart.js'
+import LoadingSpinner from '../components/common/LoadingSpinner'
+import ErrorMessage from '../components/common/ErrorMessage'
+import EmptyState from '../components/common/EmptyState'
+import type { StablecoinMetric } from '../types'
 
 ChartJS.register(
   CategoryScale,
@@ -21,13 +25,6 @@ ChartJS.register(
   Tooltip,
   Legend
 )
-
-interface StablecoinMetric {
-  timestamp: string
-  totalSupply: number
-  marketCap: number
-  volume24h: number
-}
 
 export default function StablecoinTrackerPage() {
   const [metrics, setMetrics] = useState<StablecoinMetric[]>([])
@@ -48,7 +45,7 @@ export default function StablecoinTrackerPage() {
     }
 
     fetchMetrics()
-    const interval = setInterval(fetchMetrics, 5 * 60 * 1000) // 5분마다 업데이트
+    const interval = setInterval(fetchMetrics, 5 * 60 * 1000)
     return () => clearInterval(interval)
   }, [])
 
@@ -99,8 +96,32 @@ export default function StablecoinTrackerPage() {
     }
   }
 
-  if (loading) return <div className="text-center py-8">로딩 중...</div>
-  if (error) return <div className="text-center py-8 text-red-500">{error}</div>
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold text-yellow-400 mb-6">스테이블코인 트래커</h1>
+        <LoadingSpinner message="스테이블코인 데이터를 불러오는 중..." />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold text-yellow-400 mb-6">스테이블코인 트래커</h1>
+        <ErrorMessage message={error} />
+      </div>
+    )
+  }
+
+  if (metrics.length === 0) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold text-yellow-400 mb-6">스테이블코인 트래커</h1>
+        <EmptyState message="스테이블코인 데이터가 없습니다." icon="📊" />
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -132,4 +153,4 @@ export default function StablecoinTrackerPage() {
       </div>
     </div>
   )
-} 
+}

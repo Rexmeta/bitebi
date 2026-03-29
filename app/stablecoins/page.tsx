@@ -3,25 +3,12 @@ import { useEffect, useState } from 'react'
 import AdBanner from '../components/AdBanner'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
+import LoadingSpinner from '../components/common/LoadingSpinner'
+import ErrorMessage from '../components/common/ErrorMessage'
+import EmptyState from '../components/common/EmptyState'
+import type { StablecoinStats, StablecoinData } from '../types'
 
 ChartJS.register(ArcElement, Tooltip, Legend)
-
-interface StablecoinStats {
-  circulation: number
-  circulation_change_24h: number
-  circulation_percent_change_24h: number
-  name: string
-  price: number
-  price_percent_change_24h: number
-  symbol: string
-  volume: number
-  volume_change_24h: number
-  volume_percent_change_24h: number
-}
-
-interface StablecoinData {
-  [key: string]: StablecoinStats
-}
 
 const COLORS = {
   USDT: '#26A17B',
@@ -133,7 +120,7 @@ export default function StablecoinsPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        <LoadingSpinner size="lg" message="스테이블코인 데이터를 불러오는 중..." />
       </div>
     )
   }
@@ -141,15 +128,15 @@ export default function StablecoinsPage() {
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
-          <p>⚠️ {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="mt-2 text-sm bg-red-100 hover:bg-red-200 px-3 py-1 rounded"
-          >
-            Refresh
-          </button>
-        </div>
+        <ErrorMessage message={error} />
+      </div>
+    )
+  }
+
+  if (stablecoins.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <EmptyState message="스테이블코인 데이터가 없습니다." icon="💰" />
       </div>
     )
   }

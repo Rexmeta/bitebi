@@ -108,7 +108,6 @@ export default function RootLayout({
           {children}
         </main>
 
-        {/* 모바일 하단 네비게이션 */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b]">
           <div className="flex justify-around py-2">
             <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
@@ -127,9 +126,17 @@ export default function RootLayout({
               <span>💬</span>
               <span className="text-xs">Social</span>
             </Link>
+            <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>🐳</span>
+              <span className="text-xs">Whale</span>
+            </Link>
+            <Link href="/stablecoin" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>💵</span>
+              <span className="text-xs">Stable</span>
+            </Link>
             <Link href="/money-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💸</span>
-              <span className="text-xs">머니트래커</span>
+              <span className="text-xs">머니</span>
             </Link>
           </div>
         </nav>

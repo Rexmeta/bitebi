@@ -7,7 +7,10 @@ import { storage } from '../utils/storage'
 import AdBanner from '../components/AdBanner'
 import debounce from 'lodash/debounce'
 import { SocialFeedJsonLd } from '../components/JsonLd'
-import { SocialFeed } from '../types/social'
+import LoadingSpinner from '../components/common/LoadingSpinner'
+import ErrorMessage from '../components/common/ErrorMessage'
+import EmptyState from '../components/common/EmptyState'
+import type { SocialFeed } from '../types'
 
 export default function SocialFeedPage() {
   const [posts, setPosts] = useState<SocialFeed[]>([])
@@ -48,7 +51,6 @@ export default function SocialFeedPage() {
     }
   }, [filter, category, keyword])
 
-  // 무한 스크롤
   const lastElementRef = useInfiniteScroll({
     onLoadMore: () => {
       if (!isLoading && hasMore) {
@@ -59,9 +61,7 @@ export default function SocialFeedPage() {
     hasMore
   })
 
-  // 초기 로드 및 필터 변경 시
   useEffect(() => {
-    // URL 파라미터 처리
     const params = new URLSearchParams(window.location.search)
     const platformParam = params.get('platform')
     const categoryParam = params.get('category')
@@ -83,14 +83,12 @@ export default function SocialFeedPage() {
     fetchPosts(1, true)
   }, [filter, category, fetchPosts])
 
-  // 키워드 검색 디바운스
   const debouncedSearch = debounce((value: string) => {
     setKeyword(value)
     setPage(1)
     fetchPosts(1, true)
   }, 500)
 
-  // 북마크 로드
   useEffect(() => {
     setBookmarks(storage.getBookmarks())
   }, [])
@@ -122,7 +120,6 @@ export default function SocialFeedPage() {
     }
   }
 
-  // URL 변경 처리를 위한 함수
   const handleFilterChange = (newFilter: typeof filter) => {
     setFilter(newFilter)
     const url = new URL(window.location.href)
@@ -139,14 +136,9 @@ export default function SocialFeedPage() {
 
   if (error) {
     return (
-      <div className="p-4 bg-red-900/30 text-red-200 rounded">
-        <p>⚠️ {error}</p>
-        <button 
-          onClick={() => window.location.reload()}
-          className="mt-2 text-sm bg-red-800 hover:bg-red-700 px-3 py-1 rounded"
-        >
-          새로고침
-        </button>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8 text-yellow-400">소셜 피드</h1>
+        <ErrorMessage message={error} />
       </div>
     )
   }
@@ -158,7 +150,6 @@ export default function SocialFeedPage() {
         <h1 className="text-3xl font-bold mb-8 text-yellow-400">소셜 피드</h1>
 
         <div className="flex flex-col gap-4 mb-6">
-          {/* 플랫폼 필터 */}
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleFilterChange('all')}
@@ -202,7 +193,6 @@ export default function SocialFeedPage() {
             </button>
           </div>
 
-          {/* 카테고리 필터 */}
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleCategoryChange('all')}
@@ -246,7 +236,6 @@ export default function SocialFeedPage() {
             </button>
           </div>
 
-          {/* 검색 및 북마크 필터 */}
           <div className="flex gap-2">
             <input
               type="text"
@@ -267,7 +256,12 @@ export default function SocialFeedPage() {
           </div>
         </div>
 
-        {/* 소셜 피드 */}
+        {isLoading && posts.length === 0 && <LoadingSpinner message="소셜 피드를 불러오는 중..." />}
+
+        {!isLoading && displayPosts.length === 0 && (
+          <EmptyState message="표시할 소셜 피드가 없습니다." icon="💬" />
+        )}
+
         <div className="space-y-4">
           {displayPosts.map((post, index) => (
             <div key={post.id}>
@@ -296,7 +290,6 @@ export default function SocialFeedPage() {
                 <h2 className="text-lg font-semibold text-white mb-2">{post.title}</h2>
                 <p className="text-white mb-2">{post.content}</p>
 
-                {/* 카테고리 태그 */}
                 <div className="flex flex-wrap gap-1 mb-2">
                   <span className="px-2 py-0.5 text-xs bg-[#2d333b] text-gray-300 rounded-full">
                     #{post.category}
@@ -306,7 +299,6 @@ export default function SocialFeedPage() {
                   </span>
                 </div>
 
-                {/* 링크 */}
                 <div className="flex justify-end">
                   <a
                     href={post.url}
@@ -319,7 +311,6 @@ export default function SocialFeedPage() {
                   </a>
                 </div>
               </div>
-              {/* 포스트 사이 광고 (3개마다) */}
               {(index + 1) % 3 === 0 && (
                 <div className="my-4">
                   <AdBanner 
@@ -333,7 +324,6 @@ export default function SocialFeedPage() {
           ))}
         </div>
 
-        {/* 하단 광고 */}
         <div className="mt-4">
           <AdBanner 
             slot="5844761430"
@@ -344,4 +334,4 @@ export default function SocialFeedPage() {
       </div>
     </>
   )
-} 
+}
