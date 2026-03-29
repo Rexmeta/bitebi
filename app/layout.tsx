@@ -102,6 +102,9 @@ export default function RootLayout({
                 <Link href="/money-tracker" className="text-gray-300 hover:text-white">
                   머니트래커
                 </Link>
+                <Link href="/fear-greed" className="text-gray-300 hover:text-white">
+                  공포·탐욕
+                </Link>
               </div>
             </div>
           </nav>
@@ -140,6 +143,10 @@ export default function RootLayout({
             <Link href="/money-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span>💸</span>
               <span className="text-xs">머니</span>
+            </Link>
+            <Link href="/fear-greed" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span>😱</span>
+              <span className="text-xs">공포·탐욕</span>
             </Link>
           </div>
         </nav>

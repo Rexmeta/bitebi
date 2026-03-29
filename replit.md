@@ -19,6 +19,8 @@ app/
 │   ├── common/          # 공통 UI 컴포넌트 (LoadingSpinner, ErrorMessage, EmptyState, CoinImage)
 │   ├── AdBanner.tsx     # 광고 배너
 │   ├── JsonLd.tsx       # SEO 구조화 데이터
+│   ├── ShareButtons.tsx # SNS 공유 버튼 (X, 카카오톡, 텔레그램, 링크복사)
+│   ├── MarketSummaryCard.tsx # 일일 시장 요약 카드
 │   └── WhaleTracker.tsx # 고래 트랜잭션 추적
 ├── types/               # 공유 타입 정의
 │   ├── index.ts         # Article, Coin, YouTubeVideo 등 공통 타입
@@ -28,6 +30,8 @@ app/
 ├── utils/               # 유틸리티 (storage)
 ├── api/                 # API Routes
 │   ├── coin-market/     # CoinGecko 코인 시장 데이터
+│   ├── fear-greed/      # 공포·탐욕 지수 API (Alternative.me)
+│   ├── market-summary/  # 글로벌 시장 요약 API (CoinGecko Global)
 │   ├── aggregate-news/  # 뉴스 집계
 │   ├── social/          # 소셜 피드
 │   ├── youtube/         # YouTube 영상
@@ -46,6 +50,8 @@ app/
 ├── trending/            # 트렌딩 페이지 (layout.tsx 메타데이터 포함)
 ├── aggregator/          # 뉴스 애그리게이터
 ├── money-tracker/       # 머니 트래커 대시보드 (layout.tsx 메타데이터 포함)
+├── fear-greed/          # 공포·탐욕 지수 페이지 (게이지 차트, 7/30일 추이, OG 이미지)
+├── opengraph-image.tsx  # 동적 OG 이미지 (홈, BTC/ETH 실시간 가격 포함)
 └── layout.tsx           # 루트 레이아웃 (네비게이션 포함)
 ```
 
@@ -54,6 +60,8 @@ app/
 
 ## API Caching
 - `coin-market` route: 60-second in-memory cache for CoinGecko data, with stale-data fallback on errors
+- `fear-greed` route: 5-minute in-memory cache for Alternative.me Fear & Greed Index
+- `market-summary` route: 2-minute in-memory cache for CoinGecko Global data
 - `whale-tracker` route: 30-second in-memory cache for Alchemy whale transactions
 
 ## Development Notes

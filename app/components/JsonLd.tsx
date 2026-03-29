@@ -22,6 +22,27 @@ export function HomeJsonLd() {
   )
 }
 
+export function FearGreedJsonLd() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "암호화폐 공포·탐욕 지수 - bitebi",
+    "description": "실시간 암호화폐 공포·탐욕 지수로 시장 심리를 확인하세요. 변동성, 거래량, SNS 심리 등 6개 지표로 산출됩니다.",
+    "url": "https://bitebi.vercel.app/fear-greed",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "bitebi",
+      "url": "https://bitebi.vercel.app"
+    }
+  }
+
+  return (
+    <Script id="json-ld-fear-greed" type="application/ld+json">
+      {JSON.stringify(jsonLd)}
+    </Script>
+  )
+}
+
 export function SocialFeedJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",

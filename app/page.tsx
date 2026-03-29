@@ -7,6 +7,8 @@ import { HomeJsonLd } from './components/JsonLd'
 import LoadingSpinner from './components/common/LoadingSpinner'
 import ErrorMessage from './components/common/ErrorMessage'
 import EmptyState from './components/common/EmptyState'
+import MarketSummaryCard from './components/MarketSummaryCard'
+import ShareButtons from './components/ShareButtons'
 import type { Article, Coin } from './types'
 
 function timeAgo(dateString: string): string {
@@ -126,6 +128,11 @@ export default function HomePage() {
     <>
       <HomeJsonLd />
       <div className="min-h-screen bg-[#0d1117] text-white p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-bold text-yellow-400">Bitebi</h1>
+          <ShareButtons title="Bitebi - 실시간 암호화폐 뉴스 및 시장 분석" />
+        </div>
+        <MarketSummaryCard />
         <div className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-1/2">
             <h2 className="text-lg font-semibold text-yellow-400 mb-3">실시간 암호화폐 뉴스</h2>
