@@ -126,11 +126,7 @@ export default function HomePage() {
     <>
       <HomeJsonLd />
       <div className="min-h-screen bg-[#0d1117] text-white p-4">
-        <nav className="mb-6 flex gap-4">
-          <Link href="/">Home</Link>
-
-        </nav>
-        <main className="flex flex-col lg:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           <div className="lg:w-1/2">
             <h2 className="text-lg font-semibold text-yellow-400 mb-3">📰 실시간 뉴스</h2>
 
@@ -320,7 +316,7 @@ export default function HomePage() {
               </div>
             )}
           </div>
-        </main>
+        </div>
       </div>
     </>
   )

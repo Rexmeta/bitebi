@@ -31,7 +31,7 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ['*.replit.dev', '*.repl.co'],
+  allowedDevOrigins: ['**.replit.dev', '**.repl.co'],
   webpack: (config, { dev }) => {
     if (dev) {
       config.watchOptions = {

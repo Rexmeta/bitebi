@@ -1,4 +1,3 @@
-// src/app/api/aggregate-news/route.ts
 import { NextResponse } from 'next/server'
 import Parser from 'rss-parser'
 
@@ -11,7 +10,6 @@ const FEEDS = [
   { source: 'Bitcoin Magazine', url: 'https://bitcoinmagazine.com/.rss/full/' },
 ]
 
-// 기사 인터페이스 정의
 interface Article {
   title: string;
   link: string;
@@ -19,58 +17,55 @@ interface Article {
   source: string;
 }
 
-// 타임아웃 추가된 fetch 함수
-async function fetchWithTimeout(url: string, timeout = 5000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-  
-  try {
-    const response = await fetch(url, { signal: controller.signal });
-    clearTimeout(timeoutId);
-    return response;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
-  }
-}
+let cachedData: { articles: Article[]; timestamp: number } | null = null;
+const CACHE_TTL = 60 * 1000;
 
 export async function GET() {
   try {
-    const allItems: Article[] = [] // 명시적 타입 지정
-    for (const feed of FEEDS) {
-      try {
-        const parsed = await parser.parseURL(feed.url)
-        parsed.items.forEach((item) => {
-          allItems.push({
+    if (cachedData && Date.now() - cachedData.timestamp < CACHE_TTL) {
+      return NextResponse.json({ success: true, articles: cachedData.articles })
+    }
+
+    const results = await Promise.allSettled(
+      FEEDS.map(async (feed) => {
+        try {
+          const parsed = await parser.parseURL(feed.url)
+          return parsed.items.map((item) => ({
             title: item.title || '',
             link: item.link || '',
             pubDate: item.pubDate || '',
             source: feed.source,
-          })
-        })
-      } catch (feedError) {
-        console.error(`[ERROR] ${feed.source} 피드 로딩 실패:`, feedError);
-        // 개별 피드 오류는 무시하고 계속 진행
-        continue;
-      }
-    }
-    
-    // 날짜별로 정렬
+          }))
+        } catch (feedError) {
+          console.error(`[ERROR] ${feed.source} 피드 로딩 실패:`, feedError);
+          return []
+        }
+      })
+    )
+
+    const allItems: Article[] = results
+      .filter((r): r is PromiseFulfilledResult<Article[]> => r.status === 'fulfilled')
+      .flatMap(r => r.value)
+
     allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
-    
-    if (allItems.length === 0) {
-      return NextResponse.json({ 
-        success: false, 
-        error: '뉴스 수집 실패' 
+
+    const articles = allItems.slice(0, 50)
+
+    if (articles.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: '뉴스 수집 실패'
       }, { status: 500 })
     }
-    
-    return NextResponse.json({ success: true, articles: allItems.slice(0, 50) })
+
+    cachedData = { articles, timestamp: Date.now() }
+
+    return NextResponse.json({ success: true, articles })
   } catch (e) {
     console.error('[AGGREGATOR ERROR]', e)
-    return NextResponse.json({ 
-      success: false, 
-      error: '뉴스 수집 실패' 
+    return NextResponse.json({
+      success: false,
+      error: '뉴스 수집 실패'
     }, { status: 500 })
   }
 }
