@@ -93,9 +93,6 @@ export default function RootLayout({
                 <Link href="/social" className="text-gray-300 hover:text-white text-sm">
                   소셜
                 </Link>
-                <Link href="/whale-tracker" className="text-gray-300 hover:text-white text-sm">
-                  고래추적
-                </Link>
                 <Link href="/stablecoin" className="text-gray-300 hover:text-white text-sm">
                   스테이블코인
                 </Link>
@@ -132,9 +129,9 @@ export default function RootLayout({
               <span className="text-lg">💬</span>
               <span className="text-[10px]">소셜</span>
             </Link>
-            <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span className="text-lg">🐳</span>
-              <span className="text-[10px]">고래</span>
+            <Link href="/stablecoin" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span className="text-lg">💵</span>
+              <span className="text-[10px]">스테이블</span>
             </Link>
             <Link href="/fear-greed" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span className="text-lg">😱</span>
