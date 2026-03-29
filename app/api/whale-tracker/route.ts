@@ -13,7 +13,8 @@ const CACHE_TTL = 30 * 1000
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const minAmount = Number(searchParams.get('minAmount') || '100')
+    const rawAmount = Number(searchParams.get('minAmount') || '100')
+    const minAmount = isNaN(rawAmount) || rawAmount <= 0 ? 100 : rawAmount
 
     if (cache && cache.minAmount === minAmount && Date.now() - cache.timestamp < CACHE_TTL) {
       return NextResponse.json(cache.data)
