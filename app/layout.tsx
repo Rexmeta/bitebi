@@ -80,30 +80,43 @@ export default function RootLayout({
                   <span className="text-xl font-bold text-yellow-400">Bitebi</span>
                 </Link>
               </div>
-              <div className="hidden md:flex items-center space-x-6">
-                <Link href="/" className="text-gray-300 hover:text-white">
-                  Home
+              <div className="hidden md:flex items-center space-x-5">
+                <Link href="/" className="text-gray-300 hover:text-white text-sm">
+                  홈
                 </Link>
-                <Link href="/news" className="text-gray-300 hover:text-white">
-                  News
-                </Link>
-                <Link href="/youtube" className="text-gray-300 hover:text-white">
+                <div className="relative group">
+                  <Link href="/news" className="text-gray-300 hover:text-white text-sm flex items-center gap-1">
+                    뉴스 <span className="text-[10px]">▼</span>
+                  </Link>
+                  <div className="absolute top-full left-0 mt-1 w-40 bg-[#161b22] border border-[#30363d] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                    <Link href="/news" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#21262d] rounded-t-lg">
+                      실시간 뉴스
+                    </Link>
+                    <Link href="/trending" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#21262d]">
+                      트렌딩
+                    </Link>
+                    <Link href="/aggregator" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#21262d] rounded-b-lg">
+                      모아보기
+                    </Link>
+                  </div>
+                </div>
+                <Link href="/youtube" className="text-gray-300 hover:text-white text-sm">
                   YouTube
                 </Link>
-                <Link href="/social" className="text-gray-300 hover:text-white">
-                  Social
+                <Link href="/social" className="text-gray-300 hover:text-white text-sm">
+                  소셜
                 </Link>
-                <Link href="/whale-tracker" className="text-gray-300 hover:text-white">
-                  Whale Tracker
+                <Link href="/whale-tracker" className="text-gray-300 hover:text-white text-sm">
+                  고래추적
                 </Link>
-                <Link href="/stablecoin" className="text-gray-300 hover:text-white">
-                  Stablecoin
+                <Link href="/stablecoin" className="text-gray-300 hover:text-white text-sm">
+                  스테이블코인
                 </Link>
-                <Link href="/money-tracker" className="text-gray-300 hover:text-white">
-                  머니트래커
-                </Link>
-                <Link href="/fear-greed" className="text-gray-300 hover:text-white">
+                <Link href="/fear-greed" className="text-gray-300 hover:text-white text-sm">
                   공포·탐욕
+                </Link>
+                <Link href="/money-tracker" className="text-gray-300 hover:text-white text-sm">
+                  머니트래커
                 </Link>
               </div>
             </div>
@@ -114,39 +127,31 @@ export default function RootLayout({
           {children}
         </main>
 
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b]">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b] z-50">
           <div className="flex justify-around py-2">
             <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>🏠</span>
-              <span className="text-xs">Home</span>
+              <span className="text-lg">🏠</span>
+              <span className="text-[10px]">홈</span>
             </Link>
             <Link href="/news" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>📰</span>
-              <span className="text-xs">News</span>
+              <span className="text-lg">📰</span>
+              <span className="text-[10px]">뉴스</span>
             </Link>
-            <Link href="/youtube" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>🎥</span>
-              <span className="text-xs">YouTube</span>
+            <Link href="/trending" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span className="text-lg">🔥</span>
+              <span className="text-[10px]">트렌딩</span>
             </Link>
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>💬</span>
-              <span className="text-xs">Social</span>
+              <span className="text-lg">💬</span>
+              <span className="text-[10px]">소셜</span>
             </Link>
             <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>🐳</span>
-              <span className="text-xs">Whale</span>
-            </Link>
-            <Link href="/stablecoin" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>💵</span>
-              <span className="text-xs">Stable</span>
-            </Link>
-            <Link href="/money-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>💸</span>
-              <span className="text-xs">머니</span>
+              <span className="text-lg">🐳</span>
+              <span className="text-[10px]">고래</span>
             </Link>
             <Link href="/fear-greed" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span>😱</span>
-              <span className="text-xs">공포·탐욕</span>
+              <span className="text-lg">😱</span>
+              <span className="text-[10px]">공포·탐욕</span>
             </Link>
           </div>
         </nav>

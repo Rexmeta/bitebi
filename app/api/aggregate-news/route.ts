@@ -15,6 +15,31 @@ interface Article {
   link: string;
   pubDate: string;
   source: string;
+  contentSnippet: string;
+  category: string;
+}
+
+const CATEGORY_RULES: { category: string; keywords: string[] }[] = [
+  { category: 'bitcoin', keywords: ['bitcoin', 'btc', 'satoshi', 'lightning network'] },
+  { category: 'ethereum', keywords: ['ethereum', 'eth', 'vitalik', 'erc-20', 'erc20'] },
+  { category: 'defi', keywords: ['defi', 'dex', 'yield', 'liquidity', 'aave', 'uniswap', 'compound', 'lending', 'staking'] },
+  { category: 'regulation', keywords: ['regulation', 'sec', 'ban', 'law', 'government', 'court', 'legal', 'compliance', 'policy', 'congress', 'senate'] },
+  { category: 'nft', keywords: ['nft', 'metaverse', 'opensea', 'collectible'] },
+  { category: 'altcoin', keywords: ['solana', 'xrp', 'ripple', 'cardano', 'dogecoin', 'polygon', 'avalanche', 'bnb', 'tron', 'chainlink', 'polkadot', 'altcoin'] },
+]
+
+function categorize(title: string): string {
+  const lower = title.toLowerCase()
+  for (const rule of CATEGORY_RULES) {
+    if (rule.keywords.some(kw => lower.includes(kw))) {
+      return rule.category
+    }
+  }
+  return 'general'
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/&[^;]+;/g, ' ').trim()
 }
 
 let cachedData: { articles: Article[]; timestamp: number } | null = null;
@@ -35,6 +60,12 @@ export async function GET() {
             link: item.link || '',
             pubDate: item.pubDate || '',
             source: feed.source,
+            contentSnippet: item.contentSnippet
+              ? item.contentSnippet.slice(0, 300)
+              : item.content
+                ? stripHtml(item.content).slice(0, 300)
+                : '',
+            category: categorize(item.title || ''),
           }))
         } catch (feedError) {
           console.error(`[ERROR] ${feed.source} 피드 로딩 실패:`, feedError);
@@ -49,7 +80,7 @@ export async function GET() {
 
     allItems.sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
 
-    const articles = allItems.slice(0, 50)
+    const articles = allItems.slice(0, 100)
 
     if (articles.length === 0) {
       return NextResponse.json({

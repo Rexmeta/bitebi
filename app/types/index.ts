@@ -4,6 +4,8 @@ export interface Article {
   pubDate: string
   source: string
   keywords?: string[]
+  contentSnippet?: string
+  category?: string
 }
 
 export interface Coin {
