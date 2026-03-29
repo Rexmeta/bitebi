@@ -31,6 +31,16 @@ const withPWA = require('next-pwa')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  allowedDevOrigins: ['*.replit.dev', '*.repl.co'],
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.watchOptions = {
+        ...config.watchOptions,
+        ignored: ['**/.local/**', '**/.git/**', '**/node_modules/**'],
+      }
+    }
+    return config
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'assets.coingecko.com' },

@@ -53,6 +53,11 @@ app/
 - `coin-market` route: 60-second in-memory cache for CoinGecko data, with stale-data fallback on errors
 - `whale-tracker` route: 30-second in-memory cache for Alchemy whale transactions
 
+## Development Notes
+- Webpack `watchOptions.ignored` is configured to exclude `.local`, `.git`, and `node_modules` to prevent continuous recompilation in the Replit environment
+- `allowedDevOrigins` is set for Replit proxy domains
+- First page load in dev mode is slower due to on-demand route compilation
+
 ## Running the App
 ```bash
 npx next dev -p 5000

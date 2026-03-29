@@ -43,7 +43,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
 
     fetch('/api/coin-market', {
       signal: controller.signal
