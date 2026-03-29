@@ -84,22 +84,9 @@ export default function RootLayout({
                 <Link href="/" className="text-gray-300 hover:text-white text-sm">
                   홈
                 </Link>
-                <div className="relative group">
-                  <Link href="/news" className="text-gray-300 hover:text-white text-sm flex items-center gap-1">
-                    뉴스 <span className="text-[10px]">▼</span>
-                  </Link>
-                  <div className="absolute top-full left-0 mt-1 w-40 bg-[#161b22] border border-[#30363d] rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
-                    <Link href="/news" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#21262d] rounded-t-lg">
-                      실시간 뉴스
-                    </Link>
-                    <Link href="/trending" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#21262d]">
-                      트렌딩
-                    </Link>
-                    <Link href="/aggregator" className="block px-4 py-2 text-sm text-gray-300 hover:text-white hover:bg-[#21262d] rounded-b-lg">
-                      모아보기
-                    </Link>
-                  </div>
-                </div>
+                <Link href="/news" className="text-gray-300 hover:text-white text-sm">
+                  뉴스
+                </Link>
                 <Link href="/youtube" className="text-gray-300 hover:text-white text-sm">
                   YouTube
                 </Link>
@@ -137,9 +124,9 @@ export default function RootLayout({
               <span className="text-lg">📰</span>
               <span className="text-[10px]">뉴스</span>
             </Link>
-            <Link href="/trending" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span className="text-lg">🔥</span>
-              <span className="text-[10px]">트렌딩</span>
+            <Link href="/youtube" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+              <span className="text-lg">🎥</span>
+              <span className="text-[10px]">YouTube</span>
             </Link>
             <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
               <span className="text-lg">💬</span>

@@ -160,14 +160,6 @@ export default function NewsPage() {
           <h1 className="text-2xl font-bold text-yellow-400">실시간 암호화폐 뉴스</h1>
           <p className="text-gray-400 text-sm mt-1">비트코인, 이더리움 등 주요 암호화폐 뉴스를 실시간으로 전달합니다.</p>
         </div>
-        <div className="flex gap-2 mt-2 sm:mt-0">
-          <Link href="/trending" className="px-3 py-1.5 text-sm bg-[#21262d] text-yellow-400 border border-yellow-400/30 rounded-lg hover:bg-yellow-400/10">
-            트렌딩
-          </Link>
-          <Link href="/aggregator" className="px-3 py-1.5 text-sm bg-[#21262d] text-yellow-400 border border-yellow-400/30 rounded-lg hover:bg-yellow-400/10">
-            모아보기
-          </Link>
-        </div>
       </div>
 
       <AdBanner slot="5844761425" format="auto" style={{ minHeight: '100px' }} />
