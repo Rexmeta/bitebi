@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import AdBanner from './components/AdBanner'
 import { HomeJsonLd } from './components/JsonLd'
@@ -293,7 +294,7 @@ export default function HomePage() {
                             >
                               <td className="px-2 py-1">{coin.market_cap_rank}</td>
                               <td className="px-2 py-1 flex items-center gap-2">
-                                <img src={coin.image} alt={coin.name} className="w-4 h-4" />
+                                <Image src={coin.image} alt={coin.name} width={16} height={16} className="w-4 h-4" />
                                 {coin.name} <span className="text-gray-400">({coin.symbol.toUpperCase()})</span>
                               </td>
                               <td className="px-2 py-1 text-right">${coin.current_price.toLocaleString()}</td>

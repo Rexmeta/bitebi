@@ -1,4 +1,5 @@
 'use client'
+import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
@@ -78,9 +79,11 @@ export default function YouTubePage() {
               rel="noopener noreferrer"
               className="block relative"
             >
-              <img
+              <Image
                 src={video.thumbnailUrl}
                 alt={video.title}
+                width={480}
+                height={270}
                 className="w-full aspect-video object-cover"
               />
             </a>

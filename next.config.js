@@ -32,7 +32,12 @@ const withPWA = require('next-pwa')({
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['assets.coingecko.com', 'i.ytimg.com', 'yt3.ggpht.com'],
+    remotePatterns: [
+      { protocol: 'https', hostname: 'assets.coingecko.com' },
+      { protocol: 'https', hostname: 'coin-images.coingecko.com' },
+      { protocol: 'https', hostname: 'i.ytimg.com' },
+      { protocol: 'https', hostname: 'yt3.ggpht.com' },
+    ],
   },
   async headers() {
     return []

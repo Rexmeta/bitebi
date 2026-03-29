@@ -1,6 +1,8 @@
 'use client'
-import { useEffect, useState } from 'react'
-import { Alchemy, Network, BlockWithTransactions, TransactionResponse } from 'alchemy-sdk'
+import { useEffect, useState, useCallback } from 'react'
+import LoadingSpinner from './common/LoadingSpinner'
+import ErrorMessage from './common/ErrorMessage'
+import EmptyState from './common/EmptyState'
 
 interface Transaction {
   hash: string
@@ -12,7 +14,7 @@ interface Transaction {
 }
 
 interface WhaleTrackerProps {
-  minAmount: number // ETH 단위
+  minAmount: number
 }
 
 const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
@@ -20,72 +22,52 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const fetchWhaleTransactions = async () => {
-      setLoading(true)
-      setError(null)
+  const fetchWhaleTransactions = useCallback(async () => {
+    setLoading(true)
+    setError(null)
 
-      try {
-        const config = {
-          apiKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
-          network: Network.ETH_MAINNET,
-        }
-        const alchemy = new Alchemy(config)
-
-        // 최근 블록 번호 가져오기
-        const latestBlock = await alchemy.core.getBlockNumber()
-        
-        // 최근 100개 블록의 트랜잭션 조회
-        const blocks = await Promise.all(
-          Array.from({ length: 100 }, (_, i) => latestBlock - i).map(blockNum =>
-            alchemy.core.getBlockWithTransactions(blockNum)
-          )
-        )
-
-        // 고래 트랜잭션 필터링
-        const whaleTxs = blocks.flatMap((block: BlockWithTransactions) => 
-          block.transactions
-            .filter((tx: TransactionResponse) => 
-              tx.value && 
-              Number(tx.value) / 1e18 >= minAmount
-            )
-            .map((tx: TransactionResponse) => ({
-              hash: tx.hash,
-              from: tx.from,
-              to: tx.to || '',
-              value: (Number(tx.value) / 1e18).toFixed(2),
-              timestamp: new Date(Number(block.timestamp) * 1000).toLocaleString(),
-              blockNum: block.number.toString()
-            }))
-        )
-
-        setTransactions(whaleTxs)
-      } catch (err) {
-        console.error('Error fetching whale transactions:', err)
-        setError('트랜잭션을 불러오는 중 오류가 발생했습니다.')
-      } finally {
-        setLoading(false)
+    try {
+      const res = await fetch(`/api/whale-tracker?minAmount=${minAmount}`)
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || '서버 오류가 발생했습니다.')
       }
+      const data: Transaction[] = await res.json()
+      setTransactions(data)
+    } catch (err) {
+      console.error('Error fetching whale transactions:', err)
+      setError(err instanceof Error ? err.message : '트랜잭션을 불러오는 중 오류가 발생했습니다.')
+    } finally {
+      setLoading(false)
     }
-
-    fetchWhaleTransactions()
-    const interval = setInterval(fetchWhaleTransactions, 60000) // 1분마다 업데이트
-
-    return () => clearInterval(interval)
   }, [minAmount])
 
-  if (loading) {
+  useEffect(() => {
+    fetchWhaleTransactions()
+    const interval = setInterval(fetchWhaleTransactions, 60000)
+    return () => clearInterval(interval)
+  }, [fetchWhaleTransactions])
+
+  if (loading && transactions.length === 0) {
     return (
-      <div className="bg-[#161b22] rounded-lg p-4 text-gray-400">
-        트랜잭션을 불러오는 중...
+      <div className="bg-[#161b22] rounded-lg p-8">
+        <LoadingSpinner message="트랜잭션을 불러오는 중..." />
       </div>
     )
   }
 
-  if (error) {
+  if (error && transactions.length === 0) {
     return (
-      <div className="bg-[#161b22] rounded-lg p-4 text-red-400">
-        {error}
+      <div className="bg-[#161b22] rounded-lg p-4">
+        <ErrorMessage message={error} onRetry={fetchWhaleTransactions} />
+      </div>
+    )
+  }
+
+  if (transactions.length === 0) {
+    return (
+      <div className="bg-[#161b22] rounded-lg p-4">
+        <EmptyState message={`${minAmount} ETH 이상의 트랜잭션이 없습니다.`} />
       </div>
     )
   }
@@ -95,7 +77,7 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
       <h2 className="text-xl font-semibold text-yellow-400 mb-4">
         고래 트랜잭션 트래커 ({minAmount} ETH 이상)
       </h2>
-      
+
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -111,7 +93,7 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
           <tbody>
             {transactions.map((tx) => (
               <tr key={tx.hash} className="border-b border-[#30363d] hover:bg-[#1b1f23]">
-                <td className="p-2 text-gray-400">{tx.timestamp}</td>
+                <td className="p-2 text-gray-400">{new Date(tx.timestamp).toLocaleString()}</td>
                 <td className="p-2 text-gray-400">{tx.blockNum}</td>
                 <td className="p-2">
                   <a
@@ -130,7 +112,7 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
                     rel="noopener noreferrer"
                     className="text-blue-400 hover:text-blue-300"
                   >
-                    {`${tx.to.slice(0, 6)}...${tx.to.slice(-4)}`}
+                    {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : '-'}
                   </a>
                 </td>
                 <td className="p-2 text-green-400">{tx.value} ETH</td>
@@ -153,4 +135,4 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
   )
 }
 
-export default WhaleTracker 
+export default WhaleTracker

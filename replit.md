@@ -46,6 +46,13 @@ app/
 └── layout.tsx           # 루트 레이아웃 (네비게이션 포함)
 ```
 
+## Environment Variables
+- `ALCHEMY_API_KEY` — Alchemy SDK API key for whale transaction tracking (server-side only)
+
+## API Caching
+- `coin-market` route: 60-second in-memory cache for CoinGecko data, with stale-data fallback on errors
+- `whale-tracker` route: 30-second in-memory cache for Alchemy whale transactions
+
 ## Running the App
 ```bash
 npx next dev -p 5000
