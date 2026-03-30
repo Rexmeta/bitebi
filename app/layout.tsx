@@ -64,13 +64,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <head>
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9956651639047657"
-          crossOrigin="anonymous"
-        />
-      </head>
+      <head />
       <body className={`${inter.className} bg-[#1b1f23] text-white min-h-screen`}>
         <header className="bg-[#161b22] border-b border-[#30363d]">
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -107,9 +101,15 @@ export default function RootLayout({
           </nav>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 py-6">
+        <main className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
           {children}
         </main>
+
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9956651639047657"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
 
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b] z-50">
           <div className="flex justify-around py-2">

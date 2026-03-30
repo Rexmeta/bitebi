@@ -127,9 +127,9 @@ export default function HomePage() {
   return (
     <>
       <HomeJsonLd />
-      <div className="min-h-screen bg-[#0d1117] text-white p-4">
+      <div className="text-white">
         <div className="flex items-center justify-between mb-4">
-          <h1 className="text-xl font-bold text-yellow-400">Bitebi</h1>
+          <h1 className="text-lg font-semibold text-yellow-400">실시간 암호화폐 뉴스 및 시장 분석</h1>
           <ShareButtons title="Bitebi - 실시간 암호화폐 뉴스 및 시장 분석" />
         </div>
         <MarketSummaryCard />
