@@ -19,6 +19,16 @@ export interface Coin {
   image: string
 }
 
+export type YouTubeCategory = '시장 분석' | '교육/입문' | '뉴스' | '기술/개발'
+export type YouTubeLanguage = 'ko' | 'en'
+
+export interface YouTubeChannel {
+  id: string
+  name: string
+  language: YouTubeLanguage
+  category: YouTubeCategory
+}
+
 export interface YouTubeVideo {
   id: string
   title: string
@@ -27,6 +37,9 @@ export interface YouTubeVideo {
   channelTitle: string
   thumbnailUrl: string
   formattedDate: string
+  category: YouTubeCategory
+  language: YouTubeLanguage
+  channelId: string
 }
 
 export interface StablecoinMetric {

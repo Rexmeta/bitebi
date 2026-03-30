@@ -43,7 +43,7 @@ app/
 ├── coin/[id]/           # 개별 코인 상세 페이지 (SSR, JSON-LD)
 ├── news/                # 뉴스 페이지 (카테고리 탭, 시간/소스 필터, 검색, 인기 기사)
 │   └── [slug]/          # 뉴스 상세 페이지 (기사 미리보기, 관련 기사, 브레드크럼)
-├── youtube/             # YouTube 페이지
+├── youtube/             # YouTube 큐레이션 페이지 (한국어/영어 탭, 카테고리 필터, 채널 필터, 하이라이트, 무한스크롤, 인라인 재생)
 ├── social/              # 소셜 피드 페이지 (layout.tsx 메타데이터 포함)
 ├── whale-tracker/       # 고래 트래커 페이지 (layout.tsx 메타데이터 포함)
 ├── stablecoin-tracker/  # 스테이블코인 차트
@@ -66,6 +66,7 @@ app/
 - `fear-greed` route: 5-minute in-memory cache for Alternative.me Fear & Greed Index
 - `market-summary` route: 2-minute in-memory cache for CoinGecko Global data
 - `whale-tracker` route: 30-second in-memory cache for Alchemy whale transactions
+- `youtube` route: 5-minute in-memory cache per channel, parallel Promise.all fetching, pagination support (page/limit params), language/category/channelId query filters
 
 ## Development Notes
 - Webpack `watchOptions.ignored` is configured to exclude `.local`, `.git`, and `node_modules` to prevent continuous recompilation in the Replit environment
