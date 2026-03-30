@@ -32,11 +32,13 @@ app/
 │   ├── coin-market/     # CoinGecko 코인 시장 데이터
 │   ├── fear-greed/      # 공포·탐욕 지수 API (Alternative.me)
 │   ├── market-summary/  # 글로벌 시장 요약 API (CoinGecko Global)
+│   ├── monetary/        # FRED API 미국 M2 통화량 + 금리 (FRED_API_KEY 필요)
+│   ├── defi-stats/      # DefiLlama + CoinGecko 통합 (TVL, 스테이블코인, BTC 가격)
 │   ├── aggregate-news/  # 뉴스 집계
 │   ├── social/          # 소셜 피드
 │   ├── youtube/         # YouTube 영상
 │   ├── stablecoin/      # 스테이블코인 데이터
-│   └── stablecoins/     # 스테이블코인 목록
+│   └── stablecoins/     # DefiLlama+CoinGecko 스테이블코인 상세 데이터
 ├── sitemap.ts           # 동적 sitemap.xml 생성
 ├── robots.ts            # robots.txt 생성
 ├── page.tsx             # 홈 (뉴스 + 시총 TOP 100)
@@ -51,7 +53,9 @@ app/
 │   └── [symbol]/        # 개별 코인 상세 (소개, 리스크 분석, 체인, SEO 메타데이터)
 ├── trending/            # 트렌딩 페이지 (layout.tsx 메타데이터 포함)
 ├── aggregator/          # 뉴스 애그리게이터
-├── money-tracker/       # 머니 트래커 대시보드 (layout.tsx 메타데이터 포함)
+├── money-tracker/       # 머니 트래커 대시보드 (실시간 API 연동, 컴포넌트 분리)
+│   ├── components/      # OverviewTab, MoneySupplyTab, MetricsTab, MacroTab, AnalysisTab, ApisTab, SkeletonCard, ErrorState, UpdateTimestamp
+│   └── hooks/           # useMoneyTrackerData (통합 데이터 fetching + 자동 새로고침 + 신호 생성)
 ├── fear-greed/          # 공포·탐욕 지수 페이지 (게이지 차트, 7/30일 추이, OG 이미지)
 ├── opengraph-image.tsx  # 동적 OG 이미지 (홈, BTC/ETH 실시간 가격 포함)
 └── layout.tsx           # 루트 레이아웃 (네비게이션 포함)
@@ -59,6 +63,7 @@ app/
 
 ## Environment Variables
 - `ALCHEMY_API_KEY` — Alchemy SDK API key for whale transaction tracking (server-side only)
+- `FRED_API_KEY` — (Optional) FRED API key for US M2 money supply and Federal Funds Rate data. Free at https://fred.stlouisfed.org/docs/api/api_key.html
 
 ## API Caching
 - `coin-market` route: 60-second in-memory cache for CoinGecko data, with stale-data fallback on errors
@@ -67,6 +72,9 @@ app/
 - `market-summary` route: 2-minute in-memory cache for CoinGecko Global data
 - `whale-tracker` route: 30-second in-memory cache for Alchemy whale transactions
 - `youtube` route: 5-minute in-memory cache per channel, parallel Promise.all fetching, pagination support (page/limit params), language/category/channelId query filters
+- `monetary` route: 5-minute in-memory cache for FRED M2 + Federal Funds Rate
+- `defi-stats` route: 5-minute in-memory cache for DefiLlama stablecoins, chains, TVL + CoinGecko BTC price
+- `stablecoins` route: 5-minute in-memory cache for DefiLlama + CoinGecko stablecoin data with fallback
 
 ## Development Notes
 - Webpack `watchOptions.ignored` is configured to exclude `.local`, `.git`, and `node_modules` to prevent continuous recompilation in the Replit environment
