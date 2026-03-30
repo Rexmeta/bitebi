@@ -14,6 +14,8 @@ import {
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
 import EmptyState from '../components/common/EmptyState'
+import AdBanner from '../components/AdBanner'
+import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 import type { StablecoinMetric } from '../types'
 
 ChartJS.register(
@@ -96,6 +98,8 @@ export default function StablecoinTrackerPage() {
     }
   }
 
+  const relatedLinks = getRelatedLinks('/stablecoin-tracker')
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -126,9 +130,17 @@ export default function StablecoinTrackerPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-yellow-400 mb-6">스테이블코인 트래커</h1>
+
+      <div className="mb-6">
+        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+      </div>
       
       <div className="bg-[#161b22] p-6 rounded-lg">
         <Line data={chartData} options={chartOptions} />
+      </div>
+
+      <div className="my-6">
+        <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
@@ -151,6 +163,12 @@ export default function StablecoinTrackerPage() {
           </p>
         </div>
       </div>
+
+      <div className="my-6">
+        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+      </div>
+
+      <RelatedContent links={relatedLinks} />
     </div>
   )
 }

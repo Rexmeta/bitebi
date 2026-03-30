@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react'
 import ShareButtons from '../components/ShareButtons'
 import Link from 'next/link'
+import AdBanner from '../components/AdBanner'
+import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 
 interface FearGreedEntry {
   value: string
@@ -137,6 +139,11 @@ export default function FearGreedPage() {
     { name: '구글 트렌드', desc: '비트코인 관련 검색어의 구글 트렌드 데이터를 분석합니다.', weight: '10%' },
   ]
 
+  const relatedLinks = getRelatedLinks('/fear-greed', [
+    { href: '/', title: '시장 요약', description: '실시간 암호화폐 시세 및 시장 개요', icon: '📊' },
+    { href: '/trending', title: '트렌딩', description: '지금 뜨는 암호화폐 소식', icon: '🔥' },
+  ])
+
   return (
     <div className="min-h-screen bg-[#0d1117] text-white p-4">
       <div className="max-w-4xl mx-auto">
@@ -145,6 +152,10 @@ export default function FearGreedPage() {
           <ShareButtons
             title={`암호화폐 공포·탐욕 지수: ${currentValue} (${getClassificationKo(current.value_classification)}) - Bitebi`}
           />
+        </div>
+
+        <div className="mb-4">
+          <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
         </div>
 
         <div className="bg-[#161b22] rounded-xl border border-[#2d333b] p-6 mb-6">
@@ -164,6 +175,10 @@ export default function FearGreedPage() {
               })} 기준
             </p>
           </div>
+        </div>
+
+        <div className="my-4">
+          <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -240,6 +255,12 @@ export default function FearGreedPage() {
             ))}
           </div>
         </div>
+
+        <div className="my-6">
+          <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        </div>
+
+        <RelatedContent links={relatedLinks} />
       </div>
     </div>
   )

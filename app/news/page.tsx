@@ -5,6 +5,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
 import EmptyState from '../components/common/EmptyState'
 import AdBanner from '../components/AdBanner'
+import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 import type { Article } from '../types'
 
 const CATEGORIES = [
@@ -279,7 +280,7 @@ export default function NewsPage() {
                     </div>
                   </div>
                 </Link>
-                {(index + 1) % 5 === 0 && (
+                {((index === 2) || (index > 2 && (index - 2) % 5 === 0)) && (
                   <div className="my-4">
                     <AdBanner slot="5844761425" format="auto" style={{ minHeight: '100px' }} />
                   </div>
@@ -293,6 +294,8 @@ export default function NewsPage() {
       <div className="my-6">
         <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
       </div>
+
+      <RelatedContent links={getRelatedLinks('/news')} />
     </div>
   )
 }

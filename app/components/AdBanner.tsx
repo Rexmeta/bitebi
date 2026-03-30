@@ -24,7 +24,7 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
         })
       },
       {
-        rootMargin: '50px 0px',
+        rootMargin: '200px 0px',
         threshold: 0.1
       }
     )
@@ -52,7 +52,6 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
       }
     }
 
-    // AdSense가 로드되었는지 확인하고 로드
     if (typeof window !== 'undefined') {
       // @ts-ignore
       if (window.adsbygoogle) {
@@ -66,13 +65,16 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
           }
         }, 1000)
 
-        // 10초 후에도 로드되지 않으면 인터벌 정리
         setTimeout(() => clearInterval(checkAdsbyGoogle), 10000)
       }
     }
   }, [isVisible, isLoaded])
 
-  if (!isVisible) return null
+  if (!isVisible) {
+    return (
+      <div ref={adRef} className={className} style={{ minHeight: style?.minHeight || '100px', ...style }} />
+    )
+  }
 
   return (
     <div ref={adRef} className={className}>
@@ -90,4 +92,4 @@ export default function AdBanner({ slot, format = 'auto', style, className }: Ad
       />
     </div>
   )
-} 
+}

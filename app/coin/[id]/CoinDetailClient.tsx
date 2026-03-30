@@ -2,6 +2,8 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import AdBanner from '../../components/AdBanner'
+import RelatedContent, { getRelatedLinks } from '../../components/RelatedContent'
 import type { Article } from '../../types'
 
 interface CoinDetailData {
@@ -264,6 +266,10 @@ export default function CoinDetailClient({
         </div>
       </div>
 
+      <div className="my-6">
+        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+      </div>
+
       <div className="bg-[#161b22] rounded-lg p-4 border border-[#2d333b] mb-8">
         <h2 className="text-lg font-semibold text-yellow-300 mb-3">{krName} 실시간 차트</h2>
         <iframe
@@ -277,6 +283,10 @@ export default function CoinDetailClient({
         />
       </div>
 
+      <div className="my-6">
+        <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+      </div>
+
       {coin.description?.en && (
         <div className="bg-[#161b22] rounded-lg p-6 border border-[#2d333b]">
           <h2 className="text-lg font-semibold text-yellow-300 mb-3">{krName} 소개</h2>
@@ -285,6 +295,15 @@ export default function CoinDetailClient({
           </p>
         </div>
       )}
+
+      <div className="my-6">
+        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+      </div>
+
+      <RelatedContent links={getRelatedLinks(`/coin/${coinId}`, [
+        { href: '/news', title: '관련 뉴스', description: '최신 암호화폐 뉴스 모아보기', icon: '📰' },
+        { href: '/fear-greed', title: '공포·탐욕 지수', description: '시장 심리 분석', icon: '😱' },
+      ])} />
     </div>
   )
 }

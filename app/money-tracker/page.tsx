@@ -1,6 +1,8 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import Chart from 'chart.js/auto';
+import AdBanner from '../components/AdBanner';
+import RelatedContent, { getRelatedLinks } from '../components/RelatedContent';
 
 const TABS = [
   { key: 'overview', label: '개요' },
@@ -281,6 +283,9 @@ const MoneyTrackerPage = () => {
           <h1 className="text-3xl md:text-5xl font-bold mb-4 drop-shadow">🌐 스테이블코인 기축통화 모니터링</h1>
           <p className="text-lg opacity-90">실시간 데이터로 분석하는 글로벌 금융 시스템의 변화</p>
         </div>
+        <div className="mb-6">
+          <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+        </div>
         <div className="flex bg-white/10 rounded-xl mb-6 overflow-x-auto tabs">
           {TABS.map(tab => (
             <button
@@ -293,7 +298,14 @@ const MoneyTrackerPage = () => {
           ))}
         </div>
         <div className="min-h-[600px] tab-content active">{renderTabContent()}</div>
+        <div className="my-6">
+          <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+        </div>
         <div className="text-center text-white/80 text-sm mt-10 update-time">마지막 업데이트: <span>{updateTime}</span></div>
+        <div className="my-6">
+          <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        </div>
+        <RelatedContent links={getRelatedLinks('/money-tracker')} />
       </div>
       {/* 알림 */}
       {notification && (

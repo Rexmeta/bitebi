@@ -22,6 +22,43 @@ export function HomeJsonLd() {
   )
 }
 
+export function NewsArticleJsonLd({ title, description, url, datePublished, source }: {
+  title: string
+  description?: string
+  url: string
+  datePublished: string
+  source: string
+}) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    "headline": title,
+    "description": description || title,
+    "url": url,
+    "datePublished": datePublished,
+    "author": {
+      "@type": "Organization",
+      "name": source
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Bitebi",
+      "url": "https://bitebi.vercel.app"
+    },
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Bitebi",
+      "url": "https://bitebi.vercel.app"
+    }
+  }
+
+  return (
+    <Script id="json-ld-news-article" type="application/ld+json">
+      {JSON.stringify(jsonLd)}
+    </Script>
+  )
+}
+
 export function FearGreedJsonLd() {
   const jsonLd = {
     "@context": "https://schema.org",

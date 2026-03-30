@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import AdBanner from '../../components/AdBanner'
+import { NewsArticleJsonLd } from '../../components/JsonLd'
+import RelatedContent, { getRelatedLinks } from '../../components/RelatedContent'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
 import type { Article } from '../../types'
 
@@ -82,8 +84,20 @@ export default function NewsDetailPage() {
     )
   }
 
+  const relatedLinks = getRelatedLinks('/news', [
+    { href: '/', title: '시장 요약', description: '실시간 암호화폐 시세 및 시장 개요', icon: '📊' },
+    { href: '/fear-greed', title: '공포·탐욕 지수', description: '시장 심리 분석 지표', icon: '😱' },
+  ])
+
   return (
     <div className="max-w-4xl mx-auto">
+      <NewsArticleJsonLd
+        title={article.title}
+        description={article.contentSnippet}
+        url={article.link}
+        datePublished={article.pubDate}
+        source={article.source}
+      />
       <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
         <Link href="/" className="hover:text-white">홈</Link>
         <span>/</span>
@@ -171,6 +185,8 @@ export default function NewsDetailPage() {
       <div className="my-6">
         <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
       </div>
+
+      <RelatedContent links={relatedLinks} />
     </div>
   )
 }

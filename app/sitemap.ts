@@ -51,6 +51,30 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'hourly',
       priority: 0.6,
     },
+    {
+      url: `${SITE_URL}/fear-greed`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/whale-tracker`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.7,
+    },
+    {
+      url: `${SITE_URL}/trending`,
+      lastModified: new Date(),
+      changeFrequency: 'hourly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/stablecoin-tracker`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.7,
+    },
   ]
 
   const coinPages: MetadataRoute.Sitemap = TOP_COINS.map((coinId) => ({

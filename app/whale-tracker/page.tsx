@@ -1,9 +1,13 @@
 'use client'
 import { useState } from 'react'
 import WhaleTracker from '../components/WhaleTracker'
+import AdBanner from '../components/AdBanner'
+import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 
 export default function WhaleTrackerPage() {
-  const [minAmount, setMinAmount] = useState(100) // 기본값 100 ETH
+  const [minAmount, setMinAmount] = useState(100)
+
+  const relatedLinks = getRelatedLinks('/whale-tracker')
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -25,7 +29,21 @@ export default function WhaleTrackerPage() {
         </div>
       </div>
 
+      <div className="mb-6">
+        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+      </div>
+
       <WhaleTracker minAmount={minAmount} />
+
+      <div className="my-6">
+        <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+      </div>
+
+      <div className="my-6">
+        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+      </div>
+
+      <RelatedContent links={relatedLinks} />
     </div>
   )
-} 
+}
