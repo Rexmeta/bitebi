@@ -97,13 +97,13 @@ export default function MarketSummaryCard() {
         {cards.map((card) => (
           <div
             key={card.label}
-            className="bg-[#161b22] rounded-lg p-3 border border-[#2d333b] hover:border-yellow-400/30 transition-colors"
+            className="bg-[#161b22] rounded-lg p-2 sm:p-3 border border-[#2d333b] hover:border-yellow-400/30 transition-colors"
           >
             <div className="flex items-center gap-1 mb-1">
               <span className="text-sm">{card.icon}</span>
-              <span className="text-xs text-gray-400">{card.label}</span>
+              <span className="text-xs text-gray-400 truncate">{card.label}</span>
             </div>
-            <div className="text-sm font-bold text-white">{card.value}</div>
+            <div className="text-xs sm:text-sm font-bold text-white truncate">{card.value}</div>
             {card.sub && (
               <div className={`text-xs mt-0.5 ${card.subColor || 'text-gray-400'}`}>
                 {card.sub}

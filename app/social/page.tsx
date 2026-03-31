@@ -154,7 +154,7 @@ export default function SocialFeedPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleFilterChange('all')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 filter === 'all' 
                   ? 'bg-yellow-400 text-black' 
                   : 'border border-yellow-400 text-yellow-400'
@@ -164,7 +164,7 @@ export default function SocialFeedPage() {
             </button>
             <button
               onClick={() => handleFilterChange('twitter')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 filter === 'twitter'
                   ? 'bg-blue-400 text-black'
                   : 'border border-blue-400 text-blue-400'
@@ -174,7 +174,7 @@ export default function SocialFeedPage() {
             </button>
             <button
               onClick={() => handleFilterChange('reddit')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 filter === 'reddit'
                   ? 'bg-orange-500 text-black'
                   : 'border border-orange-500 text-orange-500'
@@ -184,7 +184,7 @@ export default function SocialFeedPage() {
             </button>
             <button
               onClick={() => handleFilterChange('medium')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 filter === 'medium'
                   ? 'bg-green-500 text-black'
                   : 'border border-green-500 text-green-500'
@@ -197,7 +197,7 @@ export default function SocialFeedPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => handleCategoryChange('all')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 category === 'all' 
                   ? 'bg-yellow-400 text-black' 
                   : 'border border-yellow-400 text-yellow-400'
@@ -207,7 +207,7 @@ export default function SocialFeedPage() {
             </button>
             <button
               onClick={() => handleCategoryChange('community')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 category === 'community'
                   ? 'bg-purple-500 text-black'
                   : 'border border-purple-500 text-purple-500'
@@ -217,7 +217,7 @@ export default function SocialFeedPage() {
             </button>
             <button
               onClick={() => handleCategoryChange('news')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 category === 'news'
                   ? 'bg-blue-500 text-black'
                   : 'border border-blue-500 text-blue-500'
@@ -227,7 +227,7 @@ export default function SocialFeedPage() {
             </button>
             <button
               onClick={() => handleCategoryChange('education')}
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-2 rounded-full text-sm ${
                 category === 'education'
                   ? 'bg-green-500 text-black'
                   : 'border border-green-500 text-green-500'

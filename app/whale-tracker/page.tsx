@@ -14,7 +14,7 @@ export default function WhaleTrackerPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-yellow-400 mb-2">고래 거래 추적기 — 실시간 대규모 트랜잭션 모니터링</h1>
         <p className="text-gray-400 text-sm mb-4">이더리움 고래 지갑의 대규모 거래를 실시간으로 추적합니다.</p>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
           <label htmlFor="minAmount" className="text-gray-400">
             최소 금액 (ETH):
           </label>
@@ -24,7 +24,7 @@ export default function WhaleTrackerPage() {
             value={minAmount}
             onChange={(e) => setMinAmount(Number(e.target.value))}
             min="1"
-            className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2 text-white"
+            className="bg-[#161b22] border border-[#30363d] rounded px-3 py-2 text-white w-full sm:w-auto"
           />
         </div>
       </div>

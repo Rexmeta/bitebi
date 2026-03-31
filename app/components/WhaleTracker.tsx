@@ -78,7 +78,7 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
         고래 트랜잭션 트래커 ({minAmount} ETH 이상)
       </h2>
 
-      <div className="overflow-x-auto">
+      <div className="hidden sm:block overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="text-left text-gray-400 border-b border-[#30363d]">
@@ -130,6 +130,36 @@ const WhaleTracker = ({ minAmount }: WhaleTrackerProps) => {
             ))}
           </tbody>
         </table>
+      </div>
+
+      <div className="sm:hidden space-y-3">
+        {transactions.map((tx) => (
+          <div key={tx.hash} className="bg-[#0d1117] rounded-lg p-3 border border-[#30363d]">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-green-400 font-semibold">{tx.value} ETH</span>
+              <span className="text-xs text-gray-400">{new Date(tx.timestamp).toLocaleString()}</span>
+            </div>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-400">보낸 주소</span>
+                <a href={`https://etherscan.io/address/${tx.from}`} target="_blank" rel="noopener noreferrer" className="text-blue-400">
+                  {`${tx.from.slice(0, 6)}...${tx.from.slice(-4)}`}
+                </a>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-400">받는 주소</span>
+                <a href={`https://etherscan.io/address/${tx.to}`} target="_blank" rel="noopener noreferrer" className="text-blue-400">
+                  {tx.to ? `${tx.to.slice(0, 6)}...${tx.to.slice(-4)}` : '-'}
+                </a>
+              </div>
+            </div>
+            <div className="mt-2 text-right">
+              <a href={`https://etherscan.io/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer" className="text-blue-400 text-sm">
+                상세보기 →
+              </a>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

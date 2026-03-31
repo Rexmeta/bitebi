@@ -36,7 +36,7 @@ function GaugeChart({ value }: { value: number }) {
   const color = getGaugeColor(value)
 
   return (
-    <div className="relative w-72 h-40 mx-auto">
+    <div className="relative w-full max-w-72 h-40 mx-auto">
       <svg viewBox="0 0 200 110" className="w-full h-full">
         <defs>
           <linearGradient id="gaugeGradient" x1="0%" y1="0%" x2="100%" y2="0%">

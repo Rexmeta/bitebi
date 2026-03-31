@@ -158,7 +158,7 @@ export default function CoinDetailClient({
           />
         )}
         <div>
-          <h1 className="text-3xl font-bold text-yellow-400">
+          <h1 className="text-xl sm:text-3xl font-bold text-yellow-400">
             {krName} ({coin.symbol.toUpperCase()}) 실시간 시세
           </h1>
           <p className="text-gray-400 text-sm">시가총액 순위 #{md.market_cap_rank}</p>
@@ -278,7 +278,7 @@ export default function CoinDetailClient({
           height="500"
           frameBorder="0"
           allowFullScreen
-          className="w-full rounded"
+          className="w-full rounded h-[350px] sm:h-[500px]"
           title={`${krName} 실시간 차트`}
         />
       </div>

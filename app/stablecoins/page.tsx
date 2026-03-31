@@ -114,7 +114,7 @@ export default function StablecoinsPage() {
   const chartOptions = {
     plugins: {
       legend: {
-        position: 'right' as const,
+        position: (typeof window !== 'undefined' && window.innerWidth < 640) ? 'bottom' as const : 'right' as const,
         labels: { color: '#9ca3af', font: { size: 12 } }
       },
       tooltip: {
@@ -306,10 +306,10 @@ export default function StablecoinsPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-400">코인</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-400">유통량</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-400">변동(24h)</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-400">가격</th>
-                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-400">거래량(24h)</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 hidden sm:table-cell">가격</th>
+                  <th className="px-4 py-3 text-right text-xs font-medium text-gray-400 hidden sm:table-cell">거래량(24h)</th>
                   <th className="px-4 py-3 text-right text-xs font-medium text-gray-400">점유율</th>
-                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-400"></th>
+                  <th className="px-4 py-3 text-center text-xs font-medium text-gray-400 hidden sm:table-cell"></th>
                 </tr>
               </thead>
               <tbody>
@@ -336,12 +336,12 @@ export default function StablecoinsPage() {
                       <td className={`px-4 py-4 text-right text-sm ${coin.circulation_percent_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {coin.circulation_percent_change_24h >= 0 ? '+' : ''}{coin.circulation_percent_change_24h.toFixed(2)}%
                       </td>
-                      <td className="px-4 py-4 text-right text-sm text-gray-300">${coin.price.toFixed(4)}</td>
-                      <td className="px-4 py-4 text-right text-sm text-gray-300">{formatLargeNumber(coin.volume)}</td>
+                      <td className="px-4 py-4 text-right text-sm text-gray-300 hidden sm:table-cell">${coin.price.toFixed(4)}</td>
+                      <td className="px-4 py-4 text-right text-sm text-gray-300 hidden sm:table-cell">{formatLargeNumber(coin.volume)}</td>
                       <td className="px-4 py-4 text-right text-sm text-yellow-400">
                         {totalCirculation > 0 ? (coin.circulation / totalCirculation * 100).toFixed(1) : '-'}%
                       </td>
-                      <td className="px-4 py-4 text-center text-gray-400 text-xs">
+                      <td className="px-4 py-4 text-center text-gray-400 text-xs hidden sm:table-cell">
                         {expandedCoin === coin.symbol ? '▲' : '▼'}
                       </td>
                     </tr>

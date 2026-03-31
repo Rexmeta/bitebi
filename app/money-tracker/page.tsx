@@ -137,14 +137,14 @@ const MoneyTrackerPage = () => {
           {TABS.map(tab => (
             <button
               key={tab.key}
-              className={`flex-1 py-3 px-4 text-center text-sm md:text-base font-semibold transition-colors rounded-lg whitespace-nowrap ${activeTab === tab.key ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'}`}
+              className={`flex-1 py-3 px-4 md:px-6 text-center text-sm md:text-base font-semibold transition-colors rounded-lg whitespace-nowrap ${activeTab === tab.key ? 'bg-white/20 text-white' : 'text-white/70 hover:bg-white/10'}`}
               onClick={() => setActiveTab(tab.key)}
             >
               {tab.label}
             </button>
           ))}
         </div>
-        <div className="min-h-[600px]">{renderTabContent()}</div>
+        <div className="min-h-[400px] sm:min-h-[600px]">{renderTabContent()}</div>
         <div className="my-6">
           <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
         </div>

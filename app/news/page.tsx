@@ -193,7 +193,7 @@ export default function NewsPage() {
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-3 py-1.5 text-sm rounded-full border transition-colors ${
+            className={`px-3 py-2 text-sm rounded-full border transition-colors ${
               activeCategory === cat.id
                 ? 'bg-yellow-400 text-black border-yellow-400 font-medium'
                 : 'bg-[#21262d] text-gray-300 border-[#30363d] hover:border-yellow-400/50'
@@ -215,12 +215,12 @@ export default function NewsPage() {
           onChange={e => setSearchQuery(e.target.value)}
           className="flex-1 bg-[#0d1117] text-white px-4 py-2 text-sm rounded-lg border border-[#30363d] focus:border-yellow-400/50 focus:outline-none"
         />
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex flex-wrap gap-2">
           {TIME_FILTERS.map(tf => (
             <button
               key={tf.id}
               onClick={() => setActiveTime(tf.id)}
-              className={`px-3 py-1.5 text-sm rounded-lg whitespace-nowrap border transition-colors ${
+              className={`px-3 py-2 text-sm rounded-lg whitespace-nowrap border transition-colors ${
                 activeTime === tf.id
                   ? 'bg-blue-500/20 text-blue-400 border-blue-500/50'
                   : 'bg-[#21262d] text-gray-400 border-[#30363d] hover:text-white'
@@ -232,12 +232,12 @@ export default function NewsPage() {
         </div>
       </div>
 
-      <div className="flex gap-2 mb-4 overflow-x-auto">
+      <div className="flex flex-wrap gap-2 mb-4">
         {SOURCES.map(src => (
           <button
             key={src}
             onClick={() => setActiveSource(src)}
-            className={`px-3 py-1 text-xs rounded-full whitespace-nowrap border transition-colors ${
+            className={`px-3 py-2 text-xs rounded-full whitespace-nowrap border transition-colors ${
               activeSource === src
                 ? 'bg-green-500/20 text-green-400 border-green-500/50'
                 : 'bg-[#21262d] text-gray-400 border-[#30363d] hover:text-white'

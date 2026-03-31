@@ -150,7 +150,7 @@ export default function HomePage() {
                 {allKeywords.map((keyword, idx) => (
                   <button
                     key={idx}
-                    className={`px-2 py-1 rounded-full text-sm border ${selectedKeyword === keyword ? 'bg-yellow-400 text-black' : 'border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black'}`}
+                    className={`px-3 py-2 rounded-full text-sm border ${selectedKeyword === keyword ? 'bg-yellow-400 text-black' : 'border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black'}`}
                     onClick={() => handleCoinSelect(keyword)}
                   >
                     #{keyword}
@@ -232,7 +232,7 @@ export default function HomePage() {
                   height="600"
                   frameBorder="0"
                   allowFullScreen
-                  className="w-full rounded"
+                  className="w-full rounded h-[350px] sm:h-[600px]"
                   title={`Advanced chart for ${selectedSymbol}`}
                 />
               </div>
@@ -248,18 +248,18 @@ export default function HomePage() {
                   />
                 </div>
 
-                <div className="flex justify-between items-center mb-2">
+                <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 mb-2">
                   <input
                     type="text"
                     placeholder="🔍 코인 검색..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="bg-[#0d1117] text-white px-3 py-1 text-sm rounded border border-[#2d333b] w-1/2"
+                    className="bg-[#0d1117] text-white px-3 py-2 text-sm rounded border border-[#2d333b] w-full sm:w-1/2"
                   />
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as any)}
-                    className="bg-[#0d1117] text-white px-2 py-1 text-sm rounded border border-[#2d333b]"
+                    className="bg-[#0d1117] text-white px-3 py-2 text-sm rounded border border-[#2d333b]"
                   >
                     <option value="rank">Rank</option>
                     <option value="price">Price</option>
@@ -280,7 +280,7 @@ export default function HomePage() {
                           <th className="text-left px-2 py-1">Name</th>
                           <th className="text-right px-2 py-1">Price</th>
                           <th className="text-right px-2 py-1">24h %</th>
-                          <th className="text-right px-2 py-1">Market Cap</th>
+                          <th className="text-right px-2 py-1 hidden sm:table-cell">Market Cap</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -307,7 +307,7 @@ export default function HomePage() {
                               <td className={`px-2 py-1 text-right ${coin.price_change_percentage_24h !== null && coin.price_change_percentage_24h !== undefined ? (coin.price_change_percentage_24h ?? 0) >= 0 ? 'text-green-400' : 'text-red-400' : ''}`}>
                                 {coin.price_change_percentage_24h !== null && coin.price_change_percentage_24h !== undefined ? coin.price_change_percentage_24h.toFixed(2) : '0.00'}%
                               </td>
-                              <td className="px-2 py-1 text-right">${coin.market_cap.toLocaleString()}</td>
+                              <td className="px-2 py-1 text-right hidden sm:table-cell">${coin.market_cap.toLocaleString()}</td>
                             </tr>
                           ))
                         )}

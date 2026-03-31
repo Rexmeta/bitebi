@@ -11,8 +11,6 @@ export const viewport: Viewport = {
   themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 }
 
 export const metadata: Metadata = {
@@ -113,29 +111,33 @@ export default function RootLayout({
 
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b] z-50">
           <div className="flex justify-around py-2">
-            <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+            <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
               <span className="text-lg">🏠</span>
-              <span className="text-[10px]">홈</span>
+              <span className="text-xs">홈</span>
             </Link>
-            <Link href="/news" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+            <Link href="/news" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
               <span className="text-lg">📰</span>
-              <span className="text-[10px]">뉴스</span>
+              <span className="text-xs">뉴스</span>
             </Link>
-            <Link href="/youtube" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
-              <span className="text-lg">🎥</span>
-              <span className="text-[10px]">YouTube</span>
-            </Link>
-            <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+            <Link href="/social" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
               <span className="text-lg">💬</span>
-              <span className="text-[10px]">소셜</span>
+              <span className="text-xs">소셜</span>
             </Link>
-            <Link href="/stablecoin" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+            <Link href="/stablecoin" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
               <span className="text-lg">💵</span>
-              <span className="text-[10px]">스테이블</span>
+              <span className="text-xs">스테이블</span>
             </Link>
-            <Link href="/fear-greed" className="flex flex-col items-center text-gray-400 hover:text-yellow-400">
+            <Link href="/fear-greed" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
               <span className="text-lg">😱</span>
-              <span className="text-[10px]">공포·탐욕</span>
+              <span className="text-xs">공포탐욕</span>
+            </Link>
+            <Link href="/money-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
+              <span className="text-lg">💰</span>
+              <span className="text-xs">머니</span>
+            </Link>
+            <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
+              <span className="text-lg">🐋</span>
+              <span className="text-xs">고래</span>
             </Link>
           </div>
         </nav>
