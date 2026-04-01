@@ -112,42 +112,42 @@ export default function MetricsTab({ defiStats, stablecoinData, loading, onRetry
   }
 
   return (
-    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📈</span>
+    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-8 mb-8">
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📈</span>
           DeFi TVL 추이
         </h2>
         <UpdateTimestamp timestamp={defiStats?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-2 gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+        <div className="metric-grid grid grid-cols-2 gap-2 sm:gap-4 mb-4 mt-4">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {currentTvl > 0 ? `$${(currentTvl / 1e9).toFixed(1)}B` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">현재 TVL</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">현재 TVL</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className={`metric-value text-2xl font-bold mb-1 ${tvl7dChange !== null ? (tvl7dChange >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-800'}`}>
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className={`metric-value text-lg sm:text-2xl font-bold mb-1 ${tvl7dChange !== null ? (tvl7dChange >= 0 ? 'text-green-600' : 'text-red-500') : 'text-gray-800'}`}>
               {tvl7dChange !== null ? `${tvl7dChange >= 0 ? '+' : ''}${tvl7dChange.toFixed(1)}%` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">7일 변화율</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">7일 변화율</div>
           </div>
         </div>
         <div className="chart-container relative h-48"><canvas ref={tvlCanvasRef}></canvas></div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">💰</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">💰</span>
           스테이블코인 시가총액
         </h2>
         <UpdateTimestamp timestamp={defiStats?.lastUpdated || null} />
         <div className="chart-container relative h-48 mt-4"><canvas ref={supplyCanvasRef}></canvas></div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📊</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📊</span>
           스테이블코인 변화율
         </h2>
         {defiStats?.stablecoins && defiStats.stablecoins.length > 0 ? (
@@ -179,9 +179,9 @@ export default function MetricsTab({ defiStats, stablecoinData, loading, onRetry
         )}
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🎯</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🎯</span>
           임계점 지표
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

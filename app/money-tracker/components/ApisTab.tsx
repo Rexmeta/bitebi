@@ -3,13 +3,13 @@ import React from 'react'
 
 export default function ApisTab() {
   return (
-    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🔗</span>
+    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-8 mb-8">
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🔗</span>
           활성 데이터 소스
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mt-4">
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
             <div className="text-green-600 font-bold mb-1">✅ DefiLlama</div>
             <p className="text-xs text-gray-600">스테이블코인, TVL, 체인별 분포</p>
@@ -32,9 +32,9 @@ export default function ApisTab() {
           </div>
         </div>
       </div>
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">💻</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">💻</span>
           API 활용 예시
         </h2>
         <h3 className="font-bold mb-2">DefiLlama - 스테이블코인</h3>
@@ -46,9 +46,9 @@ export default function ApisTab() {
           {'# 미국 M2 통화량 (무료 API 키 필요)\ncurl "https://api.stlouisfed.org/fred/series/\n  observations?series_id=M2SL&api_key=YOUR_KEY\n  &file_type=json&sort_order=desc&limit=12"\n\n# 연방기금금리\ncurl "https://api.stlouisfed.org/fred/series/\n  observations?series_id=FEDFUNDS&api_key=YOUR_KEY\n  &file_type=json&sort_order=desc&limit=12"'}
         </div>
       </div>
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">⚙️</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">⚙️</span>
           데이터 갱신 정책
         </h2>
         <div className="space-y-3">
@@ -70,9 +70,9 @@ export default function ApisTab() {
           </div>
         </div>
       </div>
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📡</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📡</span>
           추가 데이터 소스 (참고)
         </h2>
         <div className="grid grid-cols-2 gap-3">

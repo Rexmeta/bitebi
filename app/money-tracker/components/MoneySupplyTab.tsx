@@ -113,25 +113,25 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
   }
 
   return (
-    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🏛️</span>
+    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-8 mb-8">
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🏛️</span>
           미국 M2 통화량
         </h2>
         <UpdateTimestamp timestamp={monetaryData?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-2 gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+        <div className="metric-grid grid grid-cols-2 gap-2 sm:gap-4 mb-4 mt-4">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {usM2 ? `$${(usM2 / 1e12).toFixed(2)}T` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">미국 M2</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">미국 M2</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {totalSupply > 0 ? `$${(totalSupply / 1e9).toFixed(1)}B` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">스테이블코인 총량</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">스테이블코인 총량</div>
           </div>
         </div>
         {!monetaryData?.hasFredKey && (
@@ -142,9 +142,9 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
         <div className="chart-container relative h-48"><canvas ref={m2CanvasRef}></canvas></div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📊</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📊</span>
           M2 통화량 추이
         </h2>
         <UpdateTimestamp timestamp={monetaryData?.lastUpdated || null} />
@@ -159,28 +159,29 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
         </div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">⚖️</span>
-          M2 대비 스테이블코인 침투율
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">⚖️</span>
+          M2 대비 침투율
         </h2>
-        <div className="flex justify-center my-6">
+        <div className="flex justify-center my-4 sm:my-6">
           <div
+            className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px]"
             style={{
-              width: 200, height: 200, borderRadius: '50%',
+              borderRadius: '50%',
               background: `conic-gradient(#667eea 0deg, #667eea ${(penetration || 0) * 3.6}deg, #e2e8f0 ${(penetration || 0) * 3.6}deg, #e2e8f0 360deg)`,
               position: 'relative',
             }}
           >
-            <div style={{
+            <div className="w-[96px] h-[96px] sm:w-[120px] sm:h-[120px]" style={{
               position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              background: 'white', width: 120, height: 120, borderRadius: '50%',
+              background: 'white', borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
             }}>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4a5568' }}>
+              <div className="text-lg sm:text-2xl font-bold text-gray-700">
                 {penetration !== null ? `${penetration.toFixed(2)}%` : '-'}
               </div>
-              <div style={{ fontSize: '0.8rem', color: '#718096' }}>침투율</div>
+              <div className="text-[10px] sm:text-xs text-gray-500">침투율</div>
             </div>
           </div>
         </div>
@@ -197,9 +198,9 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
         </div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🌍</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🌍</span>
           체인별 스테이블코인 분포
         </h2>
         {defiStats?.chainDistribution && defiStats.chainDistribution.length > 0 ? (
@@ -224,9 +225,9 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
         )}
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">💱</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">💱</span>
           스테이블코인 시장 점유율
         </h2>
         <UpdateTimestamp timestamp={stablecoinData?.lastUpdated || defiStats?.lastUpdated || null} />
@@ -248,9 +249,9 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
         )}
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🔄</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🔄</span>
           유동성 순환 분석
         </h2>
         <div className="alert-system bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-400 p-4 rounded-lg mb-4">

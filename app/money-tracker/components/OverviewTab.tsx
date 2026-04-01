@@ -128,61 +128,61 @@ export default function OverviewTab({ stablecoinData, defiStats, loading, signal
 
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all border border-white/20 backdrop-blur h-full flex flex-col">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📊</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all border border-white/20 backdrop-blur h-full flex flex-col">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📊</span>
           시장 현황
         </h2>
         <UpdateTimestamp timestamp={stablecoinData?.lastUpdated || defiStats?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-3 gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+        <div className="metric-grid grid grid-cols-3 gap-2 sm:gap-4 mb-4 mt-4">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {totalSupply > 0 ? `$${(totalSupply / 1e9).toFixed(1)}B` : '$-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">총 스테이블코인 공급량</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">총 공급량</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {usdtDominance ? `${usdtDominance}%` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">{topStable?.symbol || 'USDT'} 점유율</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">{topStable?.symbol || 'USDT'} 점유율</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {ethShare ? `${ethShare}%` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">이더리움 체인 비중</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">ETH 체인 비중</div>
           </div>
         </div>
         <div className="chart-container relative h-48 flex-1"><canvas ref={marketCanvasRef}></canvas></div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">📈</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📈</span>
           DeFi TVL 추이 (30일)
         </h2>
         <UpdateTimestamp timestamp={defiStats?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-2 gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+        <div className="metric-grid grid grid-cols-2 gap-2 sm:gap-4 mb-4 mt-4">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {defiStats?.currentTvl ? `$${(defiStats.currentTvl / 1e9).toFixed(1)}B` : '$-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">현재 DeFi TVL</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">현재 DeFi TVL</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {stables && stables.length > 0 ? stables.length : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">추적 스테이블코인 수</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">추적 스테이블코인 수</div>
           </div>
         </div>
         <div className="chart-container relative h-48 flex-1"><canvas ref={volumeCanvasRef}></canvas></div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🏦</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🏦</span>
           체인별 스테이블코인 분포
         </h2>
         {defiStats?.chainDistribution && defiStats.chainDistribution.length > 0 ? (
@@ -210,9 +210,9 @@ export default function OverviewTab({ stablecoinData, defiStats, loading, signal
         )}
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">⚠️</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur h-full flex flex-col">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">⚠️</span>
           위험/기회 신호
         </h2>
         <div className="space-y-3">

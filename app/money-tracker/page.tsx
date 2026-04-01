@@ -119,10 +119,10 @@ const MoneyTrackerPage = () => {
       onContextMenu={handleContextMenu}
       style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}
     >
-      <div className="max-w-[1400px] mx-auto py-6 px-2 md:px-6 container">
-        <div className="text-center text-white mb-10 py-10 header">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 drop-shadow">🌐 스테이블코인 기축통화 모니터링</h1>
-          <p className="text-lg opacity-90">실시간 데이터로 분석하는 글로벌 금융 시스템의 변화</p>
+      <div className="max-w-[1400px] mx-auto py-4 px-3 md:py-6 md:px-6 container">
+        <div className="text-center text-white mb-6 py-6 md:mb-10 md:py-10 header">
+          <h1 className="text-2xl md:text-5xl font-bold mb-2 md:mb-4 drop-shadow">🌐 스테이블코인 기축통화 모니터링</h1>
+          <p className="text-sm md:text-lg opacity-90">실시간 데이터로 분석하는 글로벌 금융 시스템의 변화</p>
           {loading && (
             <div className="mt-2 inline-flex items-center gap-2 bg-white/20 rounded-full px-4 py-1 text-sm">
               <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />

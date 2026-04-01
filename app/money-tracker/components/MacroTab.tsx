@@ -173,27 +173,27 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
   const penetration = usM2 > 0 ? (totalSupply / usM2) * 100 : null
 
   return (
-    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center text-white">📉</span>
-          미국 금리 추이 (Federal Funds Rate)
+    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-8">
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center text-white text-sm">📉</span>
+          미국 금리 추이
         </h2>
         <UpdateTimestamp timestamp={monetaryData?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-2 gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-red-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+        <div className="metric-grid grid grid-cols-2 gap-2 sm:gap-4 mb-4 mt-4">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-red-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {monetaryData?.fedFundsRate !== null && monetaryData?.fedFundsRate !== undefined ? `${monetaryData.fedFundsRate}%` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">현재 금리</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">현재 금리</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-red-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-red-400">
+            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
               {monetaryData?.fedFundsRate !== null && monetaryData?.fedFundsRate !== undefined
                 ? (monetaryData.fedFundsRate >= 5 ? '긴축적' : monetaryData.fedFundsRate >= 3 ? '중립적' : '완화적')
                 : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">정책 기조</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">정책 기조</div>
           </div>
         </div>
         <div className="chart-container relative h-48">
@@ -207,10 +207,10 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
         </div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white">₿</span>
-          BTC vs DeFi TVL 상관관계
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white text-sm">₿</span>
+          BTC vs DeFi TVL
         </h2>
         <UpdateTimestamp timestamp={defiStats?.lastUpdated || null} />
         <div className="chart-container relative h-64 mt-4">
@@ -222,30 +222,30 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
         </div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🌊</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🌊</span>
           글로벌 유동성 지수
         </h2>
         <UpdateTimestamp timestamp={monetaryData?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-3 gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-xl font-bold text-gray-800 mb-1">
+        <div className="metric-grid grid grid-cols-3 gap-1.5 sm:gap-4 mb-4 mt-4">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-sm sm:text-xl font-bold text-gray-800 mb-1">
               {globalLiquidity > 0 ? `$${(globalLiquidity / 1e12).toFixed(2)}T` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">M2+스테이블 합산</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">M2+스테이블</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-sm sm:text-xl font-bold text-gray-800 mb-1">
               {penetration !== null ? `${penetration.toFixed(3)}%` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">침투율</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">침투율</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-xl font-bold text-gray-800 mb-1">
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-sm sm:text-xl font-bold text-gray-800 mb-1">
               {defiStats?.currentTvl ? `$${(defiStats.currentTvl / 1e9).toFixed(0)}B` : '-'}
             </div>
-            <div className="metric-label text-xs text-gray-500">DeFi TVL</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">DeFi TVL</div>
           </div>
         </div>
         <div className="chart-container relative h-48">
@@ -259,9 +259,9 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
         </div>
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white">🔔</span>
+      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
+        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
+          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🔔</span>
           데이터 기반 자동 신호
         </h2>
         <div className="space-y-3">

@@ -143,22 +143,22 @@ export default function StablecoinTrackerPage() {
         <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        <div className="bg-[#161b22] p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">총 공급량</h3>
-          <p className="text-2xl text-yellow-400">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mt-6 sm:mt-8">
+        <div className="bg-[#161b22] p-3 sm:p-4 rounded-lg">
+          <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">총 공급량</h3>
+          <p className="text-lg sm:text-2xl text-yellow-400">
             ${metrics[metrics.length - 1]?.totalSupply.toLocaleString() ?? 0}
           </p>
         </div>
-        <div className="bg-[#161b22] p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">시가총액</h3>
-          <p className="text-2xl text-yellow-400">
+        <div className="bg-[#161b22] p-3 sm:p-4 rounded-lg">
+          <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">시가총액</h3>
+          <p className="text-lg sm:text-2xl text-yellow-400">
             ${metrics[metrics.length - 1]?.marketCap.toLocaleString() ?? 0}
           </p>
         </div>
-        <div className="bg-[#161b22] p-4 rounded-lg">
-          <h3 className="text-lg font-semibold mb-2">24시간 거래량</h3>
-          <p className="text-2xl text-yellow-400">
+        <div className="bg-[#161b22] p-3 sm:p-4 rounded-lg">
+          <h3 className="text-sm sm:text-lg font-semibold mb-1 sm:mb-2">24시간 거래량</h3>
+          <p className="text-lg sm:text-2xl text-yellow-400">
             ${metrics[metrics.length - 1]?.volume24h.toLocaleString() ?? 0}
           </p>
         </div>

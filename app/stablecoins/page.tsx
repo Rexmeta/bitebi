@@ -169,22 +169,22 @@ export default function StablecoinsPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-[#161b22] rounded-xl p-4 border border-[#30363d]">
-          <p className="text-gray-400 text-xs">총 유통량</p>
-          <p className="text-xl font-bold text-white mt-1">{formatLargeNumber(totalCirculation)}</p>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
+        <div className="bg-[#161b22] rounded-xl p-3 sm:p-4 border border-[#30363d]">
+          <p className="text-gray-400 text-[10px] sm:text-xs">총 유통량</p>
+          <p className="text-base sm:text-xl font-bold text-white mt-1">{formatLargeNumber(totalCirculation)}</p>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-4 border border-[#30363d]">
-          <p className="text-gray-400 text-xs">24시간 거래량</p>
-          <p className="text-xl font-bold text-white mt-1">{formatLargeNumber(totalVolume)}</p>
+        <div className="bg-[#161b22] rounded-xl p-3 sm:p-4 border border-[#30363d]">
+          <p className="text-gray-400 text-[10px] sm:text-xs">24시간 거래량</p>
+          <p className="text-base sm:text-xl font-bold text-white mt-1">{formatLargeNumber(totalVolume)}</p>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-4 border border-[#30363d]">
-          <p className="text-gray-400 text-xs">추적 코인 수</p>
-          <p className="text-xl font-bold text-white mt-1">{stablecoins.length}개</p>
+        <div className="bg-[#161b22] rounded-xl p-3 sm:p-4 border border-[#30363d]">
+          <p className="text-gray-400 text-[10px] sm:text-xs">추적 코인 수</p>
+          <p className="text-base sm:text-xl font-bold text-white mt-1">{stablecoins.length}개</p>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-4 border border-[#30363d]">
-          <p className="text-gray-400 text-xs">USDT 점유율</p>
-          <p className="text-xl font-bold text-white mt-1">
+        <div className="bg-[#161b22] rounded-xl p-3 sm:p-4 border border-[#30363d]">
+          <p className="text-gray-400 text-[10px] sm:text-xs">USDT 점유율</p>
+          <p className="text-base sm:text-xl font-bold text-white mt-1">
             {totalCirculation > 0 ? ((stablecoins.find(c => c.symbol === 'USDT')?.circulation || 0) / totalCirculation * 100).toFixed(1) : '-'}%
           </p>
         </div>
@@ -193,9 +193,9 @@ export default function StablecoinsPage() {
       <AdBanner slot="3574861290" format="auto" style={{ minHeight: '100px' }} />
 
       {showCompare && coinA && coinB && (
-        <div className="bg-[#161b22] rounded-xl p-6 border border-[#30363d]">
-          <h2 className="text-lg font-bold text-yellow-400 mb-4">스테이블코인 비교</h2>
-          <div className="flex gap-4 mb-6">
+        <div className="bg-[#161b22] rounded-xl p-4 sm:p-6 border border-[#30363d]">
+          <h2 className="text-base sm:text-lg font-bold text-yellow-400 mb-4">스테이블코인 비교</h2>
+          <div className="flex gap-2 sm:gap-4 mb-4 sm:mb-6">
             <select value={compareCoins[0]} onChange={e => setCompareCoins([e.target.value, compareCoins[1]])} className="bg-[#0d1117] border border-[#30363d] text-white rounded-lg px-3 py-2 text-sm">
               {stablecoins.map(c => <option key={c.symbol} value={c.symbol}>{c.symbol}</option>)}
             </select>
@@ -255,16 +255,16 @@ export default function StablecoinsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#161b22] rounded-xl p-6 border border-[#30363d]">
-          <h2 className="text-lg font-semibold text-white mb-4">유통량 기준 시장 점유율</h2>
-          <div className="h-[300px]">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div className="bg-[#161b22] rounded-xl p-4 sm:p-6 border border-[#30363d]">
+          <h2 className="text-base sm:text-lg font-semibold text-white mb-4">유통량 기준 시장 점유율</h2>
+          <div className="h-[220px] sm:h-[300px]">
             <Pie data={chartData} options={chartOptions} />
           </div>
         </div>
-        <div className="bg-[#161b22] rounded-xl p-6 border border-[#30363d]">
-          <h2 className="text-lg font-semibold text-white mb-4">24시간 거래량 기준 점유율</h2>
-          <div className="h-[300px]">
+        <div className="bg-[#161b22] rounded-xl p-4 sm:p-6 border border-[#30363d]">
+          <h2 className="text-base sm:text-lg font-semibold text-white mb-4">24시간 거래량 기준 점유율</h2>
+          <div className="h-[220px] sm:h-[300px]">
             <Pie
               data={{ ...chartData, datasets: [{ ...chartData.datasets[0], data: sortedStablecoins.map(c => c.volume) }] }}
               options={chartOptions}
