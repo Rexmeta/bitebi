@@ -135,9 +135,9 @@ export default function RootLayout({
               <span className="text-lg">💰</span>
               <span className="text-xs">머니</span>
             </Link>
-            <Link href="/whale-tracker" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
-              <span className="text-lg">🐋</span>
-              <span className="text-xs">고래</span>
+            <Link href="/youtube" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
+              <span className="text-lg">▶️</span>
+              <span className="text-xs">유튜브</span>
             </Link>
           </div>
         </nav>
