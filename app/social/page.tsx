@@ -4,7 +4,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { ko } from 'date-fns/locale'
 import { useInfiniteScroll } from '../hooks/useInfiniteScroll'
 import { storage } from '../utils/storage'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import debounce from 'lodash/debounce'
 import { SocialFeedJsonLd } from '../components/JsonLd'
 import LoadingSpinner from '../components/common/LoadingSpinner'
@@ -314,10 +314,11 @@ export default function SocialFeedPage() {
               </div>
               {(index + 1) % 3 === 0 && (
                 <div className="my-4">
-                  <AdBanner 
-                    slot="5844761429"
-                    format="horizontal"
-                    style={{ minHeight: '100px' }}
+                  <AdBanner
+                    slot={AD_SLOTS.IN_ARTICLE}
+                    format="auto"
+                    style={{ minHeight: '250px' }}
+                    label="광고"
                   />
                 </div>
               )}
@@ -326,11 +327,16 @@ export default function SocialFeedPage() {
         </div>
 
         <div className="mt-4">
-          <AdBanner 
-            slot="5844761430"
+          <AdBanner
+            slot={AD_SLOTS.FOOTER_BANNER}
             format="horizontal"
-            style={{ minHeight: '100px' }}
+            style={{ minHeight: '90px' }}
+            label="광고"
           />
+        </div>
+        {/* Multiplex */}
+        <div className="mt-6">
+          <AdBanner slot={AD_SLOTS.MULTIPLEX} format="autorelaxed" variant="multiplex" label="추천 콘텐츠" />
         </div>
       </div>
     </>

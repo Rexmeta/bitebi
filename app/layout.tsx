@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     template: '%s | Bitebi',
   },
   description: '비트코인 시세, 이더리움 가격, 암호화폐 뉴스, 고래 거래 추적, 스테이블코인 분석을 실시간으로 제공하는 한국어 암호화폐 정보 플랫폼',
-  keywords: ['비트코인 시세', '비트코인 가격', '이더리움 가격', '암호화폐 뉴스', '코인 시세', '크립토', '블록체인', '실시간 시세', '고래 거래', '스테이블코인'],
+  keywords: ['비트코인 시세', '비트코인 가격', '이더리움 가격', '암호화폐 뉴스', '코인 시세', '크립토', '블록체인', '실시간 시세', '고래 거래', '스테이블코인', '비트코인 투자', '암호화폐 거래소', 'bitcoin price', 'crypto news'],
   authors: [{ name: 'bitebi team' }],
   creator: 'bitebi',
   publisher: 'bitebi',
@@ -64,6 +64,8 @@ export default function RootLayout({
     <html lang="ko">
       <head />
       <body className={`${inter.className} bg-[#1b1f23] text-white min-h-screen`}>
+
+        {/* ── 헤더 네비게이션 ── */}
         <header className="bg-[#161b22] border-b border-[#30363d]">
           <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between h-16">
@@ -73,42 +75,85 @@ export default function RootLayout({
                 </Link>
               </div>
               <div className="hidden md:flex items-center space-x-5">
-                <Link href="/" className="text-gray-300 hover:text-white text-sm">
-                  홈
-                </Link>
-                <Link href="/news" className="text-gray-300 hover:text-white text-sm">
-                  뉴스
-                </Link>
-                <Link href="/youtube" className="text-gray-300 hover:text-white text-sm">
-                  YouTube
-                </Link>
-                <Link href="/social" className="text-gray-300 hover:text-white text-sm">
-                  소셜
-                </Link>
-                <Link href="/stablecoin" className="text-gray-300 hover:text-white text-sm">
-                  스테이블코인
-                </Link>
-                <Link href="/fear-greed" className="text-gray-300 hover:text-white text-sm">
-                  공포·탐욕
-                </Link>
-                <Link href="/money-tracker" className="text-gray-300 hover:text-white text-sm">
-                  머니트래커
-                </Link>
+                <Link href="/" className="text-gray-300 hover:text-white text-sm">홈</Link>
+                <Link href="/news" className="text-gray-300 hover:text-white text-sm">뉴스</Link>
+                <Link href="/youtube" className="text-gray-300 hover:text-white text-sm">YouTube</Link>
+                <Link href="/social" className="text-gray-300 hover:text-white text-sm">소셜</Link>
+                <Link href="/stablecoin" className="text-gray-300 hover:text-white text-sm">스테이블코인</Link>
+                <Link href="/fear-greed" className="text-gray-300 hover:text-white text-sm">공포·탐욕</Link>
+                <Link href="/money-tracker" className="text-gray-300 hover:text-white text-sm">머니트래커</Link>
               </div>
             </div>
           </nav>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 py-6 pb-20 md:pb-6">
+        {/* ── ATF 리더보드 광고 (헤더 바로 아래, 가장 높은 CPM 위치) ── */}
+        <div className="w-full bg-[#13161a] border-b border-[#2d333b] py-1.5">
+          <div className="max-w-7xl mx-auto px-4 flex justify-center items-center">
+            <div className="w-full max-w-[970px]">
+              <p className="text-[10px] text-gray-600 text-center leading-none mb-0.5">광고</p>
+              {/* ins 태그를 서버 컴포넌트에서 직접 렌더링 (ATF는 즉시 노출 필요) */}
+              <ins
+                className="adsbygoogle"
+                style={{
+                  display: 'block',
+                  minHeight: '90px',
+                  textAlign: 'center',
+                }}
+                data-ad-client="ca-pub-9956651639047657"
+                data-ad-slot="5844761425"
+                data-ad-format="horizontal"
+                data-full-width-responsive="true"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── 메인 콘텐츠 ── */}
+        {/* pb-[120px]: 모바일 네비 60px + 앵커 광고 ~60px 여백 */}
+        <main className="max-w-7xl mx-auto px-4 py-6 pb-[120px] md:pb-6">
           {children}
         </main>
 
+        {/* ── AdSense 스크립트 ── */}
         <Script
+          id="adsense-init"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9956651639047657"
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
 
+        {/* ── ATF ins 태그 초기화 스크립트 ── */}
+        <Script id="adsense-atf-push" strategy="afterInteractive">
+          {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+        </Script>
+
+        {/* ── 모바일 앵커 광고 (모바일 네비게이션 바로 위 고정) ── */}
+        <div
+          className="md:hidden fixed bottom-[56px] left-0 right-0 z-40"
+          style={{ background: 'rgba(19,22,26,0.97)' }}
+        >
+          <p className="text-[10px] text-gray-600 text-center leading-none pt-0.5">광고</p>
+          <ins
+            className="adsbygoogle"
+            style={{
+              display: 'block',
+              minHeight: '50px',
+              textAlign: 'center',
+            }}
+            data-ad-client="ca-pub-9956651639047657"
+            data-ad-slot="9632784159"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          />
+        </div>
+
+        {/* ── 모바일 앵커 광고 초기화 ── */}
+        <Script id="adsense-anchor-push" strategy="afterInteractive">
+          {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+        </Script>
+
+        {/* ── 모바일 하단 네비게이션 ── */}
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-[#13161a] border-t border-[#2d333b] z-50">
           <div className="flex justify-around py-2">
             <Link href="/" className="flex flex-col items-center text-gray-400 hover:text-yellow-400 min-w-[44px] min-h-[44px] justify-center">
@@ -141,6 +186,7 @@ export default function RootLayout({
             </Link>
           </div>
         </nav>
+
       </body>
     </html>
   )

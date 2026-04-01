@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
 import EmptyState from '../components/common/EmptyState'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 import type { Article, Coin } from '../types'
 
@@ -123,8 +123,9 @@ export default function TrendingPage() {
 
   return (
     <div>
-      <div className="mb-4">
-        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+      {/* 트렌딩 ATF 광고 */}
+      <div className="mb-6">
+        <AdBanner slot={AD_SLOTS.IN_CONTENT} format="auto" style={{ minHeight: '280px' }} label="광고" />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -227,11 +228,16 @@ export default function TrendingPage() {
       </div>
 
       <div className="my-6">
-        <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+        <AdBanner slot={AD_SLOTS.IN_ARTICLE} format="auto" style={{ minHeight: '250px' }} label="광고" />
       </div>
 
       <div className="my-6">
-        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner slot={AD_SLOTS.FOOTER_BANNER} format="horizontal" style={{ minHeight: '90px' }} label="광고" />
+      </div>
+
+      {/* Multiplex */}
+      <div className="my-6">
+        <AdBanner slot={AD_SLOTS.MULTIPLEX} format="autorelaxed" variant="multiplex" label="추천 콘텐츠" />
       </div>
 
       <RelatedContent links={relatedLinks} />

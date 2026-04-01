@@ -1,7 +1,7 @@
 'use client'
 import { Fragment, useEffect, useState } from 'react'
 import Link from 'next/link'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'react-chartjs-2'
 import LoadingSpinner from '../components/common/LoadingSpinner'
@@ -190,7 +190,8 @@ export default function StablecoinsPage() {
         </div>
       </div>
 
-      <AdBanner slot="3574861290" format="auto" style={{ minHeight: '100px' }} />
+      {/* ATF 아래 첫 번째 광고 */}
+      <AdBanner slot={AD_SLOTS.IN_CONTENT} format="auto" style={{ minHeight: '280px' }} label="광고" />
 
       {showCompare && coinA && coinB && (
         <div className="bg-[#161b22] rounded-xl p-4 sm:p-6 border border-[#30363d]">
@@ -273,7 +274,7 @@ export default function StablecoinsPage() {
         </div>
       </div>
 
-      <AdBanner slot="5844761427" format="auto" style={{ minHeight: '100px' }} />
+      <AdBanner slot={AD_SLOTS.IN_ARTICLE} format="auto" style={{ minHeight: '250px' }} label="광고" />
 
       <div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
@@ -404,7 +405,7 @@ export default function StablecoinsPage() {
                     {(idx + 1) % 3 === 0 && idx < sortedStablecoins.length - 1 && (
                       <tr>
                         <td colSpan={7} className="p-2">
-                          <AdBanner slot="3574861290" format="auto" style={{ minHeight: '80px' }} />
+                          <AdBanner slot={AD_SLOTS.IN_CONTENT} format="auto" style={{ minHeight: '90px' }} label="광고" />
                         </td>
                       </tr>
                     )}
@@ -416,7 +417,7 @@ export default function StablecoinsPage() {
         </div>
       </div>
 
-      <AdBanner slot="5844761427" format="auto" style={{ minHeight: '100px' }} />
+      <AdBanner slot={AD_SLOTS.FOOTER_BANNER} format="auto" style={{ minHeight: '90px' }} label="광고" />
 
       <div className="bg-[#161b22] rounded-xl p-6 border border-[#30363d]">
         <h2 className="text-lg font-bold text-yellow-400 mb-2">오늘의 스테이블코인 시장 요약</h2>
@@ -464,7 +465,12 @@ export default function StablecoinsPage() {
         </div>
       )}
 
-      <AdBanner slot="3574861290" format="auto" style={{ minHeight: '100px' }} />
+      <AdBanner slot={AD_SLOTS.IN_ARTICLE} format="auto" style={{ minHeight: '250px' }} label="광고" />
+
+      {/* Multiplex */}
+      <div className="my-4">
+        <AdBanner slot={AD_SLOTS.MULTIPLEX} format="autorelaxed" variant="multiplex" label="추천 콘텐츠" />
+      </div>
 
       <div className="bg-[#161b22] rounded-xl p-6 border border-[#30363d]">
         <h2 className="text-lg font-bold text-white mb-3">데이터 수집 방법론</h2>

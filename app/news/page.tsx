@@ -4,7 +4,7 @@ import Link from 'next/link'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
 import EmptyState from '../components/common/EmptyState'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 import type { Article } from '../types'
 
@@ -76,7 +76,6 @@ export default function NewsPage() {
           throw new Error(data.error || '뉴스 데이터를 가져오는데 실패했습니다')
         }
       } catch (err) {
-        console.error('뉴스 데이터 로딩 오류:', err)
         setError(err instanceof Error ? err.message : '뉴스를 불러올 수 없습니다')
       } finally {
         setIsLoading(false)
@@ -104,9 +103,7 @@ export default function NewsPage() {
 
   const filteredArticles = useMemo(() => {
     let result = [...articles]
-    if (activeCategory !== 'all') {
-      result = result.filter(a => a.category === activeCategory)
-    }
+    if (activeCategory !== 'all') result = result.filter(a => a.category === activeCategory)
     if (activeTime !== 'all') {
       const filter = TIME_FILTERS.find(t => t.id === activeTime)
       if (filter?.ms) {
@@ -114,9 +111,7 @@ export default function NewsPage() {
         result = result.filter(a => new Date(a.pubDate).getTime() > cutoff)
       }
     }
-    if (activeSource !== '전체') {
-      result = result.filter(a => a.source === activeSource)
-    }
+    if (activeSource !== '전체') result = result.filter(a => a.source === activeSource)
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       result = result.filter(a =>
@@ -156,6 +151,7 @@ export default function NewsPage() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      {/* 페이지 제목 */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <div>
           <h1 className="text-2xl font-bold text-yellow-400">실시간 암호화폐 뉴스</h1>
@@ -163,10 +159,19 @@ export default function NewsPage() {
         </div>
       </div>
 
-      <AdBanner slot="5844761425" format="auto" style={{ minHeight: '100px' }} />
+      {/* ── 뉴스 목록 최상단 광고 (ATF 아래 첫 콘텐츠 광고) ── */}
+      <div className="mb-6">
+        <AdBanner
+          slot={AD_SLOTS.IN_CONTENT}
+          format="auto"
+          style={{ minHeight: '280px' }}
+          label="광고"
+        />
+      </div>
 
+      {/* 인기 기사 */}
       {popularArticles.length > 0 && (
-        <div className="mb-6 mt-4">
+        <div className="mb-6">
           <h2 className="text-lg font-semibold text-yellow-300 mb-3">인기 기사</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {popularArticles.slice(0, 3).map((article, i) => (
@@ -178,7 +183,9 @@ export default function NewsPage() {
                 <div className="flex items-start gap-2">
                   <span className="text-2xl font-bold text-yellow-400/40">{i + 1}</span>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-white leading-snug line-clamp-3">{detectTrendIcon(article.title)} {article.title}</h3>
+                    <h3 className="text-sm font-medium text-white leading-snug line-clamp-3">
+                      {detectTrendIcon(article.title)} {article.title}
+                    </h3>
                     <div className="text-xs text-gray-400 mt-2">{article.source} · {timeAgo(article.pubDate)}</div>
                   </div>
                 </div>
@@ -188,16 +195,15 @@ export default function NewsPage() {
         </div>
       )}
 
+      {/* 카테고리 필터 */}
       <div className="flex flex-wrap gap-2 mb-4">
         {CATEGORIES.map(cat => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-3 py-2 text-sm rounded-full border transition-colors ${
-              activeCategory === cat.id
-                ? 'bg-yellow-400 text-black border-yellow-400 font-medium'
-                : 'bg-[#21262d] text-gray-300 border-[#30363d] hover:border-yellow-400/50'
-            }`}
+            className={`px-3 py-2 text-sm rounded-full border transition-colors ${activeCategory === cat.id
+              ? 'bg-yellow-400 text-black border-yellow-400 font-medium'
+              : 'bg-[#21262d] text-gray-300 border-[#30363d] hover:border-yellow-400/50'}`}
           >
             {cat.icon} {cat.label}
             {categoryCounts[cat.id] !== undefined && (
@@ -207,6 +213,7 @@ export default function NewsPage() {
         ))}
       </div>
 
+      {/* 검색 + 시간 필터 */}
       <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input
           type="text"
@@ -220,11 +227,9 @@ export default function NewsPage() {
             <button
               key={tf.id}
               onClick={() => setActiveTime(tf.id)}
-              className={`px-3 py-2 text-sm rounded-lg whitespace-nowrap border transition-colors ${
-                activeTime === tf.id
-                  ? 'bg-blue-500/20 text-blue-400 border-blue-500/50'
-                  : 'bg-[#21262d] text-gray-400 border-[#30363d] hover:text-white'
-              }`}
+              className={`px-3 py-2 text-sm rounded-lg whitespace-nowrap border transition-colors ${activeTime === tf.id
+                ? 'bg-blue-500/20 text-blue-400 border-blue-500/50'
+                : 'bg-[#21262d] text-gray-400 border-[#30363d] hover:text-white'}`}
             >
               {tf.label}
             </button>
@@ -232,22 +237,22 @@ export default function NewsPage() {
         </div>
       </div>
 
+      {/* 소스 필터 */}
       <div className="flex flex-wrap gap-2 mb-4">
         {SOURCES.map(src => (
           <button
             key={src}
             onClick={() => setActiveSource(src)}
-            className={`px-3 py-2 text-xs rounded-full whitespace-nowrap border transition-colors ${
-              activeSource === src
-                ? 'bg-green-500/20 text-green-400 border-green-500/50'
-                : 'bg-[#21262d] text-gray-400 border-[#30363d] hover:text-white'
-            }`}
+            className={`px-3 py-2 text-xs rounded-full whitespace-nowrap border transition-colors ${activeSource === src
+              ? 'bg-green-500/20 text-green-400 border-green-500/50'
+              : 'bg-[#21262d] text-gray-400 border-[#30363d] hover:text-white'}`}
           >
             {src}
           </button>
         ))}
       </div>
 
+      {/* 뉴스 목록 */}
       {filteredArticles.length === 0 ? (
         <EmptyState message="조건에 맞는 뉴스가 없습니다. 필터를 조정해 보세요." icon="🔍" />
       ) : (
@@ -280,9 +285,16 @@ export default function NewsPage() {
                     </div>
                   </div>
                 </Link>
+
+                {/* 3번째 뒤 + 이후 5개마다 in-feed 광고 (슬롯 분리) */}
                 {((index === 2) || (index > 2 && (index - 2) % 5 === 0)) && (
                   <div className="my-4">
-                    <AdBanner slot="5844761425" format="auto" style={{ minHeight: '100px' }} />
+                    <AdBanner
+                      slot={index <= 7 ? AD_SLOTS.IN_ARTICLE : AD_SLOTS.IN_CONTENT}
+                      format="auto"
+                      style={{ minHeight: '250px' }}
+                      label="광고"
+                    />
                   </div>
                 )}
               </div>
@@ -291,8 +303,24 @@ export default function NewsPage() {
         </>
       )}
 
+      {/* 뉴스 목록 하단 광고 */}
       <div className="my-6">
-        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner
+          slot={AD_SLOTS.FOOTER_BANNER}
+          format="horizontal"
+          style={{ minHeight: '90px' }}
+          label="광고"
+        />
+      </div>
+
+      {/* Multiplex (콘텐츠 추천형) */}
+      <div className="my-6">
+        <AdBanner
+          slot={AD_SLOTS.MULTIPLEX}
+          format="autorelaxed"
+          variant="multiplex"
+          label="추천 콘텐츠"
+        />
       </div>
 
       <RelatedContent links={getRelatedLinks('/news')} />

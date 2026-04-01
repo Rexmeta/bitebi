@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import WhaleTracker from '../components/WhaleTracker'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 
 export default function WhaleTrackerPage() {
@@ -29,18 +29,24 @@ export default function WhaleTrackerPage() {
         </div>
       </div>
 
+      {/* 고래 쮔적기 상단 ATF 광고 */}
       <div className="mb-6">
-        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner slot={AD_SLOTS.IN_CONTENT} format="auto" style={{ minHeight: '280px' }} label="광고" />
       </div>
 
       <WhaleTracker minAmount={minAmount} />
 
       <div className="my-6">
-        <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+        <AdBanner slot={AD_SLOTS.IN_ARTICLE} format="auto" style={{ minHeight: '250px' }} label="광고" />
       </div>
 
       <div className="my-6">
-        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner slot={AD_SLOTS.FOOTER_BANNER} format="horizontal" style={{ minHeight: '90px' }} label="광고" />
+      </div>
+
+      {/* Multiplex */}
+      <div className="my-6">
+        <AdBanner slot={AD_SLOTS.MULTIPLEX} format="autorelaxed" variant="multiplex" label="추천 콘텐츠" />
       </div>
 
       <RelatedContent links={relatedLinks} />
