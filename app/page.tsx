@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import AdBanner, { AD_SLOTS } from './components/AdBanner'
 import { HomeJsonLd } from './components/JsonLd'
 import LoadingSpinner from './components/common/LoadingSpinner'
@@ -9,7 +9,7 @@ import ErrorMessage from './components/common/ErrorMessage'
 import EmptyState from './components/common/EmptyState'
 import MarketSummaryCard from './components/MarketSummaryCard'
 import ShareButtons from './components/ShareButtons'
-import type { Article, Coin } from './types'
+import type { Coin, UnifiedFeedItem } from './types'
 
 function timeAgo(dateString: string): string {
   const now = new Date()
@@ -22,16 +22,102 @@ function timeAgo(dateString: string): string {
   return `${Math.floor(diff / 86400)}일 전`
 }
 
-function extractKeywords(title: string): string[] {
-  const coinNames = ['Bitcoin', 'Ethereum', 'Solana', 'Ripple', 'Dogecoin', 'Polygon']
-  return coinNames.filter(name => title.toLowerCase().includes(name.toLowerCase()))
+// ── 트렌드 아이콘 ─────────────────────────────────────────────
+function detectTrendIcon(title: string): string {
+  const lower = title.toLowerCase()
+  if (/surge|soar|pump|record|rally|jump/.test(lower)) return '🚀'
+  if (/drop|crash|plummet|dump|fall/.test(lower)) return '🔻'
+  if (/hack|exploit|security|breach/.test(lower)) return '⚠️'
+  if (/regulation|sec|ban|law/.test(lower)) return '⚖️'
+  if (/bullish/.test(lower)) return '🐂'
+  if (/bearish/.test(lower)) return '🐻'
+  return ''
+}
+
+const BADGE_CLASSES: Record<string, string> = {
+  yellow: 'bg-yellow-400/20 text-yellow-300 border border-yellow-400/30',
+  blue:   'bg-blue-500/20 text-blue-300 border border-blue-500/30',
+  green:  'bg-green-500/20 text-green-300 border border-green-500/30',
+  purple: 'bg-purple-500/20 text-purple-300 border border-purple-500/30',
+  orange: 'bg-orange-500/20 text-orange-300 border border-orange-500/30',
+}
+
+// ── 통합 피드 뉴스 카드 ─────────────────────────────────────
+function HomeFeedCard({ item }: { item: UnifiedFeedItem }) {
+  const isAi = item.contentType !== 'rss'
+  const trendIcon = isAi ? (item.emoji ?? '') : detectTrendIcon(item.title)
+  const badgeClass = BADGE_CLASSES[item.badgeColor ?? 'blue']
+
+  const cardBg: Record<string, string> = {
+    'daily-report':  'bg-gradient-to-r from-yellow-900/20 to-[#161b22] border-yellow-500/30',
+    'brief':         'bg-gradient-to-r from-orange-900/20 to-[#161b22] border-orange-500/30',
+    'topic':         'bg-gradient-to-r from-purple-900/20 to-[#161b22] border-purple-500/30',
+    'glossary':      'bg-gradient-to-r from-green-900/20 to-[#161b22] border-green-500/30',
+    'coin-analysis': 'bg-gradient-to-r from-blue-900/20 to-[#161b22] border-blue-500/30',
+    'rss':           'bg-[#161b22] border-[#2d333b]',
+  }
+  const bg = cardBg[item.contentType] ?? cardBg.rss
+
+  const inner = (
+    <div className={`p-3 rounded-lg border transition-all hover:brightness-110 ${bg}`}>
+      <div className="flex items-start gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
+            {item.badgeLabel && (
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${badgeClass}`}>
+                {isAi ? '🤖 ' : ''}{item.badgeLabel}
+              </span>
+            )}
+            <span className="text-[10px] text-gray-500 ml-auto shrink-0">{timeAgo(item.pubDate)}</span>
+          </div>
+          <h3 className="text-sm font-medium text-white leading-snug line-clamp-2">
+            {trendIcon && <span className="mr-1">{trendIcon}</span>}{item.title}
+          </h3>
+          {item.snippet && (
+            <p className="text-xs text-gray-400 mt-1 line-clamp-1">{item.snippet}</p>
+          )}
+          <p className="text-[10px] text-gray-500 mt-1">{item.source}</p>
+        </div>
+        {isAi && <span className="text-xl shrink-0 mt-0.5 opacity-50">{item.emoji ?? '🤖'}</span>}
+      </div>
+    </div>
+  )
+
+  if (!item.isExternal) return <Link href={item.link}>{inner}</Link>
+  // RSS 기사는 내부 상세 페이지로 → 사이트 체류 시간 향상
+  const detailHref = `/news/${encodeURIComponent(item.title.slice(0, 80).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9가-힣\-]/g, '').toLowerCase())}?url=${encodeURIComponent(item.link)}`
+  return <Link href={detailHref} className="block">{inner}</Link>
+}
+
+// ── 핀 카드 (오늘 AI 리포트 / 브리핑) ──────────────────────
+function HomePinnedCard({ item }: { item: UnifiedFeedItem }) {
+  const isReport = item.contentType === 'daily-report'
+  const gradient = isReport
+    ? 'from-yellow-500/80 to-orange-500/80 hover:from-yellow-500 hover:to-orange-500'
+    : 'from-orange-500/80 to-red-500/80 hover:from-orange-500 hover:to-red-500'
+  return (
+    <Link href={item.link} className="block">
+      <div className={`bg-gradient-to-r ${gradient} rounded-lg p-3 transition-all`}>
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-bold text-black/70 uppercase mb-0.5">
+              {isReport ? '📊 AI 분석 리포트' : '⚡ 오늘의 브리핑'}
+              <span className="ml-1.5 bg-black/20 text-black px-1.5 py-0.5 rounded-full text-[9px]">NEW</span>
+            </div>
+            <h3 className="text-black font-bold text-sm leading-snug line-clamp-2">{item.title}</h3>
+            <p className="text-black/60 text-[10px] mt-0.5">{item.source} · {timeAgo(item.pubDate)}</p>
+          </div>
+          <span className="text-2xl shrink-0">{item.emoji ?? '🤖'}</span>
+        </div>
+      </div>
+    </Link>
+  )
 }
 
 export default function HomePage() {
   const [coins, setCoins] = useState<Coin[]>([])
-  const [articles, setArticles] = useState<Article[]>([])
+  const [feedItems, setFeedItems] = useState<UnifiedFeedItem[]>([])
   const [search, setSearch] = useState('')
-  const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null)
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<'rank' | 'price' | 'change' | 'marketCap'>('rank')
   const [isLoading, setIsLoading] = useState({ coins: true, articles: true })
@@ -58,18 +144,15 @@ export default function HomePage() {
         clearTimeout(timeoutId)
       })
 
-    fetch('/api/aggregate-news')
+    // 통합 피드(RSS + AI 자체 콘텐츠) 호출 - 홈에서는 4개 RSS마다 AI 1개 비율
+    fetch('/api/unified-news?rssPerAi=4')
       .then(res => {
         if (!res.ok) throw new Error(`뉴스 데이터를 가져오는데 실패했습니다 (${res.status})`)
         return res.json()
       })
       .then(data => {
         if (data.success) {
-          const enriched = data.articles.map((a: Article) => ({
-            ...a,
-            keywords: extractKeywords(a.title),
-          }))
-          setArticles(enriched)
+          setFeedItems(data.items ?? [])
         } else {
           throw new Error(data.error || '뉴스 데이터를 가져오는데 실패했습니다')
         }
@@ -87,10 +170,11 @@ export default function HomePage() {
     }
   }, [])
 
-  const allKeywords = Array.from(new Set(articles.flatMap(a => a.keywords || [])))
-  const filteredArticles = selectedKeyword
-    ? articles.filter(a => a.keywords?.includes(selectedKeyword))
-    : articles
+  // 고정 카드 (오늘의 AI 리포트/브리핑)
+  const pinnedItems = useMemo(() => feedItems.filter(i => i.pinned), [feedItems])
+  // 일반 피드 (홈에서는 20개로 제한)
+  const feedList = useMemo(() => feedItems.filter(i => !i.pinned).slice(0, 20), [feedItems])
+  const aiCount = useMemo(() => feedItems.filter(i => i.contentType !== 'rss').length, [feedItems])
 
   const sortedCoins = [...coins]
     .filter(coin => coin.name.toLowerCase().includes(search.toLowerCase()))
@@ -104,7 +188,6 @@ export default function HomePage() {
     })
 
   function handleCoinSelect(nameOrSymbol: string) {
-    setSelectedKeyword(nameOrSymbol)
     const coin = coins.find(
       c => c.name.toLowerCase() === nameOrSymbol.toLowerCase() ||
         c.symbol.toLowerCase() === nameOrSymbol.toLowerCase()
@@ -134,67 +217,41 @@ export default function HomePage() {
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* ── 왼쪽: 뉴스 피드 ── */}
+          {/* ── 왼쪽: 통합 뉴스 피드 (RSS + AI 자체 콘텐츠) ── */}
           <div className="lg:w-1/2">
-            <h2 className="text-lg font-semibold text-yellow-400 mb-3">실시간 암호화폐 뉴스</h2>
-
-            {allKeywords.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
-                {allKeywords.map((keyword, idx) => (
-                  <button
-                    key={idx}
-                    className={`px-3 py-2 rounded-full text-sm border ${selectedKeyword === keyword
-                      ? 'bg-yellow-400 text-black'
-                      : 'border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black'}`}
-                    onClick={() => handleCoinSelect(keyword)}
-                  >
-                    #{keyword}
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {selectedKeyword && (
-              <div className="mb-3">
-                <span className="inline-flex items-center bg-yellow-500 text-black text-sm font-medium px-3 py-1 rounded-full">
-                  keyword: {selectedKeyword}
-                  <button
-                    className="ml-2 text-black hover:text-white"
-                    onClick={() => { setSelectedKeyword(null); setSelectedSymbol(null) }}
-                  >✕</button>
+            {/* 헤더 */}
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-lg font-semibold text-yellow-400">실시간 뉴스 & AI 분석</h2>
+              {aiCount > 0 && (
+                <span className="text-[10px] bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 px-2 py-1 rounded-full">
+                  🤖 AI {aiCount}개 포함
                 </span>
+              )}
+            </div>
+
+            {/* 오늘의 AI 핀 카드 (리포트 / 브리핑) */}
+            {pinnedItems.length > 0 && (
+              <div className="space-y-2 mb-3">
+                {pinnedItems.map(item => <HomePinnedCard key={item.id} item={item} />)}
               </div>
             )}
 
             {isLoading.articles && <LoadingSpinner message="뉴스를 불러오는 중..." />}
             {error.articles && <ErrorMessage message={error.articles} />}
-            {!isLoading.articles && !error.articles && filteredArticles.length === 0 && (
+            {!isLoading.articles && !error.articles && feedList.length === 0 && (
               <EmptyState message="표시할 뉴스가 없습니다." icon="📰" />
             )}
 
-            {!isLoading.articles && !error.articles && filteredArticles.length > 0 && (
-              <div className="space-y-4">
-                {filteredArticles.map((article, index) => (
-                  <div key={article.link}>
-                    <a
-                      href={article.link}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block p-4 bg-[#161b22] rounded-lg hover:bg-[#1c2128] transition-colors"
-                    >
-                      <h3 className="text-lg font-medium mb-2">{article.title}</h3>
-                      <div className="flex items-center text-sm text-gray-400">
-                        <span>{article.source}</span>
-                        <span className="mx-2">•</span>
-                        <span>{timeAgo(article.pubDate)}</span>
-                      </div>
-                    </a>
-
-                    {/* 3번째 기사 뒤 + 이후 5개마다 in-feed 광고 삽입 */}
-                    {((index === 2) || (index > 2 && (index - 2) % 5 === 0)) && (
-                      <div className="my-6">
+            {!isLoading.articles && !error.articles && feedList.length > 0 && (
+              <div className="space-y-2">
+                {feedList.map((item, index) => (
+                  <div key={item.id}>
+                    <HomeFeedCard item={item} />
+                    {/* 4번째 항목마다 광고 삽입 */}
+                    {(index + 1) % 4 === 0 && (
+                      <div className="my-3">
                         <AdBanner
-                          slot={AD_SLOTS.IN_ARTICLE}
+                          slot={index < 8 ? AD_SLOTS.IN_ARTICLE : AD_SLOTS.IN_CONTENT}
                           format="auto"
                           style={{ minHeight: '250px' }}
                           label="광고"
@@ -204,6 +261,14 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+            )}
+
+            {/* 뉴스 전체보기 링크 */}
+            {feedList.length > 0 && (
+              <Link href="/news"
+                className="block text-center text-sm text-yellow-400 hover:text-yellow-300 mt-4 py-2 border border-yellow-400/30 rounded-lg hover:bg-yellow-400/10 transition-colors">
+                📰 전체 뉴스 & AI 분석 보기 →
+              </Link>
             )}
           </div>
 
@@ -269,7 +334,7 @@ export default function HomePage() {
                     />
                     <select
                       value={sortBy}
-                      onChange={(e) => setSortBy(e.target.value as any)}
+                      onChange={(e) => setSortBy(e.target.value as 'rank' | 'price' | 'change' | 'marketCap')}
                       className="bg-[#0d1117] text-white px-3 py-2 text-sm rounded border border-[#2d333b]"
                     >
                       <option value="rank">Rank</option>
