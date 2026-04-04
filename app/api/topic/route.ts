@@ -1,13 +1,7 @@
 import { NextResponse } from 'next/server'
 import { generateTopicArticle, TRENDING_TOPICS } from '@/lib/contentGenerator'
-import fs from 'fs'
-import path from 'path'
-
-const CONTENT_DIR = path.join(process.cwd(), 'public', 'content', 'topics')
-
-function ensureDir(dir: string) {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-}
+import type { TopicArticle } from '@/app/types/content'
+import { hasContent, readContent, writeContent } from '@/lib/contentStore'
 
 // 모든 토픽 목록 반환
 export async function GET(request: Request) {
@@ -17,17 +11,15 @@ export async function GET(request: Request) {
   // 목록 요청
   if (!slug) {
     const topics = TRENDING_TOPICS.map((t) => {
-      const cacheFile = path.join(CONTENT_DIR, `${t.slug}.json`)
-      const exists = fs.existsSync(cacheFile)
+      const exists = hasContent('topics', t.slug)
       return { ...t, generated: exists }
     })
     return NextResponse.json({ success: true, topics })
   }
 
   // 캐시 확인 (토픽은 3일마다 갱신)
-  const cacheFile = path.join(CONTENT_DIR, `${slug}.json`)
-  if (fs.existsSync(cacheFile)) {
-    const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
+  const cached = readContent<TopicArticle>('topics', slug)
+  if (cached) {
     const ageMs = Date.now() - new Date(cached.generatedAt).getTime()
     const THREE_DAYS = 3 * 24 * 60 * 60 * 1000
     if (ageMs < THREE_DAYS) {
@@ -38,8 +30,10 @@ export async function GET(request: Request) {
   try {
     const article = await generateTopicArticle(slug)
 
-    ensureDir(CONTENT_DIR)
-    fs.writeFileSync(cacheFile, JSON.stringify(article, null, 2), 'utf-8')
+    const write = writeContent('topics', slug, article)
+    if (!write.written && write.reason === 'readonly') {
+      console.warn('[topic] read-only 파일시스템 환경으로 캐시 저장을 건너뜁니다.')
+    }
 
     return NextResponse.json({ success: true, data: article, cached: false })
   } catch (err) {

@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
+
+const DEFAULT_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
 
 function getGeminiModel() {
   const apiKey = process.env.GEMINI_API_KEY
@@ -31,4 +32,5 @@ export async function generateTextWithGemini(
 
   return result.response.text().trim()
 }
+
 

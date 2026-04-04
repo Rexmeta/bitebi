@@ -15,7 +15,9 @@ import { generateTextWithGemini } from '@/lib/geminiClient'
 // ─── 환경 설정 ────────────────────────────────────────────────
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://bitebi.vercel.app'
-const MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash'
+
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
+
 
 if (!GEMINI_API_KEY) {
   console.error('❌ GEMINI_API_KEY 환경변수가 설정되지 않았습니다.')

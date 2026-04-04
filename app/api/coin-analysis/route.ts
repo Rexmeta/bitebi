@@ -1,13 +1,7 @@
 import { NextResponse } from 'next/server'
 import { generateCoinAnalysis } from '@/lib/contentGenerator'
-import fs from 'fs'
-import path from 'path'
-
-const CONTENT_DIR = path.join(process.cwd(), 'public', 'content', 'coin-analysis')
-
-function ensureDir(dir: string) {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
-}
+import type { CoinAnalysis } from '@/app/types/content'
+import { readContent, writeContent } from '@/lib/contentStore'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
@@ -18,21 +12,18 @@ export async function GET(request: Request) {
   const week = Math.ceil((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / 604800000)
   const slug = `${coinId}-${now.getFullYear()}-week-${week}`
 
-  const cacheFile = path.join(CONTENT_DIR, `${slug}.json`)
-  if (fs.existsSync(cacheFile)) {
-    const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
+  const cached = readContent<CoinAnalysis>('coin-analysis', slug)
+  if (cached) {
     return NextResponse.json({ success: true, data: cached, cached: true })
   }
 
   try {
     const analysis = await generateCoinAnalysis(coinId)
 
-    ensureDir(CONTENT_DIR)
-    fs.writeFileSync(
-      path.join(CONTENT_DIR, `${analysis.slug}.json`),
-      JSON.stringify(analysis, null, 2),
-      'utf-8'
-    )
+    const write = writeContent('coin-analysis', analysis.slug, analysis)
+    if (!write.written && write.reason === 'readonly') {
+      console.warn('[coin-analysis] read-only 파일시스템 환경으로 캐시 저장을 건너뜁니다.')
+    }
 
     return NextResponse.json({ success: true, data: analysis, cached: false })
   } catch (err) {
