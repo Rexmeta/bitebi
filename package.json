@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "generate": "ts-node --project tsconfig.scripts.json scripts/generate-daily-content.ts",
+    "generate:daily": "ts-node --project tsconfig.scripts.json scripts/generate-daily-content.ts --types=daily,brief",
+    "generate:all": "ts-node --project tsconfig.scripts.json scripts/generate-daily-content.ts --types=all",
+    "update-index": "node scripts/update-content-index.js"
   },
   "dependencies": {
     "@types/chart.js": "^4.0.1",
@@ -36,6 +40,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5"
   }
 }
