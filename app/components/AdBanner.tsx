@@ -53,10 +53,14 @@ export default function AdBanner({
   variant = 'default',
   label = '광고',
 }: AdBannerProps) {
+  const manualAdsEnabled = process.env.NEXT_PUBLIC_MANUAL_ADS === 'true'
   const adRef = useRef<HTMLDivElement>(null)
-  const insRef = useRef<HTMLElement>(null)
   const [isVisible, setIsVisible] = useState(false)
   const [isLoaded, setIsLoaded] = useState(false)
+  const [isFailed, setIsFailed] = useState(false)
+
+  // 자동 광고(오토 애드) 모드에서는 수동 슬롯을 렌더링하지 않음
+  if (!manualAdsEnabled) return null
 
   // ── 1) Intersection Observer: 실제 뷰포트에 가까워질 때 로드
   useEffect(() => {
@@ -109,13 +113,19 @@ export default function AdBanner({
           clearInterval(timer)
         }
       }, 300)
-      const timeout = setTimeout(() => clearInterval(timer), 8000)
+      const timeout = setTimeout(() => {
+        clearInterval(timer)
+        setIsFailed(true)
+      }, 8000)
       return () => {
         clearInterval(timer)
         clearTimeout(timeout)
       }
     }
   }, [isVisible, isLoaded])
+
+  // 스크립트 로드 실패 시 영역 제거(빈 광고 공간 정리)
+  if (isFailed) return null
 
   // ── 플레이스홀더 (광고 로드 전)
   if (!isVisible) {

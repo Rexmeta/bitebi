@@ -52,7 +52,7 @@ export default function TopicArticlePage() {
       <div className="max-w-3xl mx-auto px-4 py-8">
 
         {/* ATF 광고 */}
-        <AdBanner slot={AD_SLOTS.ATF_LEADERBOARD} format="horizontal" style={{ minHeight: '90px' }} className="mb-6" />
+        <AdBanner slot={AD_SLOTS.LEADERBOARD_TOP} format="horizontal" style={{ minHeight: '90px' }} className="mb-6" />
 
         {/* 브레드크럼 */}
         <div className="flex items-center gap-2 text-sm text-gray-400 mb-4">
