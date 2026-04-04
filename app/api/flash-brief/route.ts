@@ -9,6 +9,13 @@ function ensureDir(dir: string) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
 }
 
+function isReadonlyFsError(err: unknown): boolean {
+  return typeof err === 'object'
+    && err !== null
+    && 'code' in err
+    && (err as NodeJS.ErrnoException).code === 'EROFS'
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const date = searchParams.get('date') ?? new Date().toISOString().split('T')[0]
@@ -30,8 +37,16 @@ export async function GET(request: Request) {
   try {
     const brief = await generateFlashBrief(date, session)
 
-    ensureDir(CONTENT_DIR)
-    fs.writeFileSync(cacheFile, JSON.stringify(brief, null, 2), 'utf-8')
+    try {
+      ensureDir(CONTENT_DIR)
+      fs.writeFileSync(cacheFile, JSON.stringify(brief, null, 2), 'utf-8')
+    } catch (writeErr) {
+      if (isReadonlyFsError(writeErr)) {
+        console.warn('[flash-brief] read-only 파일시스템 환경으로 캐시 저장을 건너뜁니다.')
+      } else {
+        throw writeErr
+      }
+    }
 
     return NextResponse.json({ success: true, data: brief, cached: false })
   } catch (err) {

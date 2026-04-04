@@ -10,20 +10,17 @@
 
 import fs from 'fs'
 import path from 'path'
-import OpenAI from 'openai'
+import { generateTextWithGemini } from '@/lib/geminiClient'
 
 // ─── 환경 설정 ────────────────────────────────────────────────
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
-const OPENAI_BASE_URL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://bitebi.vercel.app'
-const MODEL = 'gpt-5-mini'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite'
 
-if (!OPENAI_API_KEY) {
-  console.error('❌ OPENAI_API_KEY 환경변수가 설정되지 않았습니다.')
+if (!GEMINI_API_KEY) {
+  console.error('❌ GEMINI_API_KEY 환경변수가 설정되지 않았습니다.')
   process.exit(1)
 }
-
-const openai = new OpenAI({ apiKey: OPENAI_API_KEY, baseURL: OPENAI_BASE_URL })
 
 // ─── CLI 인자 파싱 ────────────────────────────────────────────
 const args = process.argv.slice(2)
@@ -59,16 +56,7 @@ function saveJson(filePath: string, data: unknown): void {
 }
 
 async function aiText(prompt: string, system?: string): Promise<string> {
-  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = []
-  if (system) messages.push({ role: 'system', content: system })
-  messages.push({ role: 'user', content: prompt })
-  const res = await openai.chat.completions.create({
-    model: MODEL,
-    messages,
-    max_tokens: 1000,
-    temperature: 0.7,
-  })
-  return res.choices[0]?.message?.content?.trim() ?? ''
+  return generateTextWithGemini(prompt, system)
 }
 
 // ─── 데이터 수집 ──────────────────────────────────────────────

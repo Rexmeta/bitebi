@@ -66,7 +66,7 @@ export default function DailyReportPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
 
         {/* ATF 광고 */}
-        <AdBanner slot={AD_SLOTS.ATF_LEADERBOARD} format="horizontal" style={{ minHeight: '90px' }} className="mb-6" />
+        <AdBanner slot={AD_SLOTS.LEADERBOARD_TOP} format="horizontal" style={{ minHeight: '90px' }} className="mb-6" />
 
         {/* 헤더 */}
         <div className="mb-8">

@@ -105,7 +105,7 @@ export default function YouTubePage() {
   const [loading, setLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [selectedLanguage, setSelectedLanguage] = useState<YouTubeLanguage>('ko')
+  const [selectedLanguage, setSelectedLanguage] = useState<YouTubeLanguage | 'all'>('all')
   const [selectedCategory, setSelectedCategory] = useState<YouTubeCategory | null>(null)
   const [selectedChannel, setSelectedChannel] = useState<string>('')
   const [modalVideo, setModalVideo] = useState<YouTubeVideo | null>(null)
@@ -127,7 +127,7 @@ export default function YouTubePage() {
       setError(null)
 
       const params = new URLSearchParams()
-      params.set('language', selectedLanguage)
+      if (selectedLanguage !== 'all') params.set('language', selectedLanguage)
       if (selectedCategory) params.set('category', selectedCategory)
       if (selectedChannel) params.set('channelId', selectedChannel)
       params.set('page', String(pageNum))
@@ -187,7 +187,9 @@ export default function YouTubePage() {
     return () => observer.disconnect()
   }, [hasMore, loadingMore, loading, page, fetchVideos])
 
-  const filteredChannels = channels.filter(c => c.language === selectedLanguage)
+  const filteredChannels = selectedLanguage === 'all'
+    ? channels
+    : channels.filter(c => c.language === selectedLanguage)
   const relatedLinks = getRelatedLinks('/youtube')
 
   return (
@@ -201,6 +203,16 @@ export default function YouTubePage() {
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
         <div className="flex rounded-lg overflow-hidden border border-[#30363d]">
+          <button
+            onClick={() => { setSelectedLanguage('all'); setSelectedChannel('') }}
+            className={`px-4 py-2 text-sm font-medium transition-colors ${
+              selectedLanguage === 'all'
+                ? 'bg-yellow-400 text-black'
+                : 'bg-[#161b22] text-gray-300 hover:bg-[#21262d]'
+            }`}
+          >
+            🌐 전체
+          </button>
           <button
             onClick={() => { setSelectedLanguage('ko'); setSelectedChannel('') }}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
@@ -219,7 +231,7 @@ export default function YouTubePage() {
                 : 'bg-[#161b22] text-gray-300 hover:bg-[#21262d]'
             }`}
           >
-            🇺🇸 English
+            🌍 해외
           </button>
         </div>
 
