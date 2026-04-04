@@ -29,7 +29,6 @@ NEXT_PUBLIC_MANUAL_ADS=false
    - `GEMINI_API_KEY`
    - `GEMINI_MODEL` (선택)
    - `NEXT_PUBLIC_SITE_URL`
-
    - `NEXT_PUBLIC_MANUAL_ADS` (`false` 권장: 자동 광고만 사용)
 
 4. 저장 후 **Redeploy**
