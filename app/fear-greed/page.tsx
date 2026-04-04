@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import ShareButtons from '../components/ShareButtons'
 import Link from 'next/link'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 
 interface FearGreedEntry {
@@ -154,8 +154,9 @@ export default function FearGreedPage() {
           />
         </div>
 
-        <div className="mb-4">
-          <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+        {/* 공포탐욕 상단 광고 */}
+        <div className="mb-6">
+          <AdBanner slot={AD_SLOTS.IN_CONTENT} format="auto" style={{ minHeight: '280px' }} label="광고" />
         </div>
 
         <div className="bg-[#161b22] rounded-xl border border-[#2d333b] p-6 mb-6">
@@ -177,8 +178,9 @@ export default function FearGreedPage() {
           </div>
         </div>
 
-        <div className="my-4">
-          <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+        {/* 게이지 차트 아래 광고 */}
+        <div className="my-6">
+          <AdBanner slot={AD_SLOTS.IN_ARTICLE} format="auto" style={{ minHeight: '250px' }} label="광고" />
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -256,8 +258,14 @@ export default function FearGreedPage() {
           </div>
         </div>
 
+        {/* 하단 광고 */}
         <div className="my-6">
-          <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+          <AdBanner slot={AD_SLOTS.FOOTER_BANNER} format="horizontal" style={{ minHeight: '90px' }} label="광고" />
+        </div>
+
+        {/* Multiplex */}
+        <div className="my-6">
+          <AdBanner slot={AD_SLOTS.MULTIPLEX} format="autorelaxed" variant="multiplex" label="추천 콘텐츠" />
         </div>
 
         <RelatedContent links={relatedLinks} />

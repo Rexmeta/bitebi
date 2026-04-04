@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import ErrorMessage from '../components/common/ErrorMessage'
 import EmptyState from '../components/common/EmptyState'
-import AdBanner from '../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../components/AdBanner'
 import RelatedContent, { getRelatedLinks } from '../components/RelatedContent'
 import type { YouTubeVideo, YouTubeChannel, YouTubeCategory, YouTubeLanguage } from '../types'
 
@@ -194,8 +194,9 @@ export default function YouTubePage() {
     <div className="max-w-7xl mx-auto">
       <h1 className="text-2xl font-bold text-yellow-400 mb-6">크립토 유튜브 큐레이션</h1>
 
+      {/* 유튜브 상단 ATF 광고 */}
       <div className="mb-6">
-        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner slot={AD_SLOTS.IN_CONTENT} format="auto" style={{ minHeight: '280px' }} label="광고" />
       </div>
 
       <div className="flex flex-wrap items-center gap-3 mb-6">
@@ -306,7 +307,7 @@ export default function YouTubePage() {
                 </div>
                 {(idx + 1) % 6 === 0 && (
                   <div className="my-4">
-                    <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+                    <AdBanner slot={AD_SLOTS.IN_ARTICLE} format="auto" style={{ minHeight: '250px' }} label="광고" />
                   </div>
                 )}
               </div>
@@ -324,7 +325,12 @@ export default function YouTubePage() {
       )}
 
       <div className="my-6">
-        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner slot={AD_SLOTS.FOOTER_BANNER} format="horizontal" style={{ minHeight: '90px' }} label="광고" />
+      </div>
+
+      {/* Multiplex */}
+      <div className="my-6">
+        <AdBanner slot={AD_SLOTS.MULTIPLEX} format="autorelaxed" variant="multiplex" label="추천 콘텐츠" />
       </div>
 
       <RelatedContent links={relatedLinks} />

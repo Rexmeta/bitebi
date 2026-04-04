@@ -2,7 +2,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import AdBanner from '../../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../../components/AdBanner'
 import RelatedContent, { getRelatedLinks } from '../../components/RelatedContent'
 import type { Article } from '../../types'
 
@@ -106,8 +106,8 @@ export default function CoinDetailClient({
 
   useEffect(() => {
     fetch('/api/aggregate-news')
-      .then((res) => res.json())
-      .then((data) => {
+      .then(res => res.json())
+      .then(data => {
         if (data.success) {
           const coinName = coin?.name?.toLowerCase() || ''
           const symbol = coin?.symbol?.toLowerCase() || ''
@@ -129,9 +129,7 @@ export default function CoinDetailClient({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-400 text-lg mb-4">코인 데이터를 불러올 수 없습니다.</p>
-          <Link href="/" className="text-yellow-400 hover:underline">
-            홈으로 돌아가기
-          </Link>
+          <Link href="/" className="text-yellow-400 hover:underline">홈으로 돌아가기</Link>
         </div>
       </div>
     )
@@ -141,21 +139,17 @@ export default function CoinDetailClient({
 
   return (
     <div className="min-h-screen bg-[#0d1117] text-white">
+      {/* 뒤로가기 */}
       <div className="mb-4">
         <Link href="/" className="text-gray-400 hover:text-yellow-400 text-sm">
           &larr; 홈으로 돌아가기
         </Link>
       </div>
 
-      <div className="flex items-center gap-4 mb-6">
+      {/* ── 코인 헤더 + 가격 정보 (ATF 영역) ── */}
+      <div className="flex items-center gap-4 mb-4">
         {coin.image?.large && (
-          <Image
-            src={coin.image.large}
-            alt={krName}
-            width={64}
-            height={64}
-            className="rounded-full"
-          />
+          <Image src={coin.image.large} alt={krName} width={64} height={64} className="rounded-full" />
         )}
         <div>
           <h1 className="text-xl sm:text-3xl font-bold text-yellow-400">
@@ -165,7 +159,19 @@ export default function CoinDetailClient({
         </div>
       </div>
 
+      {/* ── 코인 상세 최상단 광고 (ATF 바로 아래, 고가치 위치) ── */}
+      <div className="mb-6">
+        <AdBanner
+          slot={AD_SLOTS.COIN_DETAIL_TOP}
+          format="auto"
+          style={{ minHeight: '280px' }}
+          label="광고"
+        />
+      </div>
+
+      {/* ── 3컬럼 정보 그리드 ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* 가격 정보 */}
         <div className="bg-[#161b22] rounded-lg p-6 border border-[#2d333b]">
           <h2 className="text-lg font-semibold text-yellow-300 mb-4">{krName} 가격 정보</h2>
           <div className="space-y-3">
@@ -176,7 +182,7 @@ export default function CoinDetailClient({
             {md.current_price.krw && (
               <div className="flex justify-between">
                 <span className="text-gray-400">원화 가격</span>
-                <span className="font-semibold">{md.current_price.krw.toLocaleString()}</span>
+                <span className="font-semibold">{md.current_price.krw.toLocaleString()}원</span>
               </div>
             )}
             <div className="flex justify-between">
@@ -202,6 +208,7 @@ export default function CoinDetailClient({
           </div>
         </div>
 
+        {/* 시장 데이터 */}
         <div className="bg-[#161b22] rounded-lg p-6 border border-[#2d333b]">
           <h2 className="text-lg font-semibold text-yellow-300 mb-4">{krName} 시장 데이터</h2>
           <div className="space-y-3">
@@ -240,6 +247,7 @@ export default function CoinDetailClient({
           </div>
         </div>
 
+        {/* 관련 뉴스 */}
         <div className="bg-[#161b22] rounded-lg p-6 border border-[#2d333b]">
           <h2 className="text-lg font-semibold text-yellow-300 mb-4">{krName} 관련 뉴스</h2>
           {newsLoading ? (
@@ -266,10 +274,17 @@ export default function CoinDetailClient({
         </div>
       </div>
 
+      {/* ── 정보 그리드 아래 in-content 광고 ── */}
       <div className="my-6">
-        <AdBanner slot="5844761425" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner
+          slot={AD_SLOTS.IN_CONTENT}
+          format="horizontal"
+          style={{ minHeight: '90px' }}
+          label="광고"
+        />
       </div>
 
+      {/* 실시간 차트 */}
       <div className="bg-[#161b22] rounded-lg p-4 border border-[#2d333b] mb-8">
         <h2 className="text-lg font-semibold text-yellow-300 mb-3">{krName} 실시간 차트</h2>
         <iframe
@@ -283,10 +298,17 @@ export default function CoinDetailClient({
         />
       </div>
 
+      {/* ── 차트 아래 광고 ── */}
       <div className="my-6">
-        <AdBanner slot="9632784159" format="auto" style={{ minHeight: '100px' }} />
+        <AdBanner
+          slot={AD_SLOTS.IN_ARTICLE}
+          format="auto"
+          style={{ minHeight: '280px' }}
+          label="광고"
+        />
       </div>
 
+      {/* 코인 소개 */}
       {coin.description?.en && (
         <div className="bg-[#161b22] rounded-lg p-6 border border-[#2d333b]">
           <h2 className="text-lg font-semibold text-yellow-300 mb-3">{krName} 소개</h2>
@@ -296,8 +318,24 @@ export default function CoinDetailClient({
         </div>
       )}
 
+      {/* ── 소개 아래 광고 ── */}
       <div className="my-6">
-        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner
+          slot={AD_SLOTS.FOOTER_BANNER}
+          format="horizontal"
+          style={{ minHeight: '90px' }}
+          label="광고"
+        />
+      </div>
+
+      {/* Multiplex */}
+      <div className="my-6">
+        <AdBanner
+          slot={AD_SLOTS.MULTIPLEX}
+          format="autorelaxed"
+          variant="multiplex"
+          label="추천 콘텐츠"
+        />
       </div>
 
       <RelatedContent links={getRelatedLinks(`/coin/${coinId}`, [

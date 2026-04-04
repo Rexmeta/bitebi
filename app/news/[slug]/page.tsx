@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import AdBanner from '../../components/AdBanner'
+import AdBanner, { AD_SLOTS } from '../../components/AdBanner'
 import { NewsArticleJsonLd } from '../../components/JsonLd'
 import RelatedContent, { getRelatedLinks } from '../../components/RelatedContent'
 import LoadingSpinner from '../../components/common/LoadingSpinner'
@@ -98,6 +98,8 @@ export default function NewsDetailPage() {
         datePublished={article.pubDate}
         source={article.source}
       />
+
+      {/* 브레드크럼 */}
       <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6">
         <Link href="/" className="hover:text-white">홈</Link>
         <span>/</span>
@@ -106,8 +108,10 @@ export default function NewsDetailPage() {
         <span className="text-gray-500 truncate max-w-[200px]">{article.title.slice(0, 40)}...</span>
       </nav>
 
+      {/* ── 기사 본문 카드 ── */}
       <article className="bg-[#161b22] rounded-xl border border-[#2d333b] overflow-hidden">
         <div className="p-6 sm:p-8">
+          {/* 태그 */}
           <div className="flex flex-wrap gap-2 mb-4">
             <span className="text-xs px-2 py-1 bg-yellow-400/10 text-yellow-400 rounded-full font-medium">
               {article.source}
@@ -122,22 +126,46 @@ export default function NewsDetailPage() {
             </span>
           </div>
 
+          {/* 제목 */}
           <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight mb-4">
             {article.title}
           </h1>
 
+          {/* ── 제목 아래 첫 번째 in-article 광고 (가장 높은 viewability) ── */}
+          <div className="my-6">
+            <AdBanner
+              slot={AD_SLOTS.IN_ARTICLE}
+              format="auto"
+              style={{ minHeight: '280px' }}
+              label="광고"
+            />
+          </div>
+
+          {/* 요약 본문 */}
           {article.contentSnippet && (
             <p className="text-gray-300 text-base leading-relaxed mb-6 border-l-2 border-yellow-400/30 pl-4">
               {article.contentSnippet}
             </p>
           )}
 
+          {/* 메타 */}
           <div className="flex items-center gap-3 text-sm text-gray-400 mb-6">
             <span>{article.source}</span>
             <span>·</span>
             <span>{new Date(article.pubDate).toLocaleString('ko-KR')}</span>
           </div>
 
+          {/* ── 요약 본문 아래 두 번째 in-article 광고 ── */}
+          <div className="my-6">
+            <AdBanner
+              slot={AD_SLOTS.IN_CONTENT}
+              format="auto"
+              style={{ minHeight: '250px' }}
+              label="광고"
+            />
+          </div>
+
+          {/* 원문 이동 버튼 */}
           <div className="flex flex-col sm:flex-row gap-3">
             <a
               href={article.link}
@@ -157,10 +185,17 @@ export default function NewsDetailPage() {
         </div>
       </article>
 
+      {/* ── 기사 카드 아래 광고 ── */}
       <div className="my-6">
-        <AdBanner slot="9632784159" format="horizontal" style={{ minHeight: '90px' }} />
+        <AdBanner
+          slot={AD_SLOTS.FOOTER_BANNER}
+          format="horizontal"
+          style={{ minHeight: '90px' }}
+          label="광고"
+        />
       </div>
 
+      {/* 관련 기사 */}
       {relatedArticles.length > 0 && (
         <div className="mt-8">
           <h2 className="text-xl font-bold text-yellow-400 mb-4">관련 기사</h2>
@@ -182,8 +217,14 @@ export default function NewsDetailPage() {
         </div>
       )}
 
-      <div className="my-6">
-        <AdBanner slot="5844761427" format="horizontal" style={{ minHeight: '90px' }} />
+      {/* ── 관련 기사 아래 Multiplex 광고 ── */}
+      <div className="my-8">
+        <AdBanner
+          slot={AD_SLOTS.MULTIPLEX}
+          format="autorelaxed"
+          variant="multiplex"
+          label="추천 콘텐츠"
+        />
       </div>
 
       <RelatedContent links={relatedLinks} />
