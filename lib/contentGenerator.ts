@@ -1,9 +1,8 @@
 // ============================================================
 // Bitebi AI 콘텐츠 자동 생성 라이브러리
-// OpenAI API를 사용해 5가지 콘텐츠 타입 생성
+// Gemini API를 사용해 5가지 콘텐츠 타입 생성
 // ============================================================
 
-import OpenAI from 'openai'
 import type {
   DailyReport,
   CoinAnalysis,
@@ -13,30 +12,10 @@ import type {
   CoinSnapshot,
   NewsSnippet,
 } from '@/app/types/content'
-
-// ─── OpenAI 클라이언트 초기화 ────────────────────────────────
-function getOpenAIClient(): OpenAI {
-  const apiKey = process.env.OPENAI_API_KEY
-  const baseURL = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1'
-  if (!apiKey) throw new Error('OPENAI_API_KEY is not set')
-  return new OpenAI({ apiKey, baseURL })
-}
-
-const MODEL = 'gpt-5-mini'
+import { generateTextWithGemini } from '@/lib/geminiClient'
 
 async function aiGenerate(prompt: string, systemPrompt?: string): Promise<string> {
-  const client = getOpenAIClient()
-  const messages: OpenAI.Chat.ChatCompletionMessageParam[] = []
-  if (systemPrompt) messages.push({ role: 'system', content: systemPrompt })
-  messages.push({ role: 'user', content: prompt })
-
-  const response = await client.chat.completions.create({
-    model: MODEL,
-    messages,
-    max_tokens: 1200,
-    temperature: 0.7,
-  })
-  return response.choices[0]?.message?.content?.trim() ?? ''
+  return generateTextWithGemini(prompt, systemPrompt)
 }
 
 // ─── 데이터 수집 헬퍼 ────────────────────────────────────────
