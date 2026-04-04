@@ -31,3 +31,5 @@ export async function generateTextWithGemini(
 
   return result.response.text().trim()
 }
+
+

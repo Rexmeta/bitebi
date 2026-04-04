@@ -10,6 +10,7 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ```bash
 GEMINI_API_KEY=your_google_ai_studio_key
+
 GEMINI_MODEL=gemini-2.5-flash-lite
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
 NEXT_PUBLIC_MANUAL_ADS=false
@@ -18,6 +19,7 @@ NEXT_PUBLIC_MANUAL_ADS=false
 - `GEMINI_API_KEY`는 필수입니다.
 - `GEMINI_MODEL` 미설정 시 기본값은 `gemini-2.5-flash-lite`입니다.
 - `NEXT_PUBLIC_MANUAL_ADS=false`이면 수동 광고 슬롯은 렌더링하지 않고(빈 공간 제거), 애드센스 자동 광고만 사용합니다.
+
 
 ### 2) Vercel에서 설정 방법
 
@@ -28,6 +30,7 @@ NEXT_PUBLIC_MANUAL_ADS=false
    - `GEMINI_MODEL` (선택)
    - `NEXT_PUBLIC_SITE_URL`
    - `NEXT_PUBLIC_MANUAL_ADS` (`false` 권장: 자동 광고만 사용)
+
 4. 저장 후 **Redeploy**
 
 ### 3) 뉴스 생성 경로 (단일화)
