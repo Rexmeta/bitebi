@@ -15,6 +15,7 @@ export async function GET() {
     }
 
     const fredApiKey = process.env.FRED_API_KEY
+    console.log(`[monetary] FRED_API_KEY detected: ${!!fredApiKey}`)
     let usM2: number | null = null
     let usM2History: { date: string; value: number }[] = []
     let fedFundsRate: number | null = null

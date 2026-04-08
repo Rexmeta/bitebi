@@ -103,7 +103,7 @@ const MoneyTrackerPage = () => {
       case 'analysis':
         return <AnalysisTab />
       case 'apis':
-        return <ApisTab />
+        return <ApisTab hasFredKey={monetaryData?.hasFredKey || false} />
       default:
         return null
     }
