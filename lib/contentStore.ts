@@ -8,6 +8,7 @@ export type ContentBucket =
   | 'glossary'
   | 'coin-analysis'
   | 'generate-news'
+  | 'youtube-cache'
 
 const CONTENT_ROOT = path.join(process.cwd(), 'public', 'content')
 
