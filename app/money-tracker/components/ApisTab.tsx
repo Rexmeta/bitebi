@@ -1,7 +1,11 @@
 'use client'
 import React from 'react'
 
-export default function ApisTab() {
+interface ApisTabProps {
+  hasFredKey: boolean
+}
+
+export default function ApisTab({ hasFredKey }: ApisTabProps) {
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-8 mb-8">
       <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur col-span-1 md:col-span-2 xl:col-span-3 text-gray-700">
@@ -20,13 +24,17 @@ export default function ApisTab() {
             <p className="text-xs text-gray-600">BTC 가격, 시장 데이터</p>
             <p className="text-xs text-green-500 mt-1">실시간 연동</p>
           </div>
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-            <div className="text-blue-600 font-bold mb-1">🔑 FRED API</div>
-            <p className="text-xs text-gray-600">미국 M2 통화량, 금리</p>
-            <p className="text-xs text-blue-500 mt-1">API 키 필요 (무료)</p>
+          <div className={`${hasFredKey ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4 text-center transition-all`}>
+            <div className={`${hasFredKey ? 'text-green-600' : 'text-blue-600'} font-bold mb-1`}>
+              {hasFredKey ? '✅ FRED API 연동됨' : '🔑 FRED API'}
+            </div>
+            <p className="text-xs text-gray-600">미국 M2 통화량, 금리 등</p>
+            <p className={`${hasFredKey ? 'text-green-500' : 'text-blue-500'} text-xs mt-1 font-semibold`}>
+              {hasFredKey ? '데이터 수신 중' : 'API 키 필요 (무료)'}
+            </p>
           </div>
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-            <div className="text-gray-600 font-bold mb-1">📊 Alternative.me</div>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+            <div className="text-green-600 font-bold mb-1">✅ Alternative.me</div>
             <p className="text-xs text-gray-600">공포·탐욕 지수</p>
             <p className="text-xs text-green-500 mt-1">실시간 연동</p>
           </div>
