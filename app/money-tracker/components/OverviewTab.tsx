@@ -1,20 +1,21 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
 import Chart from 'chart.js/auto'
-import type { StablecoinData, DefiStatsData, Signal } from '../hooks/useMoneyTrackerData'
+import type { StablecoinData, DefiStatsData, Signal, MonetaryData } from '../hooks/useMoneyTrackerData'
 import { SkeletonCard } from './SkeletonCard'
 import { ErrorState } from './ErrorState'
 import { UpdateTimestamp } from './UpdateTimestamp'
 
 interface OverviewTabProps {
   stablecoinData: StablecoinData | null
+  monetaryData: MonetaryData | null
   defiStats: DefiStatsData | null
   loading: boolean
   signals: Signal[]
   onRetry: () => void
 }
 
-export default function OverviewTab({ stablecoinData, defiStats, loading, signals, onRetry }: OverviewTabProps) {
+export default function OverviewTab({ stablecoinData, monetaryData, defiStats, loading, signals, onRetry }: OverviewTabProps) {
   const marketChartRef = useRef<Chart | null>(null)
   const volumeChartRef = useRef<Chart | null>(null)
   const marketCanvasRef = useRef<HTMLCanvasElement>(null)
@@ -118,40 +119,40 @@ export default function OverviewTab({ stablecoinData, defiStats, loading, signal
 
   const stables = stablecoinData?.stablecoins
   const totalSupply = stablecoinData?.totalSupply || defiStats?.totalStablecoinSupply || 0
+  const globalM2 = monetaryData?.globalM2 || 0
+  const globalLiquidity = globalM2 + totalSupply
+
   const topStable = stables?.[0]
   const usdtDominance = topStable?.dominance?.toFixed(1) || null
 
-  const ethChainData = defiStats?.chainDistribution?.find(c => c.chain.toLowerCase() === 'ethereum')
-  const ethShare = ethChainData && totalSupply > 0
-    ? ((ethChainData.totalCirculating / totalSupply) * 100).toFixed(1)
-    : null
+  const penetration = globalM2 > 0 ? ((totalSupply / globalM2) * 100).toFixed(3) : null
 
   return (
     <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
       <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl hover:-translate-y-2 hover:shadow-2xl transition-all border border-white/20 backdrop-blur h-full flex flex-col">
         <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
           <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📊</span>
-          시장 현황
+          글로벌 시장 유동성
         </h2>
         <UpdateTimestamp timestamp={stablecoinData?.lastUpdated || defiStats?.lastUpdated || null} />
         <div className="metric-grid grid grid-cols-3 gap-2 sm:gap-4 mb-4 mt-4">
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
-              {totalSupply > 0 ? `$${(totalSupply / 1e9).toFixed(1)}B` : '$-'}
+            <div className="metric-value text-lg sm:text-xl font-bold text-gray-800 mb-1">
+              {globalLiquidity > 0 ? `$${(globalLiquidity / 1e12).toFixed(2)}T` : '$-'}
             </div>
-            <div className="metric-label text-[10px] sm:text-xs text-gray-500">총 공급량</div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">M2 + 스테이블</div>
           </div>
           <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
+            <div className="metric-value text-lg sm:text-xl font-bold text-gray-800 mb-1">
+              {penetration ? `${penetration}%` : '-'}
+            </div>
+            <div className="metric-label text-[10px] sm:text-xs text-gray-500">통화 침투율</div>
+          </div>
+          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
+            <div className="metric-value text-lg sm:text-xl font-bold text-gray-800 mb-1">
               {usdtDominance ? `${usdtDominance}%` : '-'}
             </div>
             <div className="metric-label text-[10px] sm:text-xs text-gray-500">{topStable?.symbol || 'USDT'} 점유율</div>
-          </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
-              {ethShare ? `${ethShare}%` : '-'}
-            </div>
-            <div className="metric-label text-[10px] sm:text-xs text-gray-500">ETH 체인 비중</div>
           </div>
         </div>
         <div className="chart-container relative h-48 flex-1"><canvas ref={marketCanvasRef}></canvas></div>

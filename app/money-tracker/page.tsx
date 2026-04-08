@@ -9,10 +9,12 @@ import MetricsTab from './components/MetricsTab'
 import MacroTab from './components/MacroTab'
 import AnalysisTab from './components/AnalysisTab'
 import ApisTab from './components/ApisTab'
+import InsightsTab from './components/InsightsTab'
 import { ErrorState } from './components/ErrorState'
 
 const TABS = [
   { key: 'overview', label: '개요' },
+  { key: 'insights', label: '금융 인사이트' },
   { key: 'money-supply', label: '전세계 통화량' },
   { key: 'metrics', label: '핵심 지표' },
   { key: 'macro', label: '매크로 연동' },
@@ -30,6 +32,7 @@ const MoneyTrackerPage = () => {
     stablecoinData,
     monetaryData,
     defiStats,
+    fearGreedData,
     loading,
     error,
     lastFetchTime,
@@ -88,7 +91,9 @@ const MoneyTrackerPage = () => {
 
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab stablecoinData={stablecoinData} defiStats={defiStats} loading={loading} signals={signals} onRetry={refetch} />
+        return <OverviewTab stablecoinData={stablecoinData} monetaryData={monetaryData} defiStats={defiStats} loading={loading} signals={signals} onRetry={refetch} />
+      case 'insights':
+        return <InsightsTab monetaryData={monetaryData} fearGreedData={fearGreedData} stablecoinData={stablecoinData} signals={signals} loading={loading} />
       case 'money-supply':
         return <MoneySupplyTab stablecoinData={stablecoinData} monetaryData={monetaryData} defiStats={defiStats} loading={loading} onRetry={refetch} />
       case 'metrics':

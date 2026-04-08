@@ -112,31 +112,37 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
       }
     }
 
-    if (liquidityCanvasRef.current && monetaryData?.usM2History && monetaryData.usM2History.length > 0) {
+    if (liquidityCanvasRef.current && monetaryData?.globalM2History && monetaryData.globalM2History.length > 0) {
       const ctx = liquidityCanvasRef.current.getContext('2d')
       if (ctx) {
-        const totalSupply = stablecoinData?.totalSupply || defiStats?.totalStablecoinSupply || 0
-        const labels = monetaryData.usM2History.map(d => {
+        const labels = monetaryData.globalM2History.map(d => {
           const date = new Date(d.date)
           return `${date.getFullYear()}.${date.getMonth() + 1}`
         })
-        const m2Data = monetaryData.usM2History.map(d => d.value / 1e12)
-        const stableData = monetaryData.usM2History.map(() => totalSupply / 1e12)
+        const m2Data = monetaryData.globalM2History.map(d => d.value / 1e12)
+        const totalSupply = stablecoinData?.totalSupply || defiStats?.totalStablecoinSupply || 0
+        const stableData = monetaryData.globalM2History.map(() => totalSupply / 1e12)
 
         liquidityChartRef.current = new Chart(ctx, {
-          type: 'bar',
+          type: 'line',
           data: {
             labels,
             datasets: [
               {
-                label: '미국 M2 (조$)',
+                label: '글로벌 M2 (조$)',
                 data: m2Data,
-                backgroundColor: 'rgba(102, 126, 234, 0.7)',
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                fill: true,
+                tension: 0.4,
               },
               {
                 label: '스테이블코인 (조$)',
                 data: stableData,
-                backgroundColor: 'rgba(237, 137, 54, 0.7)',
+                borderColor: 'rgba(237, 137, 54, 1)',
+                backgroundColor: 'rgba(237, 137, 54, 0.1)',
+                fill: true,
+                tension: 0.4,
               },
             ],
           },
@@ -144,8 +150,8 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-              y: { stacked: true, title: { display: true, text: '조 달러' } },
-              x: { stacked: true, ticks: { maxTicksLimit: 8 } },
+              y: { title: { display: true, text: '조 달러' } },
+              x: { ticks: { maxTicksLimit: 8 } },
             },
           },
         })
@@ -249,11 +255,11 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
           </div>
         </div>
         <div className="chart-container relative h-48">
-          {monetaryData?.usM2History && monetaryData.usM2History.length > 0 ? (
+          {monetaryData?.globalM2History && monetaryData.globalM2History.length > 0 ? (
             <canvas ref={liquidityCanvasRef}></canvas>
           ) : (
             <div className="flex items-center justify-center h-full text-gray-400">
-              {monetaryData?.hasFredKey ? '데이터 로딩 중...' : 'FRED API 키 설정 시 유동성 차트 표시'}
+              {monetaryData?.hasFredKey ? '데이터 로딩 중...' : 'FRED API 키 설정 시 글로벌 유동성 차트 표시'}
             </div>
           )}
         </div>
