@@ -83,14 +83,36 @@ export async function fetchLatestNews(limit = 10): Promise<NewsSnippet[]> {
   try {
     const Parser = (await import('rss-parser')).default
     const parser = new Parser()
-    const feed = await parser.parseURL('https://cointelegraph.com/rss')
-    return feed.items.slice(0, limit).map((item) => ({
-      title: item.title ?? '',
-      link: item.link ?? '',
-      source: 'Cointelegraph',
-      pubDate: item.pubDate ?? '',
-      snippet: (item.contentSnippet ?? '').slice(0, 200),
-    }))
+    
+    // 글로벌 뉴스 소스 다각화
+    const FEEDS = [
+      { url: 'https://cointelegraph.com/rss', source: 'Cointelegraph' },
+      { url: 'https://decrypt.co/feed', source: 'Decrypt' },
+      { url: 'https://www.theblock.co/rss.xml', source: 'The Block' }
+    ]
+
+    const feedResults = await Promise.allSettled(FEEDS.map(f => parser.parseURL(f.url)))
+    const allItems: NewsSnippet[] = []
+
+    feedResults.forEach((res, idx) => {
+      if (res.status === 'fulfilled') {
+        const sourceName = FEEDS[idx].source
+        res.value.items.forEach(item => {
+          allItems.push({
+            title: item.title ?? '',
+            link: item.link ?? '',
+            source: sourceName,
+            pubDate: item.pubDate ?? '',
+            snippet: (item.contentSnippet ?? '').slice(0, 200),
+          })
+        })
+      }
+    })
+
+    // 최신순 정렬 및 리미트 적용
+    return allItems
+      .sort((a, b) => new Date(b.pubDate).getTime() - new Date(a.pubDate).getTime())
+      .slice(0, limit)
   } catch {
     return []
   }
