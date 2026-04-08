@@ -22,9 +22,25 @@ export async function GET(request: Request) {
 
   // 캐시된 파일 확인
   const cacheFile = path.join(CONTENT_DIR, `${date}.json`)
+  const MAX_AGE_MS = 8 * 60 * 60 * 1000 // 8시간
+  const today = new Date().toISOString().split('T')[0]
+
   if (fs.existsSync(cacheFile)) {
-    const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
-    return NextResponse.json({ success: true, data: cached, cached: true })
+    // 오늘 날짜인 경우에만 8시간 캐시 만료 체크
+    if (date === today) {
+      const stats = fs.statSync(cacheFile)
+      const ageMs = Date.now() - stats.mtime.getTime()
+
+      if (ageMs < MAX_AGE_MS) {
+        const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
+        return NextResponse.json({ success: true, data: cached, cached: true })
+      }
+      console.log(`[daily-report] 오늘자 캐시가 만료됨 (${Math.round(ageMs / 3600000)}시간 경과). 새로 생성합니다.`)
+    } else {
+      // 과거 날짜는 이미 존재하면 그대로 반환
+      const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'))
+      return NextResponse.json({ success: true, data: cached, cached: true })
+    }
   }
 
   try {

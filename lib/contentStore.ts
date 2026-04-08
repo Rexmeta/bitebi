@@ -7,6 +7,7 @@ export type ContentBucket =
   | 'topics'
   | 'glossary'
   | 'coin-analysis'
+  | 'generate-news'
 
 const CONTENT_ROOT = path.join(process.cwd(), 'public', 'content')
 
@@ -27,6 +28,17 @@ export function isReadonlyFsError(err: unknown): boolean {
 
 export function hasContent(bucket: ContentBucket, key: string): boolean {
   return fs.existsSync(getFilePath(bucket, key))
+}
+
+export function isCacheStale(bucket: ContentBucket, key: string, maxAgeMs: number): boolean {
+  try {
+    const filePath = getFilePath(bucket, key)
+    if (!fs.existsSync(filePath)) return true
+    const mtime = fs.statSync(filePath).mtime.getTime()
+    return Date.now() - mtime > maxAgeMs
+  } catch {
+    return true
+  }
 }
 
 export function readContent<T>(bucket: ContentBucket, key: string): T | null {
