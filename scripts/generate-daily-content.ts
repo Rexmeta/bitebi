@@ -218,13 +218,17 @@ const ALL_TOPICS = [
 
 async function generateTopics() {
   const sys = `암호화폐 전문 저널리스트. 한국어 흥미롭고 정보있게. 마크다운 없이.`
-  // 오래된 토픽(3일 이상) 갱신
+  // 오래된 토픽(30일 이상) 갱신 — API와 동일 TTL
+  const TOPIC_TTL = 30 * 24 * 60 * 60 * 1000
   for (const topic of ALL_TOPICS) {
     const outputFile = path.join(DIRS.topics, `${topic.slug}.json`)
     if (fs.existsSync(outputFile)) {
       const existing = JSON.parse(fs.readFileSync(outputFile, 'utf-8'))
       const age = Date.now() - new Date(existing.generatedAt).getTime()
-      if (age < 3 * 24 * 60 * 60 * 1000) continue
+      if (age < TOPIC_TTL) {
+        console.log(`  ⏭️  토픽 유효 (${Math.round(age / 86400000)}일 경과): ${topic.slug}`)
+        continue
+      }
     }
     console.log(`\n🔥 토픽 생성: ${topic.keywordKo}`)
 
@@ -273,16 +277,19 @@ const ALL_TERMS = [
 
 async function generateGlossary() {
   const sys = `암호화폐 교육 전문가. 초보자도 쉽게 이해. 한국어 친절하게. 마크다운 없이.`
-  // 아직 없는 것만 생성 (하루 최대 5개)
+  // 6개월(180일) 미만이면 재생성 생략 — API와 동일 TTL
+  const GLOSSARY_TTL = 180 * 24 * 60 * 60 * 1000
   let count = 0
   for (const t of ALL_TERMS) {
     if (count >= 5) break
     const outputFile = path.join(DIRS.glossary, `${t.slug}.json`)
     if (fs.existsSync(outputFile)) {
-      // 7일 이상 된 경우만 재생성
       const existing = JSON.parse(fs.readFileSync(outputFile, 'utf-8'))
       const age = Date.now() - new Date(existing.generatedAt).getTime()
-      if (age < 7 * 24 * 60 * 60 * 1000) continue
+      if (age < GLOSSARY_TTL) {
+        console.log(`  ⏭️  용어 유효 (${Math.round(age / 86400000)}일 경과): ${t.slug}`)
+        continue
+      }
     }
     console.log(`\n📖 용어 생성: ${t.termKo}`)
     count++
