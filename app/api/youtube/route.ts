@@ -3,7 +3,35 @@ import Parser from 'rss-parser'
 import { readContent, writeContent, isCacheStale } from '../../../lib/contentStore'
 import type { YouTubeChannel, YouTubeVideo, YouTubeCategory, YouTubeLanguage } from '../../types'
 
-const parser = new Parser()
+// media:group 네임스페이스를 파싱하기 위한 커스텀 필드 설정
+type MediaThumbnail = {
+  $: { url: string; width: string; height: string }
+}
+
+type MediaGroup = {
+  'media:thumbnail'?: MediaThumbnail[]
+  'media:description'?: string[]
+  'media:title'?: string[]
+}
+
+type CustomItem = {
+  id?: string
+  title?: string
+  link?: string
+  isoDate?: string
+  pubDate?: string
+  author?: string
+  contentSnippet?: string
+  'media:group'?: MediaGroup
+}
+
+const parser = new Parser<Record<string, unknown>, CustomItem>({
+  customFields: {
+    item: [
+      ['media:group', 'media:group'],
+    ],
+  },
+})
 
 const CHANNELS: YouTubeChannel[] = [
   // 한국어 채널
@@ -31,6 +59,33 @@ const CHANNELS: YouTubeChannel[] = [
 
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 
+/**
+ * 썸네일 URL 우선순위 체인을 반환합니다.
+ * maxresdefault → sddefault → hqdefault → mqdefault 순으로 시도
+ * RSS media:thumbnail URL을 우선 사용하고, 없을 경우 표준 URL 생성
+ */
+function buildThumbnailUrl(videoId: string, rssThumbnailUrl?: string): string {
+  // RSS에서 제공하는 실제 썸네일 URL 우선 사용
+  if (rssThumbnailUrl) {
+    return rssThumbnailUrl
+  }
+  // fallback: 표준 hqdefault 썸네일 URL
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+}
+
+/**
+ * 썸네일 URL 폴백 배열을 반환합니다 (API 응답에 포함되어 클라이언트에서 활용)
+ * maxresdefault는 일부 영상에서 없을 수 있으므로 hqdefault를 기본값으로
+ */
+function buildThumbnailFallbacks(videoId: string): string[] {
+  return [
+    `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`,
+    `https://i.ytimg.com/vi/${videoId}/sddefault.jpg`,
+    `https://i.ytimg.com/vi/${videoId}/default.jpg`,
+  ]
+}
+
 async function getChannelVideos(channel: YouTubeChannel): Promise<YouTubeVideo[]> {
   const cacheKey = `channel_${channel.id}`
   
@@ -51,13 +106,18 @@ async function getChannelVideos(channel: YouTubeChannel): Promise<YouTubeVideo[]
 
     const videos: YouTubeVideo[] = feed.items.map(item => {
       const videoId = item.id?.split(':').pop() || ''
+
+      // RSS의 media:group > media:thumbnail에서 실제 썸네일 URL 추출
+      const rssThumbnailUrl = item['media:group']?.['media:thumbnail']?.[0]?.['$']?.url
+
       return {
         id: videoId,
         title: item.title || '',
         description: item.contentSnippet || '',
         publishedAt: item.isoDate || '',
         channelTitle: feed.title || channel.name,
-        thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+        thumbnailUrl: buildThumbnailUrl(videoId, rssThumbnailUrl),
+        thumbnailFallbacks: buildThumbnailFallbacks(videoId),
         formattedDate: new Date(item.isoDate || '').toLocaleDateString('ko-KR'),
         category: channel.category,
         language: channel.language,

@@ -62,6 +62,7 @@ export interface YouTubeVideo {
   publishedAt: string
   channelTitle: string
   thumbnailUrl: string
+  thumbnailFallbacks?: string[]
   formattedDate: string
   category: YouTubeCategory
   language: YouTubeLanguage
