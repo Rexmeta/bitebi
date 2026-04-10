@@ -16,6 +16,18 @@ const withPWA = require('next-pwa')({
       }
     },
     {
+      // YouTube 썸네일 이미지 캐싱 (i.ytimg.com, i1~i9.ytimg.com)
+      urlPattern: /^https:\/\/i\d*\.ytimg\.com\/.*/,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'youtube-thumbnail-cache',
+        expiration: {
+          maxEntries: 200,
+          maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
+        }
+      }
+    },
+    {
       urlPattern: /^https:\/\/www\.googleapis\.com\/.*/,
       handler: 'NetworkFirst',
       options: {
@@ -45,12 +57,11 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: 'assets.coingecko.com' },
       { protocol: 'https', hostname: 'coin-images.coingecko.com' },
-      { protocol: 'https', hostname: 'i.ytimg.com' },
-      { protocol: 'https', hostname: 'i1.ytimg.com' },
-      { protocol: 'https', hostname: 'i2.ytimg.com' },
-      { protocol: 'https', hostname: 'i3.ytimg.com' },
-      { protocol: 'https', hostname: 'i4.ytimg.com' },
+      // YouTube 썸네일 도메인 - i.ytimg.com, i1~i9.ytimg.com 모두 허용
+      { protocol: 'https', hostname: '**.ytimg.com' },
+      // YouTube 채널 아이콘 도메인
       { protocol: 'https', hostname: 'yt3.ggpht.com' },
+      { protocol: 'https', hostname: '**.ggpht.com' },
     ],
   },
   async headers() {

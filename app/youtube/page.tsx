@@ -10,6 +10,63 @@ import type { YouTubeVideo, YouTubeChannel, YouTubeCategory, YouTubeLanguage } f
 
 const CATEGORIES: YouTubeCategory[] = ['시장 분석', '교육/입문', '뉴스', '기술/개발']
 
+// 썸네일 이미지 컴포넌트 - 로드 실패 시 폴백 체인 처리
+function VideoThumbnail({
+  video,
+  width,
+  height,
+  className,
+}: {
+  video: YouTubeVideo
+  width: number
+  height: number
+  className?: string
+}) {
+  // 폴백 URL 체인: RSS URL → hqdefault → mqdefault → sddefault → default → 플레이스홀더
+  const fallbacks = [
+    video.thumbnailUrl,
+    ...(video.thumbnailFallbacks || []),
+  ].filter((url, idx, arr) => url && arr.indexOf(url) === idx) // 중복 제거
+
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const [failed, setFailed] = useState(false)
+
+  const handleError = useCallback(() => {
+    const nextIndex = currentIndex + 1
+    if (nextIndex < fallbacks.length) {
+      setCurrentIndex(nextIndex)
+    } else {
+      setFailed(true)
+    }
+  }, [currentIndex, fallbacks.length])
+
+  if (failed) {
+    return (
+      <div
+        className={`${className || ''} flex items-center justify-center bg-[#21262d] text-gray-500`}
+        style={{ aspectRatio: `${width}/${height}` }}
+      >
+        <div className="text-center p-4">
+          <span className="text-4xl block mb-2">🎬</span>
+          <span className="text-xs">썸네일 없음</span>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <Image
+      src={fallbacks[currentIndex]}
+      alt={video.title}
+      width={width}
+      height={height}
+      className={className}
+      onError={handleError}
+      unoptimized={fallbacks[currentIndex]?.includes('ytimg.com')}
+    />
+  )
+}
+
 function VideoModal({ video, onClose }: { video: YouTubeVideo; onClose: () => void }) {
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
@@ -76,9 +133,8 @@ function HighlightSection({
             onClick={() => onVideoClick(video)}
           >
             <div className="relative">
-              <Image
-                src={video.thumbnailUrl}
-                alt={video.title}
+              <VideoThumbnail
+                video={video}
                 width={256}
                 height={144}
                 className="w-full aspect-video object-cover"
@@ -292,9 +348,8 @@ export default function YouTubePage() {
                   onClick={() => setModalVideo(video)}
                 >
                   <div className="relative">
-                    <Image
-                      src={video.thumbnailUrl}
-                      alt={video.title}
+                    <VideoThumbnail
+                      video={video}
                       width={480}
                       height={270}
                       className="w-full aspect-video object-cover"
