@@ -8,43 +8,63 @@ interface CacheEntry {
 let cache: CacheEntry | null = null
 const CACHE_TTL = 5 * 60 * 1000
 
+// Retry fetch with exponential back-off (handles 429 rate-limits)
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
+  for (let i = 0; i < retries; i++) {
+    const res = await fetch(url, options)
+    if (res.status !== 429) return res
+    // 429 → wait 2^i * 1 second then retry
+    await new Promise(r => setTimeout(r, 1000 * Math.pow(2, i)))
+  }
+  return fetch(url, options)
+}
+
 export async function GET() {
   try {
     if (cache && Date.now() - cache.timestamp < CACHE_TTL) {
       return NextResponse.json(cache.data)
     }
 
-    const [llamaRes, geckoRes] = await Promise.allSettled([
-      fetch('https://stablecoins.llama.fi/stablecoins?includePrices=true', {
-        headers: { 'Accept': 'application/json' },
-        next: { revalidate: 300 },
-      }),
-      fetch(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether,usd-coin,dai,first-digital-usd,ethena-usde,usds&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=24h,7d,30d',
-        {
-          headers: {
-            'Accept': 'application/json',
-            'User-Agent': 'Mozilla/5.0',
-          },
-          next: { revalidate: 300 },
-        }
-      ),
-    ])
+    // Primary: DefiLlama (free, no key needed, very reliable)
+    const llamaRes = await fetchWithRetry(
+      'https://stablecoins.llama.fi/stablecoins?includePrices=true',
+      { headers: { 'Accept': 'application/json' }, next: { revalidate: 300 } }
+    )
 
     let llamaData: any[] = []
     let totalSupply = 0
 
-    if (llamaRes.status === 'fulfilled' && llamaRes.value.ok) {
-      const json = await llamaRes.value.json()
-      const peggedAssets = json.peggedAssets || []
+    if (llamaRes.ok) {
+      const json = await llamaRes.json()
+      const peggedAssets: any[] = json.peggedAssets || []
+
+      // Filter USD-pegged only, sort by circulating supply descending
       const usdPegged = peggedAssets
         .filter((s: any) => s.pegType === 'peggedUSD')
         .sort((a: any, b: any) => (b.circulating?.peggedUSD || 0) - (a.circulating?.peggedUSD || 0))
 
+      // ✅ FIX #5: totalSupply computed from the FULL set (not just top-15)
       totalSupply = usdPegged.reduce((sum: number, s: any) => sum + (s.circulating?.peggedUSD || 0), 0)
 
       llamaData = usdPegged.slice(0, 15).map((s: any) => {
         const mcap = s.circulating?.peggedUSD || 0
+
+        // ✅ FIX #1: Use circulatingPrevWeek for 7d change, NOT prevDay×7
+        let change7d = 0
+        let change30d = 0
+        if (s.circulatingPrevWeek?.peggedUSD && mcap) {
+          const prevWeek = s.circulatingPrevWeek.peggedUSD
+          change7d = ((mcap - prevWeek) / prevWeek) * 100
+        } else if (s.circulatingPrevDay?.peggedUSD && mcap) {
+          // Fallback: use prevDay only when prevWeek is absent (mark as approximation)
+          const prevDay = s.circulatingPrevDay.peggedUSD
+          change7d = ((mcap - prevDay) / prevDay) * 100 // single-day change, NOT ×7
+        }
+        if (s.circulatingPrevMonth?.peggedUSD && mcap) {
+          const prevMonth = s.circulatingPrevMonth.peggedUSD
+          change30d = ((mcap - prevMonth) / prevMonth) * 100
+        }
+
         const chains = s.chainCirculating || {}
         const chainList = Object.entries(chains)
           .map(([chain, data]: [string, any]) => ({
@@ -54,21 +74,13 @@ export async function GET() {
           .sort((a, b) => b.circulating - a.circulating)
           .slice(0, 5)
 
-        let change7d = 0
-        let change30d = 0
-        if (s.circulatingPrevDay?.peggedUSD && mcap) {
-          change7d = ((mcap - s.circulatingPrevDay.peggedUSD) / s.circulatingPrevDay.peggedUSD) * 100 * 7
-        }
-        if (s.circulatingPrevMonth?.peggedUSD && mcap) {
-          change30d = ((mcap - s.circulatingPrevMonth.peggedUSD) / s.circulatingPrevMonth.peggedUSD) * 100
-        }
-
         return {
           id: s.id,
           name: s.name,
           symbol: s.symbol,
           circulating_supply: mcap,
           market_cap: mcap,
+          // ✅ FIX #5: dominance against real full-market totalSupply
           dominance: totalSupply > 0 ? (mcap / totalSupply) * 100 : 0,
           change_7d: Math.round(change7d * 100) / 100,
           change_30d: Math.round(change30d * 100) / 100,
@@ -77,9 +89,32 @@ export async function GET() {
       })
     }
 
+    // ✅ FIX #7: CoinGecko fallback with rate-limit retry
     let geckoData: any[] = []
-    if (geckoRes.status === 'fulfilled' && geckoRes.value.ok) {
-      geckoData = await geckoRes.value.json()
+    if (llamaData.length === 0) {
+      const geckoRes = await fetchWithRetry(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=tether,usd-coin,dai,first-digital-usd,ethena-usde,usds&order=market_cap_desc&per_page=20&page=1&sparkline=false&price_change_percentage=7d,30d',
+        {
+          headers: { 'Accept': 'application/json', 'User-Agent': 'Mozilla/5.0 bitebi-bot/1.0' },
+          next: { revalidate: 300 },
+        }
+      )
+      if (geckoRes.ok) {
+        const raw = await geckoRes.json()
+        const geckoTotal = raw.reduce((s: number, c: any) => s + (c.market_cap || 0), 0)
+        geckoData = raw.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          symbol: c.symbol?.toUpperCase(),
+          circulating_supply: c.circulating_supply || 0,
+          market_cap: c.market_cap || 0,
+          dominance: geckoTotal > 0 ? ((c.market_cap || 0) / geckoTotal) * 100 : 0,
+          change_7d: Math.round((c.price_change_percentage_7d_in_currency || 0) * 100) / 100,
+          change_30d: Math.round((c.price_change_percentage_30d_in_currency || 0) * 100) / 100,
+          chains: [],
+        }))
+        if (!totalSupply && geckoTotal) totalSupply = geckoTotal
+      }
     }
 
     const data = {
