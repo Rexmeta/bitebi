@@ -13,54 +13,73 @@ interface MoneySupplyTabProps {
   onRetry: () => void
 }
 
+// 다크 카드 래퍼
+function DarkCard({ title, icon, children, timestamp, className = '' }: {
+  title: string; icon: string; children: React.ReactNode; timestamp?: string | null; className?: string
+}) {
+  return (
+    <div className={`bg-[#161b22] border border-[#21262d] rounded-xl p-5 ${className}`}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="flex items-center gap-2 text-sm font-bold text-white">
+          <span>{icon}</span> {title}
+        </h2>
+        {timestamp && <UpdateTimestamp timestamp={timestamp} />}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats, loading, onRetry }: MoneySupplyTabProps) {
-  const m2ChartRef = useRef<Chart | null>(null)
-  const m2CanvasRef = useRef<HTMLCanvasElement>(null)
+  const m2ChartRef      = useRef<Chart | null>(null)
+  const m2CanvasRef     = useRef<HTMLCanvasElement>(null)
   const historyChartRef = useRef<Chart | null>(null)
   const historyCanvasRef = useRef<HTMLCanvasElement>(null)
+  const chainChartRef   = useRef<Chart | null>(null)
+  const chainCanvasRef  = useRef<HTMLCanvasElement>(null)
 
-  const usM2 = monetaryData?.usM2 || null
+  const usM2        = monetaryData?.usM2 || null
   const totalSupply = stablecoinData?.totalSupply || defiStats?.totalStablecoinSupply || 0
   const penetration = usM2 && totalSupply > 0 ? (totalSupply / usM2) * 100 : null
 
   useEffect(() => {
-    if (m2ChartRef.current) { m2ChartRef.current.destroy(); m2ChartRef.current = null }
+    if (m2ChartRef.current)      { m2ChartRef.current.destroy();      m2ChartRef.current = null }
     if (historyChartRef.current) { historyChartRef.current.destroy(); historyChartRef.current = null }
+    if (chainChartRef.current)   { chainChartRef.current.destroy();   chainChartRef.current = null }
 
+    const tooltipDefaults = {
+      backgroundColor: '#1c2128', borderColor: '#30363d', borderWidth: 1,
+      titleColor: '#e6edf3', bodyColor: '#8b949e',
+    }
+
+    // M2 vs 스테이블코인 바차트
     if (m2CanvasRef.current) {
       const ctx = m2CanvasRef.current.getContext('2d')
       if (ctx) {
         const labels = ['미국 M2']
         const values = [usM2 ? usM2 / 1e12 : 0]
-
-        if (totalSupply > 0) {
-          labels.push('스테이블코인')
-          values.push(totalSupply / 1e12)
-        }
+        const colors = ['#818cf8']
+        if (totalSupply > 0) { labels.push('스테이블코인'); values.push(totalSupply / 1e12); colors.push('#f59e0b') }
 
         m2ChartRef.current = new Chart(ctx, {
           type: 'bar',
           data: {
             labels,
-            datasets: [{
-              label: '통화량 (조 달러)',
-              data: values,
-              backgroundColor: ['#667eea', '#ed8936'],
-            }],
+            datasets: [{ label: '통화량 (조 달러)', data: values, backgroundColor: colors, borderRadius: 6 }],
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: { y: { beginAtZero: true, title: { display: true, text: '조 달러' } } },
-            plugins: {
-              legend: { display: false },
-              tooltip: { callbacks: { label: (c) => `$${(c.raw as number).toFixed(3)}T` } },
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipDefaults, callbacks: { label: (c) => `$${(c.raw as number).toFixed(3)}T` } } },
+            scales: {
+              y: { beginAtZero: true, ticks: { color: '#6b7280' }, grid: { color: '#21262d' }, title: { display: true, text: '조$', color: '#6b7280' } },
+              x: { ticks: { color: '#6b7280' }, grid: { color: '#21262d' } },
             },
           },
         })
       }
     }
 
+    // 미국 M2 추이 라인차트
     if (historyCanvasRef.current && monetaryData?.usM2History && monetaryData.usM2History.length > 0) {
       const ctx = historyCanvasRef.current.getContext('2d')
       if (ctx) {
@@ -68,215 +87,323 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
           const date = new Date(d.date)
           return `${date.getFullYear()}.${date.getMonth() + 1}`
         })
-        const data = monetaryData.usM2History.map(d => d.value / 1e12)
-
         historyChartRef.current = new Chart(ctx, {
           type: 'line',
           data: {
             labels,
             datasets: [{
               label: '미국 M2 (조 달러)',
-              data,
-              borderColor: '#667eea',
-              backgroundColor: 'rgba(102, 126, 234, 0.1)',
+              data: monetaryData.usM2History.map(d => d.value / 1e12),
+              borderColor: '#818cf8',
+              backgroundColor: 'rgba(129,140,248,0.08)',
               tension: 0.4,
               fill: true,
               pointRadius: 2,
             }],
           },
           options: {
-            responsive: true,
-            maintainAspectRatio: false,
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipDefaults, callbacks: { label: (c) => `M2: $${(c.raw as number).toFixed(2)}T` } } },
             scales: {
-              y: { title: { display: true, text: '조 달러' } },
-              x: { ticks: { maxTicksLimit: 8 } },
+              y: { ticks: { color: '#6b7280' }, grid: { color: '#21262d' }, title: { display: true, text: '조$', color: '#6b7280' } },
+              x: { ticks: { color: '#6b7280', maxTicksLimit: 8 }, grid: { color: '#21262d' } },
             },
-            plugins: { tooltip: { callbacks: { label: (c) => `M2: $${(c.raw as number).toFixed(2)}T` } } },
+          },
+        })
+      }
+    }
+
+    // 체인별 스테이블코인 수평 바차트
+    if (chainCanvasRef.current && defiStats?.chainDistribution && defiStats.chainDistribution.length > 0) {
+      const ctx = chainCanvasRef.current.getContext('2d')
+      if (ctx) {
+        const top = defiStats.chainDistribution.slice(0, 8)
+        const colors = ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#f97316', '#ec4899', '#64748b']
+        chainChartRef.current = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: top.map(c => c.chain),
+            datasets: [{
+              label: '스테이블 유통량 (B$)',
+              data: top.map(c => c.totalCirculating / 1e9),
+              backgroundColor: colors,
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            indexAxis: 'y' as const,
+            responsive: true, maintainAspectRatio: false,
+            plugins: { legend: { display: false }, tooltip: { ...tooltipDefaults, callbacks: { label: (c) => `$${(c.raw as number).toFixed(2)}B` } } },
+            scales: {
+              x: { ticks: { color: '#6b7280' }, grid: { color: '#21262d' } },
+              y: { ticks: { color: '#9ca3af' }, grid: { color: '#21262d' } },
+            },
           },
         })
       }
     }
 
     return () => {
-      if (m2ChartRef.current) m2ChartRef.current.destroy()
+      if (m2ChartRef.current)      m2ChartRef.current.destroy()
       if (historyChartRef.current) historyChartRef.current.destroy()
+      if (chainChartRef.current)   chainChartRef.current.destroy()
     }
   }, [monetaryData, stablecoinData, defiStats, usM2, totalSupply])
 
   if (loading && !monetaryData && !stablecoinData) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mb-8">
-        <SkeletonCard /><SkeletonCard /><SkeletonCard />
-        <SkeletonCard /><SkeletonCard /><SkeletonCard />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
       </div>
     )
   }
 
+  // 지역별 M2
+  const regional = monetaryData?.regionalM2
+  const regionRows = [
+    { name: '미국 (US)',     value: usM2,               color: 'bg-blue-500' },
+    { name: '유로존 (EU)',   value: regional?.eu || null, color: 'bg-indigo-500' },
+    { name: '일본 (JP)',     value: regional?.jp || null, color: 'bg-cyan-500' },
+    { name: '영국 (UK)',     value: regional?.uk || null, color: 'bg-violet-500' },
+  ].filter(r => r.value != null)
+
+  const globalM2Total = (usM2 || 0) + (regional?.eu || 0) + (regional?.jp || 0) + (regional?.uk || 0)
+
   return (
-    <div className="dashboard-grid grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-8 mb-8">
-      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🏛️</span>
-          미국 M2 통화량
-        </h2>
-        <UpdateTimestamp timestamp={monetaryData?.lastUpdated || null} />
-        <div className="metric-grid grid grid-cols-2 gap-2 sm:gap-4 mb-4 mt-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
-              {usM2 ? `$${(usM2 / 1e12).toFixed(2)}T` : '-'}
+    <div className="space-y-6">
+
+      {/* ── KPI 카드 4개 ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { label: '미국 M2', value: usM2 ? `$${(usM2/1e12).toFixed(2)}T` : '-', color: 'text-indigo-400', dot: 'bg-indigo-400', sub: '연준 기준 통화량' },
+          { label: '스테이블 총량', value: totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-', color: 'text-amber-400', dot: 'bg-amber-400', sub: '온체인 달러 공급' },
+          { label: 'M2 침투율', value: penetration != null ? `${penetration.toFixed(3)}%` : '-', color: 'text-cyan-400', dot: 'bg-cyan-400', sub: '스테이블/미국 M2' },
+          { label: '글로벌 M2', value: globalM2Total > 0 ? `$${(globalM2Total/1e12).toFixed(2)}T` : '-', color: 'text-emerald-400', dot: 'bg-emerald-400', sub: 'US+EU+JP+UK' },
+        ].map(kpi => (
+          <div key={kpi.label} className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+            <div className="flex items-center gap-1.5 mb-2">
+              <span className={`w-1.5 h-1.5 rounded-full ${kpi.dot}`} />
+              <span className="text-xs text-gray-400">{kpi.label}</span>
             </div>
-            <div className="metric-label text-[10px] sm:text-xs text-gray-500">미국 M2</div>
+            <div className={`text-xl sm:text-2xl font-bold ${kpi.color} mb-0.5`}>{kpi.value}</div>
+            <div className="text-xs text-gray-500">{kpi.sub}</div>
           </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-2 sm:p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-lg sm:text-2xl font-bold text-gray-800 mb-1">
-              {totalSupply > 0 ? `$${(totalSupply / 1e9).toFixed(1)}B` : '-'}
-            </div>
-            <div className="metric-label text-[10px] sm:text-xs text-gray-500">스테이블코인 총량</div>
-          </div>
-        </div>
-        {!monetaryData?.hasFredKey && (
-          <div className="text-xs text-amber-600 bg-amber-50 rounded p-2 mb-3">
-            FRED API 키가 설정되지 않았습니다. 환경변수 FRED_API_KEY를 설정하면 실시간 미국 M2 데이터를 표시합니다.
-          </div>
-        )}
-        <div className="chart-container relative h-48"><canvas ref={m2CanvasRef}></canvas></div>
+        ))}
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-1">
-          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">📊</span>
-          M2 통화량 추이
-        </h2>
-        <UpdateTimestamp timestamp={monetaryData?.lastUpdated || null} />
-        <div className="chart-container relative h-64 mt-4">
-          {monetaryData?.usM2History && monetaryData.usM2History.length > 0 ? (
-            <canvas ref={historyCanvasRef}></canvas>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400">
-              {monetaryData?.hasFredKey ? '데이터 로딩 중...' : 'FRED API 키 필요'}
-            </div>
-          )}
+      {/* ── FRED API 경고 ── */}
+      {!monetaryData?.hasFredKey && (
+        <div className="flex items-start gap-3 bg-amber-400/5 border border-amber-400/20 rounded-xl p-4 text-sm">
+          <span className="text-amber-400 text-lg mt-0.5">⚠</span>
+          <div>
+            <div className="text-amber-400 font-medium mb-0.5">FRED API 키 미설정</div>
+            <div className="text-gray-400 text-xs">환경변수 <code className="bg-[#21262d] px-1 rounded text-amber-300">FRED_API_KEY</code>를 설정하면 실시간 미국 M2 데이터를 표시합니다.</div>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">⚖️</span>
-          M2 대비 침투율
-        </h2>
-        <div className="flex justify-center my-4 sm:my-6">
-          <div
-            className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px]"
-            style={{
-              borderRadius: '50%',
-              background: `conic-gradient(#667eea 0deg, #667eea ${(penetration || 0) * 3.6}deg, #e2e8f0 ${(penetration || 0) * 3.6}deg, #e2e8f0 360deg)`,
-              position: 'relative',
-            }}
-          >
-            <div className="w-[96px] h-[96px] sm:w-[120px] sm:h-[120px]" style={{
-              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              background: 'white', borderRadius: '50%',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column',
-            }}>
-              <div className="text-lg sm:text-2xl font-bold text-gray-700">
-                {penetration !== null ? `${penetration.toFixed(2)}%` : '-'}
+      {/* ── 차트 2열 ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* M2 vs 스테이블코인 비교 */}
+        <DarkCard title="미국 M2 vs 스테이블코인 규모" icon="🏛️" timestamp={monetaryData?.lastUpdated || null}>
+          <div className="h-52">
+            <canvas ref={m2CanvasRef} />
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <span className="w-2.5 h-2.5 rounded-sm bg-indigo-400 shrink-0" />
+              미국 M2: {usM2 ? `$${(usM2/1e12).toFixed(2)}T` : '-'}
+            </div>
+            <div className="flex items-center gap-1.5 text-gray-400">
+              <span className="w-2.5 h-2.5 rounded-sm bg-amber-400 shrink-0" />
+              스테이블: {totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-'}
+            </div>
+          </div>
+        </DarkCard>
+
+        {/* M2 추이 */}
+        <DarkCard title="미국 M2 통화량 추이" icon="📊" timestamp={monetaryData?.lastUpdated || null}>
+          <div className="h-64">
+            {monetaryData?.usM2History && monetaryData.usM2History.length > 0 ? (
+              <canvas ref={historyCanvasRef} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500 text-sm">
+                {monetaryData?.hasFredKey ? '데이터 로딩 중...' : 'FRED API 키 필요'}
               </div>
-              <div className="text-[10px] sm:text-xs text-gray-500">침투율</div>
+            )}
+          </div>
+        </DarkCard>
+
+      </div>
+
+      {/* ── 침투율 게이지 + 지역별 M2 ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* M2 침투율 게이지 */}
+        <DarkCard title="M2 대비 스테이블코인 침투율" icon="⚖️">
+          <div className="flex flex-col items-center py-4">
+            {/* 원형 게이지 */}
+            <div className="relative w-36 h-36 mb-6">
+              {(() => {
+                const pct = Math.min(penetration || 0, 10) // 10%를 최대로 시각화
+                const circumference = 2 * Math.PI * 40
+                const offset = circumference - (circumference * pct) / 10
+                const color = (penetration || 0) < 1 ? '#f59e0b' : (penetration || 0) < 3 ? '#818cf8' : '#34d399'
+                return (
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="40" fill="none" stroke="#21262d" strokeWidth="10" />
+                    <circle
+                      cx="50" cy="50" r="40" fill="none"
+                      stroke={color} strokeWidth="10"
+                      strokeDasharray={circumference}
+                      strokeDashoffset={offset}
+                      strokeLinecap="round"
+                      style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+                    />
+                    <text x="50" y="50" className="rotate-90" textAnchor="middle" dominantBaseline="middle"
+                      style={{ fill: color, fontSize: '14px', fontWeight: 'bold', transform: 'rotate(90deg)', transformOrigin: '50% 50%' }}>
+                      {penetration !== null ? `${penetration.toFixed(2)}%` : '-'}
+                    </text>
+                    <text x="50" y="62" textAnchor="middle" dominantBaseline="middle"
+                      style={{ fill: '#6b7280', fontSize: '7px', transform: 'rotate(90deg)', transformOrigin: '50% 50%' }}>
+                      침투율
+                    </text>
+                  </svg>
+                )
+              })()}
+            </div>
+
+            {/* 마일스톤 */}
+            <div className="w-full space-y-2">
+              {[
+                { threshold: 1, label: '1% — 시스템적 중요성 확보', color: 'text-amber-400', border: 'border-amber-400/30 bg-amber-400/5' },
+                { threshold: 3, label: '3% — 통화정책 영향 시작',  color: 'text-indigo-400', border: 'border-indigo-400/30 bg-indigo-400/5' },
+                { threshold: 5, label: '5% — 기축통화 역할 본격화', color: 'text-emerald-400', border: 'border-emerald-400/30 bg-emerald-400/5' },
+              ].map(m => {
+                const reached = (penetration || 0) >= m.threshold
+                return (
+                  <div key={m.threshold} className={`flex items-center justify-between text-xs px-3 py-2 rounded-lg border ${m.border}`}>
+                    <span className={reached ? m.color : 'text-gray-500'}>{m.label}</span>
+                    <span className={reached ? m.color + ' font-bold' : 'text-gray-600'}>{reached ? '✓ 달성' : '미달'}</span>
+                  </div>
+                )
+              })}
             </div>
           </div>
-        </div>
-        <div className="space-y-2 mt-4">
-          <div className="bg-gradient-to-r from-green-100 to-green-200 border-l-4 border-green-400 p-3 rounded-lg">
-            <p className="text-sm text-gray-700"><strong>1% 돌파:</strong> 시스템적 중요성 확보</p>
-          </div>
-          <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 border-l-4 border-yellow-400 p-3 rounded-lg">
-            <p className="text-sm text-gray-700"><strong>3% 돌파:</strong> 통화정책 영향 시작</p>
-          </div>
-          <div className="bg-gradient-to-r from-red-100 to-red-200 border-l-4 border-red-400 p-3 rounded-lg">
-            <p className="text-sm text-gray-700"><strong>5% 돌파:</strong> 기축통화 역할 본격화</p>
-          </div>
-        </div>
+        </DarkCard>
+
+        {/* 지역별 M2 */}
+        <DarkCard title="지역별 M2 통화량 비교" icon="🌍" timestamp={monetaryData?.lastUpdated || null}>
+          {regionRows.length > 0 ? (
+            <div className="space-y-4">
+              {regionRows.map(r => {
+                const pct = globalM2Total > 0 && r.value ? (r.value / globalM2Total) * 100 : 0
+                return (
+                  <div key={r.name}>
+                    <div className="flex justify-between mb-1.5 text-xs">
+                      <span className="text-gray-300 font-medium">{r.name}</span>
+                      <span className="text-gray-400">
+                        {r.value ? `$${(r.value/1e12).toFixed(2)}T` : '-'}
+                        <span className="text-gray-600 ml-1">({pct.toFixed(1)}%)</span>
+                      </span>
+                    </div>
+                    <div className="bg-[#21262d] h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${r.color} rounded-full transition-all duration-700`}
+                        style={{ width: `${Math.min(pct, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+              {regionRows.length === 0 && (
+                <p className="text-gray-500 text-center py-8">지역별 데이터 없음</p>
+              )}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">데이터 로딩 중...</p>
+          )}
+        </DarkCard>
+
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🌍</span>
-          체인별 스테이블코인 분포
-        </h2>
-        {defiStats?.chainDistribution && defiStats.chainDistribution.length > 0 ? (
-          <div className="space-y-3">
-            {defiStats.chainDistribution.map((chain) => {
-              const percent = totalSupply > 0 ? (chain.totalCirculating / totalSupply) * 100 : 0
-              return (
-                <div key={chain.chain}>
-                  <div className="flex justify-between mb-1 text-sm">
-                    <span className="text-gray-700">{chain.chain}</span>
-                    <span className="text-gray-600">${(chain.totalCirculating / 1e9).toFixed(2)}B ({percent.toFixed(1)}%)</span>
-                  </div>
-                  <div className="bg-gray-200 h-4 rounded-lg overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-indigo-400 to-purple-400 rounded-lg" style={{ width: `${Math.min(percent, 100)}%` }} />
-                  </div>
-                </div>
-              )
-            })}
+      {/* ── 체인별 스테이블 분포 (수평 바차트 + 리스트) ── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <DarkCard title="체인별 스테이블코인 분포 (차트)" icon="🔗">
+          <div className="h-72">
+            {defiStats?.chainDistribution && defiStats.chainDistribution.length > 0 ? (
+              <canvas ref={chainCanvasRef} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-500 text-sm">데이터 로딩 중...</div>
+            )}
           </div>
-        ) : (
-          <p className="text-gray-500 text-center">데이터 로딩 중...</p>
-        )}
+        </DarkCard>
+
+        <DarkCard title="체인별 스테이블코인 분포 (상세)" icon="📋" timestamp={defiStats?.lastUpdated || null}>
+          {defiStats?.chainDistribution && defiStats.chainDistribution.length > 0 ? (
+            <div className="space-y-3 overflow-y-auto max-h-72">
+              {defiStats.chainDistribution.map((chain, idx) => {
+                const percent = totalSupply > 0 ? (chain.totalCirculating / totalSupply) * 100 : 0
+                const colors = ['bg-blue-500', 'bg-indigo-500', 'bg-cyan-500', 'bg-emerald-500', 'bg-amber-500', 'bg-orange-500', 'bg-pink-500', 'bg-slate-500']
+                const color = colors[idx % colors.length]
+                return (
+                  <div key={chain.chain}>
+                    <div className="flex justify-between mb-1 text-xs">
+                      <div className="flex items-center gap-1.5">
+                        <span className={`w-2 h-2 rounded-full ${color} shrink-0`} />
+                        <span className="text-gray-300 font-medium">{chain.chain}</span>
+                      </div>
+                      <span className="text-gray-400">
+                        ${(chain.totalCirculating/1e9).toFixed(2)}B
+                        <span className="text-gray-600 ml-1">({percent.toFixed(1)}%)</span>
+                      </span>
+                    </div>
+                    <div className="bg-[#21262d] h-2 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full ${color} rounded-full transition-all duration-500`}
+                        style={{ width: `${Math.min(percent, 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center py-8">데이터 로딩 중...</p>
+          )}
+        </DarkCard>
+
       </div>
 
-      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">💱</span>
-          스테이블코인 시장 점유율
-        </h2>
-        <UpdateTimestamp timestamp={stablecoinData?.lastUpdated || defiStats?.lastUpdated || null} />
-        {stablecoinData?.stablecoins && stablecoinData.stablecoins.length > 0 ? (
-          <div className="space-y-2 mt-3">
-            {stablecoinData.stablecoins.slice(0, 8).map((s) => (
-              <div key={s.symbol} className="flex items-center justify-between text-sm bg-gray-50 rounded-lg p-2">
-                <span className="font-medium text-gray-700">{s.symbol}</span>
-                <span className="text-gray-600">${(s.market_cap / 1e9).toFixed(2)}B</span>
-                <span className="text-gray-500">{s.dominance.toFixed(1)}%</span>
-                <span className={s.change_7d >= 0 ? 'text-green-600' : 'text-red-500'}>
-                  {s.change_7d >= 0 ? '+' : ''}{s.change_7d.toFixed(1)}% (7d)
-                </span>
+      {/* ── 유동성 순환 분석 ── */}
+      <DarkCard title="유동성 순환 분석" icon="🔄">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-[#21262d] border border-[#30363d] rounded-lg p-4">
+            <div className="text-xs text-indigo-400 font-bold mb-2">📊 분석 포인트</div>
+            <p className="text-sm text-gray-300 leading-relaxed">
+              {penetration !== null
+                ? `스테이블코인이 미국 M2의 ${penetration.toFixed(2)}%를 차지하며, ${penetration < 1 ? '1% 돌파 시 시스템적 중요성 확보 예상' : '이미 시스템적 중요성을 확보한 수준'}`
+                : '데이터를 로딩하면 침투율 분석을 표시합니다'}
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: '침투율', value: penetration != null ? `${penetration.toFixed(2)}%` : '-', color: 'text-cyan-400' },
+              { label: 'DeFi TVL', value: defiStats?.currentTvl ? `$${(defiStats.currentTvl/1e9).toFixed(1)}B` : '-', color: 'text-purple-400' },
+              { label: '스테이블 총량', value: totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-', color: 'text-amber-400' },
+              { label: '미국 M2', value: usM2 ? `$${(usM2/1e12).toFixed(2)}T` : '-', color: 'text-indigo-400' },
+            ].map(kpi => (
+              <div key={kpi.label} className="bg-[#21262d] rounded-lg p-3 text-center">
+                <div className={`text-xl font-bold ${kpi.color}`}>{kpi.value}</div>
+                <div className="text-xs text-gray-500 mt-0.5">{kpi.label}</div>
               </div>
             ))}
           </div>
-        ) : (
-          <p className="text-gray-500 text-center mt-4">데이터 로딩 중...</p>
-        )}
-      </div>
+        </div>
+      </DarkCard>
 
-      <div className="card bg-white/95 rounded-2xl p-4 sm:p-8 shadow-xl border border-white/20 backdrop-blur text-gray-700">
-        <h2 className="flex items-center gap-2 text-base sm:text-xl font-bold text-gray-700 mb-4">
-          <span className="inline-block w-7 h-7 sm:w-8 sm:h-8 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm">🔄</span>
-          유동성 순환 분석
-        </h2>
-        <div className="alert-system bg-gradient-to-r from-blue-50 to-blue-100 border-l-4 border-blue-400 p-4 rounded-lg mb-4">
-          <h3 className="font-bold mb-1 text-blue-900">분석 포인트</h3>
-          <p className="text-sm text-gray-700">
-            {penetration !== null
-              ? `스테이블코인이 미국 M2의 ${penetration.toFixed(2)}%를 차지하며, ${penetration < 1 ? '1% 돌파 시 시스템적 중요성 확보 예상' : '시스템적 중요성을 확보한 수준'}`
-              : '데이터를 로딩하면 침투율 분석을 표시합니다'}
-          </p>
-        </div>
-        <div className="metric-grid grid grid-cols-2 gap-4">
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
-              {penetration !== null ? `${penetration.toFixed(2)}%` : '-'}
-            </div>
-            <div className="metric-label text-xs text-gray-500">미국 M2 대비 침투율</div>
-          </div>
-          <div className="metric text-center bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg p-4 border-l-4 border-indigo-400">
-            <div className="metric-value text-2xl font-bold text-gray-800 mb-1">
-              {defiStats?.currentTvl ? `$${(defiStats.currentTvl / 1e9).toFixed(1)}B` : '-'}
-            </div>
-            <div className="metric-label text-xs text-gray-500">DeFi TVL</div>
-          </div>
-        </div>
-      </div>
     </div>
   )
 }
