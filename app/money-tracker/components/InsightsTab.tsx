@@ -76,7 +76,13 @@ export default function InsightsTab({ monetaryData, fearGreedData, stablecoinDat
     if (sentimentChartRef.current) { sentimentChartRef.current.destroy(); sentimentChartRef.current = null }
 
     // 1. Global M2 vs Nasdaq-100 상관관계 차트
-    if (correlationCanvasRef.current && monetaryData?.globalM2History && monetaryData.marketIndices?.nasdaq100History) {
+    if (
+      correlationCanvasRef.current &&
+      monetaryData?.globalM2History &&
+      monetaryData.globalM2History.length > 0 &&
+      monetaryData.marketIndices?.nasdaq100History &&
+      monetaryData.marketIndices.nasdaq100History.length > 0
+    ) {
       const ctx = correlationCanvasRef.current.getContext('2d')
       if (ctx) {
         const m2Hist = monetaryData.globalM2History
@@ -326,7 +332,7 @@ export default function InsightsTab({ monetaryData, fearGreedData, stablecoinDat
           <span>📊</span> 글로벌 유동성 vs Nasdaq-100 상관관계
         </h2>
         <div className="h-64">
-          {monetaryData?.globalM2History && monetaryData?.marketIndices?.nasdaq100History ? (
+          {monetaryData?.globalM2History?.length && monetaryData?.marketIndices?.nasdaq100History?.length ? (
             <canvas ref={correlationCanvasRef} />
           ) : (
             <div className="flex items-center justify-center h-full text-gray-500 text-sm">

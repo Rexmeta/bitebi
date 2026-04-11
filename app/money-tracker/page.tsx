@@ -97,6 +97,28 @@ const MoneyTrackerPage = () => {
     ? new Date(lastFetchTime).toLocaleString('ko-KR', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
     : '-'
 
+  const monetaryDiagnostics = monetaryData?.diagnostics
+  const dataCompleteness = monetaryDiagnostics?.completeness ?? null
+  const dataSource = monetaryDiagnostics?.source ?? (monetaryData?.hasFredKey ? 'fred' : 'fallback')
+  const sourceLabel = dataSource === 'fred' ? 'FRED' : dataSource === 'hybrid' ? 'HYBRID' : 'FALLBACK'
+  const missingSeries = monetaryDiagnostics?.missing || []
+  const seriesLabelMap: Record<string, string> = {
+    usM2: '미국 M2',
+    fedFunds: '연준 금리',
+    globalM2: '글로벌 M2',
+    regionalM2: '지역별 M2',
+    sp500: 'S&P 500',
+    nasdaq100: 'Nasdaq-100',
+    gold: 'Gold',
+  }
+  const completenessColor = dataCompleteness == null
+    ? 'text-gray-400'
+    : dataCompleteness >= 90
+      ? 'text-emerald-400'
+      : dataCompleteness >= 70
+        ? 'text-yellow-400'
+        : 'text-red-400'
+
   return (
     <div className="relative min-h-screen bg-[#0d1117] text-white">
 
@@ -166,6 +188,16 @@ const MoneyTrackerPage = () => {
               <span className="text-gray-400">시장</span>
               <span className={`font-bold ${sentimentColor}`}>{marketSentiment}</span>
             </div>
+            <div className="w-px h-3 bg-[#30363d]" />
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-gray-500">데이터 완전성</span>
+              <span className={`font-bold ${completenessColor}`}>
+                {dataCompleteness != null ? `${dataCompleteness}%` : '-'}
+              </span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded border border-[#30363d] text-gray-400">
+                {sourceLabel}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -194,6 +226,34 @@ const MoneyTrackerPage = () => {
           ))}
         </div>
       </div>
+
+      {/* ── 부분 실패/추정치 안내 ─────────────────────────────── */}
+      {missingSeries.length > 0 && (
+        <div className="max-w-[1400px] mx-auto px-4 md:px-6 mt-3">
+          <div className="bg-amber-400/10 border border-amber-400/30 rounded-xl p-3 md:p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="text-xs md:text-sm text-amber-300 font-semibold mb-1">
+                  일부 지표가 지연되어 추정치/대체 데이터가 사용 중입니다.
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {missingSeries.map((key) => (
+                    <span key={key} className="text-[11px] px-2 py-0.5 rounded-full border border-amber-400/30 text-amber-200 bg-amber-400/10">
+                      {seriesLabelMap[key] || key}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => { refetch(); notify('누락 지표를 재조회합니다.', 'success') }}
+                className="shrink-0 text-xs px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-gray-200 transition"
+              >
+                다시 조회
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── 탭 콘텐츠 ─────────────────────────────────── */}
       <div className="max-w-[1400px] mx-auto px-4 md:px-6 py-6 min-h-[500px]">

@@ -26,6 +26,14 @@ export interface MonetaryData {
   marketIndices: MarketIndexData
   lastUpdated: string
   hasFredKey: boolean
+  diagnostics?: {
+    source: 'fred' | 'hybrid' | 'fallback'
+    isEstimated: boolean
+    completeness: number
+    available: number
+    total: number
+    missing: string[]
+  }
 }
 
 export interface StablecoinItem {
