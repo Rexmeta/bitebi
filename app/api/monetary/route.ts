@@ -41,6 +41,18 @@ async function fetchFallbackMonetaryData() {
   }
 
   try {
+    const parseSeriesSafe = (raw: any[], valueKey: string, dateKey: string, limit = 24) => {
+      if (!Array.isArray(raw) || raw.length === 0) return []
+      return raw
+        .slice(0, limit)
+        .reverse()
+        .map((item: any) => ({
+          date: item?.[dateKey],
+          value: Number.parseFloat(item?.[valueKey]),
+        }))
+        .filter((item: any) => item.date && Number.isFinite(item.value))
+    }
+
     // ── 1. Fed Funds effective rate (NY Fed, public JSON) ──────────────────────
     // Note: NY Fed REST endpoint format is:
     //   https://markets.newyorkfed.org/read?productCode=50&eventCodes=500&limit=31&startPosition=0&sort=postDt:-1&format=json
@@ -54,10 +66,7 @@ async function fetchFallbackMonetaryData() {
       const rates: any[] = fedJson?.refRates || []
       if (rates.length > 0) {
         fallback.fedFundsRate = parseFloat(rates[0].percentRate)
-        fallback.fedFundsHistory = rates.slice(0, 24).reverse().map((r: any) => ({
-          date: r.effectiveDt,
-          value: parseFloat(r.percentRate),
-        }))
+        fallback.fedFundsHistory = parseSeriesSafe(rates, 'percentRate', 'effectiveDt')
       }
     }
 
@@ -101,11 +110,24 @@ async function fetchFallbackMonetaryData() {
         date: h.date,
         value: h.value * 3.5,
       }))
+
+      // Keep regional cards populated even without FRED key.
+      // Ratio split (of non-US share) is a coarse heuristic:
+      // EU 50% / JP 30% / UK 20%.
+      const nonUs = Math.max(globalProxy - fallback.usM2, 0)
+      fallback.regionalM2 = {
+        eu: nonUs * 0.5,
+        jp: nonUs * 0.3,
+        uk: nonUs * 0.2,
+      }
     }
 
     // ── 4. Market indices via CryptoCompare (free) ────────────────────────────
-    const [spRes, goldRes] = await Promise.allSettled([
+    const [spRes, nasdaqRes, goldRes] = await Promise.allSettled([
       fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=SPX&tsym=USD&limit=30', {
+        headers: { 'Accept': 'application/json' }, next: { revalidate: 3600 }
+      }),
+      fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=NDX&tsym=USD&limit=30', {
         headers: { 'Accept': 'application/json' }, next: { revalidate: 3600 }
       }),
       fetch('https://min-api.cryptocompare.com/data/v2/histoday?fsym=XAU&tsym=USD&limit=30', {
@@ -121,6 +143,14 @@ async function fetchFallbackMonetaryData() {
         const hist = spData.Data.Data.map((d: any) => ({ date: new Date(d.time * 1000).toISOString().split('T')[0], value: d.close }))
         marketIndices.sp500 = hist[hist.length - 1]?.value || 0
         marketIndices.sp500History = hist
+      }
+    }
+    if (nasdaqRes.status === 'fulfilled' && nasdaqRes.value.ok) {
+      const nasdaqData = await nasdaqRes.value.json()
+      if (nasdaqData?.Data?.Data) {
+        const hist = nasdaqData.Data.Data.map((d: any) => ({ date: new Date(d.time * 1000).toISOString().split('T')[0], value: d.close }))
+        marketIndices.nasdaq100 = hist[hist.length - 1]?.value || 0
+        marketIndices.nasdaq100History = hist
       }
     }
     if (goldRes.status === 'fulfilled' && goldRes.value.ok) {
@@ -284,6 +314,56 @@ export async function GET() {
           goldHistory:    rawData.goldPrice?.slice(0, 30).reverse().map((o: any) => ({ date: o.date, value: parseFloat(o.value) })) || [],
         },
       })
+
+      // FRED key가 있어도 시리즈 일부가 누락/제한될 수 있으므로
+      // free fallback으로 빈 필드만 보강한다.
+      const needsBackfill =
+        !data.usM2 ||
+        !data.usM2History?.length ||
+        !data.fedFundsHistory?.length ||
+        !data.globalM2History?.length ||
+        !data.marketIndices?.sp500History?.length ||
+        !data.marketIndices?.nasdaq100History?.length ||
+        !data.marketIndices?.goldHistory?.length
+
+      if (needsBackfill) {
+        console.log('[monetary] Partial FRED data detected → backfilling missing fields with free APIs')
+        const fb = await fetchFallbackMonetaryData()
+
+        if (!data.usM2 && fb.usM2) data.usM2 = fb.usM2
+        if (!data.usM2History?.length && fb.usM2History?.length) data.usM2History = fb.usM2History
+        if ((data.fedFundsRate === null || data.fedFundsRate === undefined) && fb.fedFundsRate !== null) {
+          data.fedFundsRate = fb.fedFundsRate
+        }
+        if (!data.fedFundsHistory?.length && fb.fedFundsHistory?.length) data.fedFundsHistory = fb.fedFundsHistory
+
+        if (!data.globalM2 && fb.globalM2) data.globalM2 = fb.globalM2
+        if (!data.globalM2History?.length && fb.globalM2History?.length) data.globalM2History = fb.globalM2History
+
+        const regionalMissing =
+          !data.regionalM2 ||
+          ((!data.regionalM2.eu || data.regionalM2.eu <= 0) &&
+           (!data.regionalM2.jp || data.regionalM2.jp <= 0) &&
+           (!data.regionalM2.uk || data.regionalM2.uk <= 0))
+        if (regionalMissing && fb.regionalM2) {
+          data.regionalM2 = fb.regionalM2
+        }
+
+        if (!data.marketIndices) data.marketIndices = { sp500: 0, sp500History: [], nasdaq100: 0, nasdaq100History: [], gold: 0, goldHistory: [] }
+
+        if (!data.marketIndices.sp500History?.length && fb.marketIndices?.sp500History?.length) {
+          data.marketIndices.sp500 = fb.marketIndices.sp500
+          data.marketIndices.sp500History = fb.marketIndices.sp500History
+        }
+        if (!data.marketIndices.nasdaq100History?.length && fb.marketIndices?.nasdaq100History?.length) {
+          data.marketIndices.nasdaq100 = fb.marketIndices.nasdaq100
+          data.marketIndices.nasdaq100History = fb.marketIndices.nasdaq100History
+        }
+        if (!data.marketIndices.goldHistory?.length && fb.marketIndices?.goldHistory?.length) {
+          data.marketIndices.gold = fb.marketIndices.gold
+          data.marketIndices.goldHistory = fb.marketIndices.goldHistory
+        }
+      }
     } else {
       // ✅ FIX #2: Free fallback when FRED key is absent
       console.log('[monetary] No FRED key → using free-API fallback')

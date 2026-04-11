@@ -167,7 +167,9 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
     { name: '영국 (UK)',     value: regional?.uk || null, color: 'bg-violet-500' },
   ].filter(r => r.value != null)
 
-  const globalM2Total = (usM2 || 0) + (regional?.eu || 0) + (regional?.jp || 0) + (regional?.uk || 0)
+  // Prefer API-computed global M2 (FRED 합산 또는 fallback proxy).
+  // 지역 합계는 상세 카드 표시용으로만 사용한다.
+  const globalM2Total = monetaryData?.globalM2 || ((usM2 || 0) + (regional?.eu || 0) + (regional?.jp || 0) + (regional?.uk || 0))
 
   return (
     <div className="space-y-6">
