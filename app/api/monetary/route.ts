@@ -331,7 +331,7 @@ export async function GET() {
 
       if (needsBackfill) {
         console.log('[monetary] Partial FRED data detected → backfilling missing fields with free APIs')
-        fallbackUsed = true
+
         const fb = await fetchFallbackMonetaryData()
 
         if (!data.usM2 && fb.usM2) data.usM2 = fb.usM2
