@@ -179,6 +179,8 @@ export async function GET() {
     const fredApiKey = process.env.FRED_API_KEY
     console.log(`[monetary] FRED_API_KEY detected: ${!!fredApiKey}`)
 
+    let fallbackUsed = false
+
     const data: any = {
       usM2: null,
       usM2History: [],
@@ -189,6 +191,7 @@ export async function GET() {
       regionalM2: { eu: 0, jp: 0, uk: 0 },
       lastUpdated: new Date().toISOString(),
       hasFredKey: !!fredApiKey,
+      diagnostics: null,
     }
 
     if (fredApiKey) {
@@ -328,6 +331,7 @@ export async function GET() {
 
       if (needsBackfill) {
         console.log('[monetary] Partial FRED data detected → backfilling missing fields with free APIs')
+
         const fb = await fetchFallbackMonetaryData()
 
         if (!data.usM2 && fb.usM2) data.usM2 = fb.usM2
@@ -367,6 +371,7 @@ export async function GET() {
     } else {
       // ✅ FIX #2: Free fallback when FRED key is absent
       console.log('[monetary] No FRED key → using free-API fallback')
+      fallbackUsed = true
       const fb = await fetchFallbackMonetaryData()
       Object.assign(data, {
         usM2:           fb.usM2,
@@ -379,6 +384,30 @@ export async function GET() {
         marketIndices:  fb.marketIndices,
         source:         'fallback-free-apis',
       })
+    }
+
+    const checks: Record<string, boolean> = {
+      usM2: !!data.usM2 && data.usM2 > 0 && (data.usM2History?.length || 0) > 0,
+      fedFunds: (data.fedFundsRate !== null && data.fedFundsRate !== undefined) && (data.fedFundsHistory?.length || 0) > 0,
+      globalM2: !!data.globalM2 && data.globalM2 > 0 && (data.globalM2History?.length || 0) > 0,
+      regionalM2: !!data.regionalM2 && ((data.regionalM2.eu || 0) + (data.regionalM2.jp || 0) + (data.regionalM2.uk || 0)) > 0,
+      sp500: !!data.marketIndices?.sp500 && (data.marketIndices?.sp500History?.length || 0) > 0,
+      nasdaq100: !!data.marketIndices?.nasdaq100 && (data.marketIndices?.nasdaq100History?.length || 0) > 0,
+      gold: !!data.marketIndices?.gold && (data.marketIndices?.goldHistory?.length || 0) > 0,
+    }
+
+    const available = Object.values(checks).filter(Boolean).length
+    const total = Object.keys(checks).length
+    const missing = Object.entries(checks).filter(([, ok]) => !ok).map(([name]) => name)
+    const source = !fredApiKey ? 'fallback' : fallbackUsed ? 'hybrid' : 'fred'
+
+    data.diagnostics = {
+      source,
+      isEstimated: source !== 'fred',
+      completeness: Math.round((available / total) * 100),
+      available,
+      total,
+      missing,
     }
 
     cache = { data, timestamp: Date.now() }
