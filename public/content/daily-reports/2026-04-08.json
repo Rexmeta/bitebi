@@ -1,0 +1,125 @@
+{
+  "date": "2026-04-08",
+  "generatedAt": "2026-04-08T00:00:00.000Z",
+  "title": "2026-04-08 암호화폐 시장 일일 분석 리포트",
+  "summary": "비트코인은 $65,000 선에서 횡보하며 투자자들의 관망세가 이어지고 있습니다. 이더리움은 상하이 업그레이드 이후 스테이킹 수요 증가로 안정적인 흐름을 보이고 있으며, 전체 시장은 연준의 금리 정책 발표를 앞두고 신중한 분위기입니다.",
+  "marketOverview": {
+    "totalMarketCap": 2450000000000,
+    "btcDominance": 52.3,
+    "fearGreedIndex": 58,
+    "fearGreedLabel": "Greed",
+    "topGainers": [
+      {
+        "id": "solana",
+        "name": "Solana",
+        "symbol": "SOL",
+        "price": 145.23,
+        "change24h": 8.45,
+        "marketCap": 65000000000,
+        "image": "https://assets.coingecko.com/coins/images/4128/large/solana.png"
+      },
+      {
+        "id": "cardano",
+        "name": "Cardano",
+        "symbol": "ADA",
+        "price": 0.52,
+        "change24h": 6.12,
+        "marketCap": 18500000000,
+        "image": "https://assets.coingecko.com/coins/images/975/large/cardano.png"
+      },
+      {
+        "id": "polygon",
+        "name": "Polygon",
+        "symbol": "MATIC",
+        "price": 0.89,
+        "change24h": 5.67,
+        "marketCap": 8200000000,
+        "image": "https://assets.coingecko.com/coins/images/4713/large/matic-token-icon.png"
+      }
+    ],
+    "topLosers": [
+      {
+        "id": "ripple",
+        "name": "XRP",
+        "symbol": "XRP",
+        "price": 0.48,
+        "change24h": -3.21,
+        "marketCap": 26000000000,
+        "image": "https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png"
+      },
+      {
+        "id": "dogecoin",
+        "name": "Dogecoin",
+        "symbol": "DOGE",
+        "price": 0.082,
+        "change24h": -2.85,
+        "marketCap": 11500000000,
+        "image": "https://assets.coingecko.com/coins/images/5/large/dogecoin.png"
+      },
+      {
+        "id": "shiba-inu",
+        "name": "Shiba Inu",
+        "symbol": "SHIB",
+        "price": 0.00001145,
+        "change24h": -2.34,
+        "marketCap": 6750000000,
+        "image": "https://assets.coingecko.com/coins/images/11939/large/shiba.png"
+      }
+    ]
+  },
+  "btcAnalysis": "비트코인은 $65,000 근처에서 강력한 지지를 받으며 안정적인 횡보 구간을 형성하고 있습니다. 20일 이동평균선이 상향 돌파를 준비 중이며, RSI 지표는 중립 영역인 55 수준을 유지하고 있어 과매수 없이 건강한 상승 여력을 보여주고 있습니다. 온체인 데이터에 따르면 장기 보유자들의 BTC 축적이 계속되고 있어 바닥권 매수세가 견조한 것으로 분석됩니다. 주요 저항선은 $68,000이며, 이 구간 돌파 시 $72,000까지 상승 가능성이 열립니다. 반면 $63,000 아래로 하락할 경우 단기 조정이 나타날 수 있으니 주의가 필요합니다.",
+  "ethAnalysis": "이더리움은 상하이 업그레이드 이후 스테이킹 인출 메커니즘이 안정화되면서 네트워크 신뢰도가 향상되고 있습니다. 현재 $3,200 수준에서 거래되며, DeFi 생태계의 활성화로 가스비 수요가 꾸준히 증가하고 있습니다. EIP-4844 프로토-댕크샤딩 업데이트를 앞두고 레이어2 솔루션들의 ETH 예치량이 증가 추세를 보이며, 이는 장기적으로 ETH 가격에 긍정적 영향을 미칠 전망입니다. 기술적으로는 $3,000이 강력한 지지선으로 작용하고 있으며, $3,500 돌파 시 $4,000 재도전이 가능할 것으로 예상됩니다.",
+  "marketOutlook": "전체 암호화폐 시장 시가총액은 $2.45조를 기록하며 안정적인 흐름을 유지하고 있습니다. 비트코인 도미넌스 52.3%는 최근 몇 주간 유지되고 있어 알트코인 시장으로의 자금 유입이 제한적임을 시사합니다. 공포탐욕지수 58(탐욕)은 투자자들의 적정 수준의 긍정적 심리를 반영하고 있으나, 과열 단계는 아니어서 건전한 상승 여력을 보유하고 있습니다. 향후 24~48시간 내 연준의 통화정책 발표가 예정되어 있어 시장 변동성이 일시적으로 확대될 가능성이 있습니다. 금리 동결 시 긍정적 반응이 예상되며, 인상 시사 시 단기 조정 압력이 나타날 수 있습니다.",
+  "keyEvents": [
+    "연준 FOMC 회의 결과 발표 예정 - 금리 정책 방향성 주목",
+    "이더리움 EIP-4844 테스트넷 최종 검증 단계 진입",
+    "솔라나 네트워크 거래량 사상 최고치 경신 - DeFi 활성화",
+    "SEC, 비트코인 현물 ETF 추가 승인 검토 중",
+    "주요 거래소들의 BTC 보유량 감소 추세 지속 - 자체 지갑 이동 증가"
+  ],
+  "relatedNews": [
+    {
+      "title": "Fed to Announce Interest Rate Decision This Week",
+      "link": "https://cointelegraph.com/news/fed-interest-rate-decision",
+      "source": "Cointelegraph",
+      "pubDate": "2026-04-08T06:00:00.000Z",
+      "snippet": "The Federal Reserve is expected to announce its interest rate decision..."
+    },
+    {
+      "title": "Ethereum's Shanghai Upgrade Shows Strong Network Health",
+      "link": "https://decrypt.co/ethereum-shanghai-upgrade",
+      "source": "Decrypt",
+      "pubDate": "2026-04-08T05:30:00.000Z",
+      "snippet": "Post-Shanghai upgrade data reveals robust staking participation..."
+    },
+    {
+      "title": "Solana DeFi TVL Reaches New All-Time High",
+      "link": "https://theblock.co/solana-defi-tvl-ath",
+      "source": "The Block",
+      "pubDate": "2026-04-08T04:15:00.000Z",
+      "snippet": "Solana's total value locked in DeFi protocols has surged to..."
+    },
+    {
+      "title": "Bitcoin Long-Term Holders Accumulate at Current Levels",
+      "link": "https://cointelegraph.com/news/bitcoin-holders-accumulate",
+      "source": "Cointelegraph",
+      "pubDate": "2026-04-08T03:00:00.000Z",
+      "snippet": "On-chain data shows long-term Bitcoin holders are actively buying..."
+    },
+    {
+      "title": "SEC Reviews Additional Bitcoin Spot ETF Applications",
+      "link": "https://decrypt.co/sec-bitcoin-etf-review",
+      "source": "Decrypt",
+      "pubDate": "2026-04-08T02:00:00.000Z",
+      "snippet": "The Securities and Exchange Commission is reviewing several new..."
+    }
+  ],
+  "seoKeywords": [
+    "4월 8일 비트코인 시세",
+    "2026-04-08 암호화폐 분석",
+    "오늘 비트코인 가격",
+    "암호화폐 시장 전망",
+    "비트코인 2026-04-08",
+    "코인 시세 분석"
+  ]
+}

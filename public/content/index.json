@@ -1,8 +1,18 @@
 {
-  "lastUpdated": "2026-04-04T00:00:00.000Z",
-  "dailyReports": [],
-  "coinAnalyses": [],
-  "topics": [],
-  "glossaryTerms": [],
-  "flashBriefs": []
+  "lastUpdated": "2026-04-08T00:00:00.000Z",
+  "dailyReports": [
+    "2026-04-08"
+  ],
+  "coinAnalyses": [
+    "bitcoin-2026-week-14"
+  ],
+  "topics": [
+    "bitcoin-etf"
+  ],
+  "glossaryTerms": [
+    "defi"
+  ],
+  "flashBriefs": [
+    "2026-04-08-morning"
+  ]
 }

@@ -33,7 +33,47 @@ NEXT_PUBLIC_MANUAL_ADS=false
 
 4. 저장 후 **Redeploy**
 
-### 3) 뉴스 생성 경로 (단일화)
+### 3) GitHub Actions 콘텐츠 자동화 설정
+
+프로젝트는 GitHub Actions를 통해 AI 콘텐츠를 자동 생성합니다.
+
+**GitHub Repository Secrets 설정:**
+
+1. GitHub 저장소 → **Settings** → **Secrets and variables** → **Actions**
+2. **New repository secret** 클릭
+3. 필수 Secret 추가:
+   - `GEMINI_API_KEY`: Google AI Studio API 키
+   - `NEXT_PUBLIC_SITE_URL`: 프로덕션 사이트 URL (선택)
+
+**자동화 워크플로우:**
+
+- **일일 콘텐츠** (`.github/workflows/generate-daily-content.yml`)
+  - 매일 오전 9시(KST) 실행
+  - 일일 시장 리포트 + 플래시 브리핑 생성
+  - 수동 실행: GitHub Actions 탭에서 "Generate Daily AI Content" → Run workflow
+
+- **주간 콘텐츠** (`.github/workflows/generate-weekly-content.yml`)
+  - 매주 월요일 오전 9시(KST) 실행
+  - 코인 분석, 토픽 기사, 용어 사전 생성
+  - 수동 실행: GitHub Actions 탭에서 "Generate Weekly AI Content" → Run workflow
+
+**로컬에서 수동 생성:**
+
+```bash
+# 환경 변수 설정
+export GEMINI_API_KEY=your_api_key
+
+# 일일 콘텐츠만 생성
+npm run generate:daily
+
+# 모든 콘텐츠 타입 생성
+npm run generate:all
+
+# 특정 타입만 생성
+npm run generate -- --types=coins,topics
+```
+
+### 4) 뉴스 생성 경로 (단일화)
 
 - API 엔드포인트: `/api/generate-news`
 - 내부 흐름:
@@ -43,7 +83,7 @@ NEXT_PUBLIC_MANUAL_ADS=false
 
 즉, 뉴스 AI 생성 로직은 `lib/generateNews.ts` 한 경로로 통일됩니다.
 
-### 4) 일일 시장 리포트 생성 구조
+### 5) 일일 시장 리포트 생성 구조
 
 일일 리포트는 `lib/contentGenerator.ts`의 `generateDailyReport(date)`가 중심입니다.
 
