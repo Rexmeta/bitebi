@@ -1,0 +1,29 @@
+{
+  "_comment": "Public labelled exchange wallets used to compute on-chain Netflow. ETH addresses are checksummed mixed-case but compared lowercase. BTC addresses cover well-known exchange cold/hot wallets. Sources: Etherscan public labels, Arkham, BitInfoCharts.",
+  "eth": [
+    { "address": "0x28C6c06298d514Db089934071355E5743bf21d60", "exchange": "Binance 14" },
+    { "address": "0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549", "exchange": "Binance 15" },
+    { "address": "0xDFd5293D8e347dFe59E90eFd55b2956a1343963d", "exchange": "Binance 16" },
+    { "address": "0x564286362092D8e7936f0549571a803B203aAceD", "exchange": "Binance 17" },
+    { "address": "0xF977814e90dA44bFA03b6295A0616a897441aceC", "exchange": "Binance 8 (cold)" },
+    { "address": "0x71660c4005BA85c37ccec55d0C4493E66Fe775d3", "exchange": "Coinbase 1" },
+    { "address": "0x503828976D22510aad0201ac7EC88293211D23Da", "exchange": "Coinbase 2" },
+    { "address": "0x3cD751E6b0078Be393132286c442345e5DC49699", "exchange": "Coinbase 4" },
+    { "address": "0xeB2629a2734e272Bcc07BDA959863f316F4bD4Cf", "exchange": "Coinbase 6" },
+    { "address": "0x2910543Af39abA0Cd09dBb2D50200b3E800A63D2", "exchange": "Kraken 1" },
+    { "address": "0x267be1C1D684F78cb4F6a176C4911b741E4Ffdc0", "exchange": "Kraken 4" },
+    { "address": "0x1151314c646Ce4E0eFD76d1aF4760aE66a9Fe30F", "exchange": "Bitfinex" },
+    { "address": "0x6cC5F688a315f3dC28A7781717a9A798a59fDA7b", "exchange": "OKX" },
+    { "address": "0xf89d7b9c864f589bbF53a82105107622B35EaA40", "exchange": "Bybit" },
+    { "address": "0x6262998Ced04146fA42253a5C0AF90CA02dfd2A3", "exchange": "Crypto.com" }
+  ],
+  "btc": [
+    { "address": "34xp4vRoCGJym3xR7yCVPFHoCNxv4Twseo", "exchange": "Binance cold" },
+    { "address": "bc1qm34lsc65zpw79lxes69zkqmk6ee3ewf0j77s3h", "exchange": "Binance" },
+    { "address": "bc1qgdjqv0av3q56jvd82tkdjpy7gdp9ut8tlqmgrpmv24sq90ecnvqqjwvw97", "exchange": "Coinbase" },
+    { "address": "bc1q5shngj24323nsrmxv99st02na6srekfctt30ch", "exchange": "Kraken" },
+    { "address": "3D2oetdNuZUqQHPJmcMDDHYoqkyNVsFk9r", "exchange": "Bitstamp" },
+    { "address": "1Ay8vMC7R1UbyCCZRVULMV7iQpHSAbguJP", "exchange": "OKX" },
+    { "address": "1KXrWXciRDZUpQwQmuM1DbwsKDLYAYsVLR", "exchange": "Huobi/HTX" }
+  ]
+}
