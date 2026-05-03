@@ -1,9 +1,14 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
+import Link from 'next/link'
 import Chart from 'chart.js/auto'
 import type { StablecoinData, DefiStatsData, Signal, MonetaryData, FetchStatus } from '../hooks/useMoneyTrackerData'
 import { SkeletonCard } from './SkeletonCard'
 import { UpdateTimestamp } from './UpdateTimestamp'
+import CoreKpiGrid from './CoreKpiGrid'
+import Watchlist from './Watchlist'
+import SignalHistoryPanel from './SignalHistoryPanel'
+import KoreaPulse from './KoreaPulse'
 
 interface OverviewTabProps {
   stablecoinData: StablecoinData | null
@@ -208,6 +213,37 @@ export default function OverviewTab({ stablecoinData, monetaryData, defiStats, l
 
   return (
     <div className="space-y-6">
+
+      {/* ── 6-블록 핵심 KPI (벤치마크 기반 신규 그리드) ──────── */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <span>🎯</span> 핵심 6 블록 — 모바일은 가로 스와이프
+          </h2>
+          <div className="flex items-center gap-2 text-xs">
+            <Link href="/money-tracker/korea" className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-gray-200 border border-[#30363d]">🇰🇷 Korea Pulse</Link>
+            <Link href="/money-tracker/compare" className="px-2.5 py-1 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-gray-200 border border-[#30363d]">📊 비교 차트</Link>
+          </div>
+        </div>
+        <CoreKpiGrid />
+      </div>
+
+      {/* ── Korea Pulse (메인 흐름에 임베드) ──────────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-bold text-white flex items-center gap-2">
+            <span>🇰🇷</span> Korea Pulse — 김치프리미엄 · 업비트/빗썸 거래대금
+          </h2>
+          <Link href="/money-tracker/korea" className="text-xs text-blue-400 hover:underline">전체 보기 →</Link>
+        </div>
+        <KoreaPulse />
+      </div>
+
+      {/* ── 워치리스트 + 시그널 히스토리 ─────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <Watchlist />
+        <SignalHistoryPanel currentSignals={signals} />
+      </div>
 
       {/* ── KPI 요약 카드 4개 ──────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

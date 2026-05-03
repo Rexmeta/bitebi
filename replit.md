@@ -54,8 +54,12 @@ app/
 ├── trending/            # 트렌딩 페이지 (layout.tsx 메타데이터 포함)
 ├── aggregator/          # 뉴스 애그리게이터
 ├── money-tracker/       # 머니 트래커 대시보드 (실시간 API 연동, 컴포넌트 분리)
-│   ├── components/      # OverviewTab, MoneySupplyTab, MetricsTab, MacroTab, AnalysisTab, ApisTab, SkeletonCard, ErrorState, UpdateTimestamp
-│   └── hooks/           # useMoneyTrackerData (통합 데이터 fetching + 자동 새로고침 + 신호 생성)
+│   ├── components/      # OverviewTab, CoreKpiGrid, KoreaPulse, Watchlist, SignalHistoryPanel, MoneySupplyTab, MetricsTab, MacroTab, AnalysisTab, ApisTab, SkeletonCard, ErrorState, UpdateTimestamp
+│   ├── hooks/           # useMoneyTrackerData (통합 데이터 fetching + 자동 새로고침 + 신호 생성)
+│   ├── [metric]/        # 지표별 SEO 단독 페이지 (/money-tracker/<metric-id>) — KPI 카드, 차트, 정의/계산식, 임베드 코드, 관련 지표
+│   ├── korea/           # Korea Pulse: 김치프리미엄 + 업비트/빗썸 거래대금/점유율 + KRW 마켓 상승률
+│   └── compare/         # 두 지표 오버레이 + 피어슨 + 리드-래그 비교 차트 (URL 공유 가능)
+├── embed/[metric]/      # 외부 사이트 임베드용 경량 차트 (iframe 친화)
 ├── fear-greed/          # 공포·탐욕 지수 페이지 (게이지 차트, 7/30일 추이, OG 이미지)
 ├── opengraph-image.tsx  # 동적 OG 이미지 (홈, BTC/ETH 실시간 가격 포함)
 └── layout.tsx           # 루트 레이아웃 (네비게이션 포함)
@@ -77,6 +81,21 @@ app/
 - `stablecoins` route: SWR persistent cache for DefiLlama + CoinGecko stablecoin data with fallback
 - `fear-greed` route: SWR persistent cache for Alternative.me Fear & Greed Index
 - Persistent cache files are written under `.cache/api-responses/<key>.json` (override via `PERSISTENT_CACHE_DIR`). They survive process restarts so the next cold start does not re-pay the 5–15s external-API tax.
+- `derivatives` route: 2-minute cache for Binance Futures OI/funding (BTC/ETH) + 30-day OI history; liquidations approximated when no public feed
+- `etf-flows` route: 30-minute cache for SoSoValue spot BTC/ETH ETF historical net inflows (estimated fallback when upstream unavailable)
+- `exchange-flows` route: 10-minute cache; stablecoin daily delta from DefiLlama, BTC/ETH netflow currently synthetic until labelled-wallet feed is added (`estimated:true`)
+- `onchain-cohorts` route: 1-hour cache; CoinGecko-derived MVRV/SOPR/realized-price/LTH-share proxies (clearly marked `estimated:true`)
+- `korea` route: 2-minute cache combining Upbit ticker, Bithumb 24h volume, Coinbase BTC-USD, exchangerate.host USD/KRW (kimchi premium + market share)
+- `metric-data/[id]` route: thin wrapper around the metric registry returning `{current, history, source, formula}` JSON or `text/csv`
+- `signals` route: GET returns file-backed signal history + 30/90 day BTC return backtest; POST appends current signals (no-ops on read-only filesystems)
+
+## Money Tracker Conventions
+- Central metric registry at `lib/metrics.ts` — every metric has id, title, category, unit, description, formula, source, apiPath, selector, optional history selector. Used by `[metric]` page, `embed/[metric]` page, `compare` tool, and the `metric-data` export endpoint.
+- 6-block KPI grid (`CoreKpiGrid`) replaces the legacy overview hero on mobile (horizontal swipe) and desktop (3×2 grid). Each card shows current value, 30-day sparkline, and 1D/7D/30D/YTD chips, and links to the SEO detail page.
+- Signal history is persisted at `data/signal-history.json`; `lib/signalHistory.ts` exposes `loadSignalHistory`, `recordSignals`, `backtestSignals`. Backtest pulls 365 days of CoinGecko BTC daily prices and computes +30/+90 day returns from each signal's first-seen date.
+- Watchlist + threshold alerts use browser `localStorage` (`mt_watchlist_v1`) and the Notification API. Server-backed alerts (email/Telegram) are intentionally out of scope and tracked as a follow-up.
+- Compare tool (`/money-tracker/compare?a=...&b=...`) computes Pearson correlation and best ±30 day lead-lag and writes selections to the URL for sharing.
+- `lib/analytics.ts` exposes `trackEvent(name, params)` that forwards to GA4 (`gtag`) and GTM `dataLayer`. Used by KPI grid card clicks and the export buttons.
 
 ## Development Notes
 - Webpack `watchOptions.ignored` is configured to exclude `.local`, `.git`, and `node_modules` to prevent continuous recompilation in the Replit environment

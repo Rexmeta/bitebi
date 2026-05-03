@@ -17,6 +17,7 @@ async function fetchWithRetry(url: string, options: RequestInit, retries = 3): P
 interface StablecoinsPayload {
   stablecoins: any[]
   totalSupply: number
+  totalSupplyHistory: { date: string; value: number }[]
   source: 'defillama' | 'coingecko' | 'none'
   lastUpdated: string
 }
@@ -114,10 +115,26 @@ async function buildStablecoinsData(): Promise<StablecoinsPayload> {
     }
   }
 
+  // Aggregate USD-pegged total-supply history from DefiLlama stablecoincharts.
+  let totalSupplyHistory: { date: string; value: number }[] = []
+  try {
+    const histRes = await fetch('https://stablecoins.llama.fi/stablecoincharts/all', { next: { revalidate: 600 } })
+    if (histRes.ok) {
+      const arr = await histRes.json()
+      if (Array.isArray(arr)) {
+        totalSupplyHistory = arr.slice(-365).map((p: any) => ({
+          date: new Date((p.date || 0) * 1000).toISOString().slice(0, 10),
+          value: Number(p?.totalCirculatingUSD?.peggedUSD ?? 0),
+        })).filter(p => p.date && p.value > 0)
+      }
+    }
+  } catch { /* leave history empty */ }
+
   const stablecoins = llamaData.length > 0 ? llamaData : geckoData
   return {
     stablecoins,
     totalSupply,
+    totalSupplyHistory,
     source: llamaData.length > 0 ? 'defillama' : (geckoData.length > 0 ? 'coingecko' : 'none'),
     lastUpdated: new Date().toISOString(),
   }
