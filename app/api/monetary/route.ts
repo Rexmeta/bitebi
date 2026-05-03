@@ -1,28 +1,19 @@
 import { NextResponse } from 'next/server'
+import { swrCache, setCached } from '@/lib/persistentCache'
 
 // ─────────────────────────────────────────────────────────────
 // Types
 // ─────────────────────────────────────────────────────────────
-interface CacheEntry {
-  data: any
-  timestamp: number
-  completeness: number
-}
-
 interface SeriesPoint {
   date: string
   value: number
 }
 
 // ─────────────────────────────────────────────────────────────
-// Module-scope state
+// Cache TTLs (used by SWR persistent cache)
 // ─────────────────────────────────────────────────────────────
-let cache: CacheEntry | null = null
-const CACHE_TTL_FULL = 5 * 60 * 1000      // 5 min when completeness >= 70%
-const CACHE_TTL_PARTIAL = 60 * 1000        // 60 s otherwise
-
-// In-flight request dedup (stampede prevention)
-let inflight: Promise<any> | null = null
+const CACHE_TTL_FULL = 5 * 60 * 1000      // fresh window when completeness >= 70%
+const CACHE_TTL_PARTIAL = 60 * 1000        // fresh window when partial
 
 // ─────────────────────────────────────────────────────────────
 // Per-request source latency recorder
@@ -869,39 +860,47 @@ export async function GET(request: Request) {
     const url = new URL(request.url)
     const force = url.searchParams.get('force') === '1' || url.searchParams.get('force') === 'true'
 
-    // Cache check (with completeness-aware TTL)
-    if (!force && cache) {
-      const age = Date.now() - cache.timestamp
-      const ttl = cache.completeness >= 70 ? CACHE_TTL_FULL : CACHE_TTL_PARTIAL
-      if (age < ttl) {
-        return NextResponse.json({ success: true, data: cache.data, cached: true })
+    const completeness = (d: any): number => d?.diagnostics?.completeness ?? 0
+    // Dynamic fresh window: 5 min for "complete" payloads, 60 s otherwise.
+    const dynamicTtl = (d: any): number =>
+      completeness(d) >= 70 ? CACHE_TTL_FULL : CACHE_TTL_PARTIAL
+
+    if (force) {
+      const data = await buildMonetaryData()
+      // Persist the freshly-built payload (subject to the same completeness gate
+      // used by the SWR path) and return it directly to this caller.
+      if (completeness(data) >= 50) {
+        await setCached('monetary-v1', data)
       }
+      return NextResponse.json({
+        success: true,
+        data,
+        cached: false,
+        cacheSource: 'forced',
+        cacheAgeMs: 0,
+        stale: false,
+        revalidating: false,
+      })
     }
 
-    // Stampede prevention: reuse in-flight promise
-    if (!inflight) {
-      inflight = (async () => {
-        try {
-          const data = await buildMonetaryData()
-          cache = {
-            data,
-            timestamp: Date.now(),
-            completeness: data?.diagnostics?.completeness ?? 0,
-          }
-          return data
-        } finally {
-          inflight = null
-        }
-      })()
-    }
+    const result = await swrCache({
+      key: 'monetary-v1',
+      freshTtlMs: dynamicTtl,
+      fetcher: buildMonetaryData,
+      shouldStore: (d: any) => completeness(d) >= 50,
+    })
 
-    const data = await inflight
-    return NextResponse.json({ success: true, data })
+    return NextResponse.json({
+      success: true,
+      data: result.data,
+      cached: result.fromCache,
+      cacheSource: result.source,
+      cacheAgeMs: result.age,
+      stale: result.stale,
+      revalidating: result.revalidating,
+    })
   } catch (error) {
     console.error('[monetary] fatal error:', error)
-    if (cache) {
-      return NextResponse.json({ success: true, data: cache.data, cached: true, stale: true })
-    }
     return NextResponse.json(
       { success: false, error: 'Failed to fetch monetary data' },
       { status: 500 },

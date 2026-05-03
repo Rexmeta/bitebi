@@ -72,9 +72,11 @@ app/
 - `market-summary` route: 2-minute in-memory cache for CoinGecko Global data
 - `whale-tracker` route: 30-second in-memory cache for Alchemy whale transactions
 - `youtube` route: 5-minute in-memory cache per channel, parallel Promise.all fetching, pagination support (page/limit params), language/category/channelId query filters
-- `monetary` route: 5-minute in-memory cache for FRED M2 + Federal Funds Rate
-- `defi-stats` route: 5-minute in-memory cache for DefiLlama stablecoins, chains, TVL + CoinGecko BTC price
-- `stablecoins` route: 5-minute in-memory cache for DefiLlama + CoinGecko stablecoin data with fallback
+- `monetary` route: SWR persistent cache (memory + disk via `lib/persistentCache.ts`) for FRED M2 + Federal Funds Rate. Stale entries are served instantly while a background revalidation runs, so cold-start hits return last-known data in <1s.
+- `defi-stats` route: SWR persistent cache for DefiLlama stablecoins, chains, TVL + CoinGecko BTC price
+- `stablecoins` route: SWR persistent cache for DefiLlama + CoinGecko stablecoin data with fallback
+- `fear-greed` route: SWR persistent cache for Alternative.me Fear & Greed Index
+- Persistent cache files are written under `.cache/api-responses/<key>.json` (override via `PERSISTENT_CACHE_DIR`). They survive process restarts so the next cold start does not re-pay the 5–15s external-API tax.
 
 ## Development Notes
 - Webpack `watchOptions.ignored` is configured to exclude `.local`, `.git`, and `node_modules` to prevent continuous recompilation in the Replit environment
