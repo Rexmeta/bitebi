@@ -36,6 +36,19 @@ export interface MonetaryData {
     missing: string[]
     missingReasons?: Record<string, string>
     fredKeyInvalid?: boolean
+    fallbackUsed?: boolean
+    buildDurationMs?: number
+    sourceLatencies?: {
+      label: string
+      status: number
+      ok: boolean
+      durationMs: number
+      attempts: number
+      bytes: number | null
+      errorName?: string
+      finishedAt: string
+      slow?: boolean
+    }[]
   }
 }
 

@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Chart from 'chart.js/auto'
 import type { StablecoinData, MonetaryData, DefiStatsData } from '../hooks/useMoneyTrackerData'
 import { SkeletonCard } from './SkeletonCard'
@@ -30,6 +30,48 @@ function DarkCard({ title, icon, children, timestamp, className = '' }: {
   )
 }
 
+// 외부 호출 라벨 → 사람이 읽는 소스명 매핑
+const SOURCE_LABELS: Record<string, string> = {
+  'nyfed:fedfunds': 'NY Fed · Fed Funds',
+  'wb:policyrate': 'World Bank · 정책금리',
+  'wb-bm:us': 'World Bank · 미국 광의통화',
+  'wb-bm:eu': 'World Bank · EU 광의통화',
+  'wb-bm:jp': 'World Bank · 일본 광의통화',
+  'wb-bm:uk': 'World Bank · 영국 광의통화',
+  'wb-fx:eu': 'World Bank · EUR/USD 환율',
+  'wb-fx:jp': 'World Bank · JPY/USD 환율',
+  'wb-fx:uk': 'World Bank · GBP/USD 환율',
+  'yahoo:spx': 'Yahoo Finance · S&P 500',
+  'yahoo:ndx': 'Yahoo Finance · Nasdaq-100',
+  'yahoo:xau': 'Yahoo Finance · Gold',
+  'fred:M2SL': 'FRED · 미국 M2',
+  'fred:FEDFUNDS': 'FRED · Fed Funds',
+  'fred:MABMM301EZM189S': 'FRED · EU M3',
+  'fred:MYAGM2JPM189S': 'FRED · 일본 M2',
+  'fred:MABMM301GBM657S': 'FRED · 영국 M3',
+  'fred:DEXUSEU': 'FRED · EUR/USD',
+  'fred:DEXJPUS': 'FRED · JPY/USD',
+  'fred:DEXUSUK': 'FRED · GBP/USD',
+  'fred:SP500': 'FRED · S&P 500',
+  'fred:NASDAQ100': 'FRED · Nasdaq-100',
+  'fred:GOLDPMGBD228NLBM': 'FRED · Gold',
+}
+function prettySource(label: string): string {
+  return SOURCE_LABELS[label] || label
+}
+function formatRelative(iso: string): string {
+  const t = new Date(iso).getTime()
+  if (!Number.isFinite(t)) return iso
+  const diff = Math.max(0, Date.now() - t)
+  const s = Math.floor(diff / 1000)
+  if (s < 60) return `${s}초 전`
+  const m = Math.floor(s / 60)
+  if (m < 60) return `${m}분 전`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}시간 전`
+  return `${Math.floor(h / 24)}일 전`
+}
+
 export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats, loading, onRetry }: MoneySupplyTabProps) {
   const m2ChartRef      = useRef<Chart | null>(null)
   const m2CanvasRef     = useRef<HTMLCanvasElement>(null)
@@ -37,6 +79,8 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
   const historyCanvasRef = useRef<HTMLCanvasElement>(null)
   const chainChartRef   = useRef<Chart | null>(null)
   const chainCanvasRef  = useRef<HTMLCanvasElement>(null)
+
+  const [diagOpen, setDiagOpen] = useState(false)
 
   const usM2        = monetaryData?.usM2 || null
   const totalSupply = stablecoinData?.totalSupply || defiStats?.totalStablecoinSupply || 0
@@ -463,6 +507,143 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
           </div>
         </div>
       </DarkCard>
+
+      {/* ── 데이터 소스 상태 진단 패널 ── */}
+      {(() => {
+        const lats = diag?.sourceLatencies || []
+        const okCount = lats.filter(l => l.ok && !l.slow).length
+        const slowCount = lats.filter(l => l.ok && l.slow).length
+        const failCount = lats.filter(l => !l.ok).length
+        const overallDot =
+          failCount > 0 ? 'bg-red-400'
+          : slowCount > 0 ? 'bg-amber-400'
+          : 'bg-emerald-400'
+        const overallText =
+          failCount > 0 ? `${failCount}건 실패`
+          : slowCount > 0 ? `${slowCount}건 지연`
+          : lats.length > 0 ? '모두 정상'
+          : '데이터 없음'
+
+        const reasonEntries = Object.entries(reasons || {})
+        return (
+          <div className="bg-[#161b22] border border-[#21262d] rounded-xl">
+            <button
+              type="button"
+              onClick={() => setDiagOpen(v => !v)}
+              className="w-full flex items-center justify-between gap-3 px-5 py-4 text-left"
+              aria-expanded={diagOpen}
+            >
+              <div className="flex items-center gap-2">
+                <span>🩺</span>
+                <span className="text-sm font-bold text-white">데이터 소스 상태</span>
+                <span className={`w-2 h-2 rounded-full ${overallDot} ml-1`} />
+                <span className="text-xs text-gray-400">{overallText}</span>
+              </div>
+              <div className="flex items-center gap-3 text-xs text-gray-500">
+                <span>경로: <span className="text-gray-300">{sourceTag}</span></span>
+                {diag?.completeness != null && (
+                  <span>완성도: <span className="text-gray-300">{diag.completeness}%</span></span>
+                )}
+                {diag?.buildDurationMs != null && (
+                  <span>총 {diag.buildDurationMs}ms</span>
+                )}
+                <span className="text-gray-400">{diagOpen ? '▲' : '▼'}</span>
+              </div>
+            </button>
+
+            {diagOpen && (
+              <div className="px-5 pb-5 border-t border-[#21262d] pt-4 space-y-4">
+                {/* 폴백 경로 안내 */}
+                {diag?.fallbackUsed && (
+                  <div className="text-xs text-amber-300/90 bg-amber-400/5 border border-amber-400/20 rounded-lg px-3 py-2">
+                    ⚠ 일부 또는 전체 항목이 폴백 데이터로 대체되었습니다
+                    {diag.source === 'hybrid'
+                      ? ' (FRED 응답 누락분을 World Bank · NY Fed · Yahoo Finance로 보충)'
+                      : ' (FRED 키 사용 불가 → World Bank · NY Fed · Yahoo Finance 사용)'}
+                    .
+                  </div>
+                )}
+
+                {/* 누락된 필드 사유 */}
+                {reasonEntries.length > 0 && (
+                  <div>
+                    <div className="text-xs text-gray-400 font-semibold mb-2">누락된 지표</div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {reasonEntries.map(([field, reason]) => (
+                        <div key={field} className="text-xs bg-[#0d1117] border border-[#21262d] rounded-md px-3 py-2">
+                          <span className="text-red-300/90 font-medium">{field}</span>
+                          <span className="text-gray-500"> · {reason}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 외부 호출 목록 */}
+                {lats.length > 0 ? (
+                  <div>
+                    <div className="text-xs text-gray-400 font-semibold mb-2">
+                      외부 호출 ({okCount} 정상 / {slowCount} 지연 / {failCount} 실패)
+                    </div>
+                    <div className="text-[10px] text-gray-500 mb-2">
+                      ※ 소요시간은 마지막 시도 기준이며, 시도 횟수는 재시도 누적값입니다.
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-gray-500 border-b border-[#21262d]">
+                            <th className="text-left font-medium py-1.5 pr-3">상태</th>
+                            <th className="text-left font-medium py-1.5 pr-3">소스</th>
+                            <th className="text-right font-medium py-1.5 pr-3">HTTP</th>
+                            <th className="text-right font-medium py-1.5 pr-3">소요</th>
+                            <th className="text-right font-medium py-1.5 pr-3">시도</th>
+                            <th className="text-right font-medium py-1.5">마지막 호출</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {lats.slice().sort((a, b) => b.durationMs - a.durationMs).map((l, idx) => {
+                            const dot = !l.ok ? 'bg-red-400' : l.slow ? 'bg-amber-400' : 'bg-emerald-400'
+                            const label = !l.ok ? '실패' : l.slow ? '지연' : '정상'
+                            const labelColor = !l.ok ? 'text-red-300' : l.slow ? 'text-amber-300' : 'text-emerald-300'
+                            const httpDisplay = l.status === 0 ? (l.errorName || 'ERR') : String(l.status)
+                            return (
+                              <tr key={`${l.label}-${idx}`} className="border-b border-[#21262d]/50 last:border-0">
+                                <td className="py-1.5 pr-3">
+                                  <span className="inline-flex items-center gap-1.5">
+                                    <span className={`w-1.5 h-1.5 rounded-full ${dot}`} />
+                                    <span className={labelColor}>{label}</span>
+                                  </span>
+                                </td>
+                                <td className="py-1.5 pr-3 text-gray-300">{prettySource(l.label)}</td>
+                                <td className="py-1.5 pr-3 text-right text-gray-400">{httpDisplay}</td>
+                                <td className="py-1.5 pr-3 text-right text-gray-400">{l.durationMs}ms</td>
+                                <td className="py-1.5 pr-3 text-right text-gray-500">{l.attempts}</td>
+                                <td className="py-1.5 text-right text-gray-500" title={l.finishedAt}>{formatRelative(l.finishedAt)}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-500">캐시된 응답이라 최근 외부 호출 기록이 없습니다. 강제 새로고침 시 표시됩니다.</div>
+                )}
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={onRetry}
+                    className="text-xs px-3 py-1.5 rounded-md bg-[#21262d] hover:bg-[#30363d] text-gray-200 border border-[#30363d]"
+                  >
+                    🔄 다시 가져오기
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
 
     </div>
   )

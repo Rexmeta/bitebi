@@ -24,6 +24,24 @@ const CACHE_TTL_PARTIAL = 60 * 1000        // 60 s otherwise
 // In-flight request dedup (stampede prevention)
 let inflight: Promise<any> | null = null
 
+// ─────────────────────────────────────────────────────────────
+// Per-request source latency recorder
+// ─────────────────────────────────────────────────────────────
+interface SourceLatency {
+  label: string
+  status: number          // HTTP status, 0 = network error / abort
+  ok: boolean             // counted as a successful response
+  durationMs: number      // duration of the LAST attempt only (not cumulative retry wall-time)
+  attempts: number        // total attempts performed (cumulative across retries)
+  bytes: number | null    // content-length, null if unknown
+  errorName?: string      // error name on network failure
+  finishedAt: string      // ISO timestamp of last finish
+}
+let currentLatencies: SourceLatency[] | null = null
+function recordLatency(entry: SourceLatency) {
+  if (currentLatencies) currentLatencies.push(entry)
+}
+
 // FRED key health cache
 let fredKeyInvalid = false
 let fredKeyCheckedAt = 0
@@ -72,15 +90,37 @@ async function fetchWithTimeout(
       const res = await fetch(url, { ...init, signal: ctrl.signal })
       clearTimeout(timer)
       const dur = Date.now() - t0
-      const len = res.headers.get('content-length') || '?'
+      const lenHeader = res.headers.get('content-length')
+      const len = lenHeader || '?'
       console.log(`[monetary][${label}] status=${res.status} len=${len} dur=${dur}ms attempt=${attempt + 1}`)
       if (!res.ok && attempt < retries) continue
+      recordLatency({
+        label,
+        status: res.status,
+        ok: res.ok,
+        durationMs: dur,
+        attempts: attempt + 1,
+        bytes: lenHeader ? parseInt(lenHeader, 10) || null : null,
+        finishedAt: new Date().toISOString(),
+      })
       return res
     } catch (err: any) {
       clearTimeout(timer)
       const dur = Date.now() - t0
       console.log(`[monetary][${label}] error=${err?.name || err?.message} dur=${dur}ms attempt=${attempt + 1}`)
-      if (attempt >= retries) return null
+      if (attempt >= retries) {
+        recordLatency({
+          label,
+          status: 0,
+          ok: false,
+          durationMs: dur,
+          attempts: attempt + 1,
+          bytes: null,
+          errorName: err?.name || err?.message || 'unknown',
+          finishedAt: new Date().toISOString(),
+        })
+        return null
+      }
     }
   }
   return null
@@ -337,6 +377,8 @@ async function fredFetchSeries(seriesId: string, apiKey: string): Promise<{ rows
 // Main monetary aggregator (called via the in-flight cache)
 // ─────────────────────────────────────────────────────────────
 async function buildMonetaryData() {
+  currentLatencies = []
+  const buildStartedAt = Date.now()
   const rawKey = process.env.FRED_API_KEY
   // If we previously detected the key as invalid recently, treat as absent
   if (fredKeyInvalid && (Date.now() - fredKeyCheckedAt) < FRED_KEY_RECHECK_MS) {
@@ -575,6 +617,13 @@ async function buildMonetaryData() {
   else if (fallbackUsed) source = 'hybrid'
   else source = 'fred'
 
+  // Snapshot recorded latencies and reset for next request
+  const sourceLatencies = currentLatencies ? currentLatencies.slice() : []
+  currentLatencies = null
+
+  // Mark sources as degraded if slower than this (ms)
+  const SLOW_THRESHOLD_MS = 3000
+
   data.diagnostics = {
     source,
     isEstimated: source !== 'fred',
@@ -584,6 +633,12 @@ async function buildMonetaryData() {
     missing,
     missingReasons: reasons,
     fredKeyInvalid: data.fredKeyInvalid,
+    fallbackUsed,
+    buildDurationMs: Date.now() - buildStartedAt,
+    sourceLatencies: sourceLatencies.map(s => ({
+      ...s,
+      slow: s.ok && s.durationMs >= SLOW_THRESHOLD_MS,
+    })),
   }
 
   return data
