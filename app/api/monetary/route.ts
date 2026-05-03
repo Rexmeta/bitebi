@@ -154,6 +154,142 @@ async function fetchYahooDaily(symbol: string, label: string): Promise<SeriesPoi
 }
 
 // ─────────────────────────────────────────────────────────────
+// Free monthly broad-money sources (no FRED key required)
+// ─────────────────────────────────────────────────────────────
+
+// Frankfurter (ECB-backed) — latest USD-base FX
+async function fetchFrankfurterFx(): Promise<{ eurUsd: number; jpyUsd: number; gbpUsd: number } | null> {
+  const res = await fetchWithTimeout(
+    'https://api.frankfurter.dev/v1/latest?base=USD&symbols=EUR,JPY,GBP',
+    { next: { revalidate: 21600 } },
+    { label: 'frankfurter:fx' },
+  )
+  if (!res || !res.ok) return null
+  try {
+    const j = await res.json()
+    const r = j?.rates || {}
+    if (!Number.isFinite(r.EUR) || !Number.isFinite(r.JPY) || !Number.isFinite(r.GBP)) return null
+    // base=USD, rates.EUR = EUR per 1 USD → eurUsd (USD per EUR) = 1/r.EUR
+    return { eurUsd: 1 / r.EUR, jpyUsd: r.JPY, gbpUsd: 1 / r.GBP }
+  } catch {
+    return null
+  }
+}
+
+// FRED public graphdata CSV (no API key required)
+async function fetchFredCsvNoKey(seriesId: string, label: string): Promise<SeriesPoint[]> {
+  const url = `https://fred.stlouisfed.org/graph/fredgraph.csv?id=${seriesId}`
+  const res = await fetchWithTimeout(
+    url,
+    { headers: { Accept: 'text/csv' }, next: { revalidate: 21600 } },
+    { label: `fredcsv:${label}` },
+  )
+  if (!res || !res.ok) return []
+  try {
+    const text = await res.text()
+    const lines = text.trim().split('\n')
+    if (lines.length < 2) return []
+    const out: SeriesPoint[] = []
+    for (let i = 1; i < lines.length; i++) {
+      const parts = lines[i].split(',')
+      if (parts.length < 2) continue
+      const d = parts[0].trim()
+      const v = parseFloat(parts[1])
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d) && Number.isFinite(v)) {
+        out.push({ date: d, value: v })
+      }
+    }
+    return out.slice(-36)
+  } catch {
+    return []
+  }
+}
+
+// ECB Statistical Data Warehouse — Euro-area M3 outstanding (millions EUR, monthly)
+async function fetchEcbM3Monthly(): Promise<SeriesPoint[]> {
+  const url =
+    'https://data-api.ecb.europa.eu/service/data/BSI/M.U2.Y.V.M30.X.1.U2.2300.Z01.E?format=jsondata&lastNObservations=36'
+  const res = await fetchWithTimeout(
+    url,
+    { headers: { Accept: 'application/json' }, next: { revalidate: 21600 } },
+    { label: 'ecb:m3' },
+  )
+  if (!res || !res.ok) return []
+  try {
+    const j = await res.json()
+    const seriesObj = j?.dataSets?.[0]?.series
+    if (!seriesObj) return []
+    const seriesKey = Object.keys(seriesObj)[0]
+    const obs = seriesKey != null ? seriesObj[seriesKey]?.observations : null
+    const periods: any[] = j?.structure?.dimensions?.observation?.[0]?.values || []
+    if (!obs || periods.length === 0) return []
+    const out: SeriesPoint[] = []
+    for (const k of Object.keys(obs)) {
+      const idx = parseInt(k, 10)
+      const period: string | undefined = periods[idx]?.id
+      const v = obs[k]?.[0]
+      if (period && Number.isFinite(v) && /^\d{4}-\d{2}$/.test(period)) {
+        // value is in millions of EUR → convert to EUR
+        out.push({ date: `${period}-01`, value: (v as number) * 1e6 })
+      }
+    }
+    return out.sort((a, b) => a.date.localeCompare(b.date)).slice(-36)
+  } catch {
+    return []
+  }
+}
+
+// Bank of England IADB — UK M4 monthly outstanding (sterling millions, SA)
+async function fetchBoeM4Monthly(): Promise<SeriesPoint[]> {
+  const today = new Date()
+  const dd = String(today.getDate()).padStart(2, '0')
+  const mmm = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][today.getMonth()]
+  const yyyy = today.getFullYear()
+  const dateTo = `${dd}/${mmm}/${yyyy}`
+  const fromYear = yyyy - 3
+  const url =
+    `https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes` +
+    `&Datefrom=01/Jan/${fromYear}&Dateto=${encodeURIComponent(dateTo)}` +
+    `&SeriesCodes=LPMAUYN&CSVF=TT&UsingCodes=Y&VPD=Y&VFD=N`
+  const res = await fetchWithTimeout(
+    url,
+    { headers: { Accept: 'text/csv' }, next: { revalidate: 21600 } },
+    { label: 'boe:m4' },
+  )
+  if (!res || !res.ok) return []
+  try {
+    const text = await res.text()
+    const lines = text.trim().split('\n')
+    // Header rows precede a "DATE,LPMAUYN" line; skip until then.
+    let dataStart = -1
+    for (let i = 0; i < lines.length; i++) {
+      if (/^DATE\s*,/i.test(lines[i])) { dataStart = i + 1; break }
+    }
+    if (dataStart < 0) return []
+    const monthMap: Record<string, string> = {
+      Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+      Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
+    }
+    const out: SeriesPoint[] = []
+    for (let i = dataStart; i < lines.length; i++) {
+      const [d, vRaw] = lines[i].split(',')
+      if (!d || vRaw == null) continue
+      const m = d.trim().match(/^(\d{1,2})\s+([A-Za-z]{3})\s+(\d{4})$/)
+      if (!m) continue
+      const mm = monthMap[m[2]]
+      if (!mm) continue
+      const v = parseFloat(vRaw)
+      if (!Number.isFinite(v)) continue
+      // GBP millions → GBP
+      out.push({ date: `${m[3]}-${mm}-01`, value: v * 1e6 })
+    }
+    return out.sort((a, b) => a.date.localeCompare(b.date)).slice(-36)
+  } catch {
+    return []
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // World Bank Broad Money fallback (annual, current LCU → USD)
 // ─────────────────────────────────────────────────────────────
 async function fetchWorldBankBroadMoneyUSD(country: string, label: string): Promise<SeriesPoint[]> {
@@ -275,10 +411,19 @@ async function fetchFallbackMonetaryData() {
   // ── Run all fetches concurrently ──────────────────────────
   const [
     fed,
+    fx,
+    usCsv, ecbEu, jpCsv, ukBoe,
     usWb, euWb, jpWb, ukWb,
     spx, ndx, xau,
   ] = await Promise.all([
     fetchFedFundsNYFed(),
+    fetchFrankfurterFx(),
+    // Monthly preferred sources (no FRED key required)
+    fetchFredCsvNoKey('M2SL', 'us-m2'),                 // billions of USD
+    fetchEcbM3Monthly(),                                 // EUR
+    fetchFredCsvNoKey('MABMM301JPM189S', 'jp-m2'),      // JPY (national currency level)
+    fetchBoeM4Monthly(),                                 // GBP
+    // Annual World Bank fallbacks (already in USD)
     fetchWorldBankBroadMoneyUSD('USA', 'us'),
     fetchWorldBankBroadMoneyUSD('EMU', 'eu'),
     fetchWorldBankBroadMoneyUSD('JPN', 'jp'),
@@ -297,42 +442,81 @@ async function fetchFallbackMonetaryData() {
     if (wbRate != null) fallback.fedFundsRate = wbRate
   }
 
-  if (usWb.length > 0) {
-    fallback.usM2 = usWb[usWb.length - 1].value
-    fallback.usM2History = usWb
+  // Sensible FX defaults if Frankfurter is unavailable
+  const eurUsd = fx?.eurUsd ?? 1.08
+  const jpyUsd = fx?.jpyUsd ?? 150
+  const gbpUsd = fx?.gbpUsd ?? 1.26
+
+  // ── Per-region series in USD: prefer monthly, fall back to annual WB ──
+  // US M2 (M2SL is billions of USD)
+  let usSeries: SeriesPoint[] = []
+  if (usCsv.length > 0) {
+    usSeries = usCsv.slice(-24).map(p => ({ date: p.date, value: p.value * 1e9 }))
+  } else if (usWb.length > 0) {
+    usSeries = usWb
+  }
+  if (usSeries.length > 0) {
+    fallback.usM2 = usSeries[usSeries.length - 1].value
+    fallback.usM2History = usSeries
+  }
+
+  // EU M3 (ECB returns EUR; convert via eurUsd)
+  let euSeries: SeriesPoint[] = []
+  if (ecbEu.length > 0) {
+    euSeries = ecbEu.slice(-24).map(p => ({ date: p.date, value: p.value * eurUsd }))
+  } else if (euWb.length > 0) {
+    euSeries = euWb
+  }
+
+  // JP M2 (FRED CSV gives JPY level; convert via jpyUsd)
+  let jpSeries: SeriesPoint[] = []
+  if (jpCsv.length > 0) {
+    jpSeries = jpCsv.slice(-24).map(p => ({ date: p.date, value: p.value / jpyUsd }))
+  } else if (jpWb.length > 0) {
+    jpSeries = jpWb
+  }
+
+  // UK M4 (BoE returns GBP; convert via gbpUsd)
+  let ukSeries: SeriesPoint[] = []
+  if (ukBoe.length > 0) {
+    ukSeries = ukBoe.slice(-24).map(p => ({ date: p.date, value: p.value * gbpUsd }))
+  } else if (ukWb.length > 0) {
+    ukSeries = ukWb
   }
 
   fallback.regionalM2 = {
-    eu: euWb.length > 0 ? euWb[euWb.length - 1].value : 0,
-    jp: jpWb.length > 0 ? jpWb[jpWb.length - 1].value : 0,
-    uk: ukWb.length > 0 ? ukWb[ukWb.length - 1].value : 0,
+    eu: euSeries.length ? euSeries[euSeries.length - 1].value : 0,
+    jp: jpSeries.length ? jpSeries[jpSeries.length - 1].value : 0,
+    uk: ukSeries.length ? ukSeries[ukSeries.length - 1].value : 0,
   }
 
-  // Global M2: only sum years where ALL four regions have data; forward-fill missing months
-  const yearMap: Record<string, { us?: number; eu?: number; jp?: number; uk?: number }> = {}
-  const addToYearMap = (rows: SeriesPoint[], k: 'us' | 'eu' | 'jp' | 'uk') => {
+  // Global M2: aggregate by month-key (YYYY-MM); annual points slot into Dec.
+  // Forward-fill the most recent value per region so months where only some
+  // regions report (typical) still produce a sum.
+  const monthMap: Record<string, { us?: number; eu?: number; jp?: number; uk?: number }> = {}
+  const addMonth = (rows: SeriesPoint[], k: 'us' | 'eu' | 'jp' | 'uk') => {
     for (const p of rows) {
-      const y = p.date.substring(0, 4)
-      yearMap[y] = yearMap[y] || {}
-      yearMap[y][k] = p.value
+      const m = p.date.substring(0, 7) // "YYYY-MM"
+      monthMap[m] = monthMap[m] || {}
+      monthMap[m][k] = p.value
     }
   }
-  addToYearMap(usWb, 'us')
-  addToYearMap(euWb, 'eu')
-  addToYearMap(jpWb, 'jp')
-  addToYearMap(ukWb, 'uk')
+  addMonth(usSeries, 'us')
+  addMonth(euSeries, 'eu')
+  addMonth(jpSeries, 'jp')
+  addMonth(ukSeries, 'uk')
 
-  const sortedYears = Object.keys(yearMap).sort()
+  const sortedMonths = Object.keys(monthMap).sort()
   const carry: { us?: number; eu?: number; jp?: number; uk?: number } = {}
   const globalHist: SeriesPoint[] = []
-  for (const y of sortedYears) {
-    const cur = yearMap[y]
+  for (const m of sortedMonths) {
+    const cur = monthMap[m]
     if (cur.us != null) carry.us = cur.us
     if (cur.eu != null) carry.eu = cur.eu
     if (cur.jp != null) carry.jp = cur.jp
     if (cur.uk != null) carry.uk = cur.uk
     if (carry.us != null && carry.eu != null && carry.jp != null && carry.uk != null) {
-      globalHist.push({ date: `${y}-12-31`, value: carry.us + carry.eu + carry.jp + carry.uk })
+      globalHist.push({ date: `${m}-01`, value: carry.us + carry.eu + carry.jp + carry.uk })
     }
   }
   if (globalHist.length > 0) {
