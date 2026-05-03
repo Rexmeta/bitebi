@@ -3,6 +3,7 @@ import { getMetric } from '@/lib/metrics'
 import { getBaseUrl } from '@/lib/baseUrl'
 
 export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
 export const alt = '머니트래커 지표'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
@@ -39,8 +40,9 @@ function sparkPoints(values: number[], w: number, h: number): string {
   return values.map((v, i) => `${(i * step).toFixed(1)},${(h - ((v - min) / range) * h).toFixed(1)}`).join(' ')
 }
 
-export default async function MetricOgImage({ params }: { params: { metric: string } }) {
-  const m = getMetric(params.metric)
+export default async function MetricOgImage({ params }: { params: Promise<{ metric: string }> }) {
+  const { metric } = await params
+  const m = getMetric(metric)
   if (!m) {
     return new ImageResponse(<div style={{ display: 'flex', width: '100%', height: '100%', background: '#0d1117', color: 'white', alignItems: 'center', justifyContent: 'center', fontSize: 48 }}>머니트래커</div>, size)
   }
