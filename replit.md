@@ -68,6 +68,10 @@ app/
 ## Environment Variables
 - `ALCHEMY_API_KEY` — Alchemy SDK API key for whale transaction tracking (server-side only)
 - `FRED_API_KEY` — (Optional) FRED API key for US M2 money supply and Federal Funds Rate data. Free at https://fred.stlouisfed.org/docs/api/api_key.html
+- `RESEND_API_KEY` — (Optional) Resend API key used by `/api/watchlist-cron` to send threshold-breach emails. When unset, email dispatch is silently skipped.
+- `RESEND_FROM` — (Optional) Verified Resend sender, e.g. `Bitebi Alerts <alerts@yourdomain.com>`. Defaults to `Bitebi Alerts <alerts@bitebi.app>`.
+- `TELEGRAM_BOT_TOKEN` — (Optional) Telegram bot token (BotFather) used by `/api/watchlist-cron` to send messages. When unset, Telegram dispatch is silently skipped.
+- `CRON_SECRET` — (Optional but recommended) Shared secret required as `?secret=…` or `Authorization: Bearer …` on `/api/watchlist-cron`. When unset the route is open (dev only).
 
 ## API Caching
 - `coin-market` route: 60-second in-memory cache for CoinGecko data, with stale-data fallback on errors
@@ -93,7 +97,8 @@ app/
 - Central metric registry at `lib/metrics.ts` — every metric has id, title, category, unit, description, formula, source, apiPath, selector, optional history selector. Used by `[metric]` page, `embed/[metric]` page, `compare` tool, and the `metric-data` export endpoint.
 - 6-block KPI grid (`CoreKpiGrid`) replaces the legacy overview hero on mobile (horizontal swipe) and desktop (3×2 grid). Each card shows current value, 30-day sparkline, and 1D/7D/30D/YTD chips, and links to the SEO detail page.
 - Signal history is persisted at `data/signal-history.json`; `lib/signalHistory.ts` exposes `loadSignalHistory`, `recordSignals`, `backtestSignals`. Backtest pulls 365 days of CoinGecko BTC daily prices and computes +30/+90 day returns from each signal's first-seen date.
-- Watchlist + threshold alerts use browser `localStorage` (`mt_watchlist_v1`) and the Notification API. Server-backed alerts (email/Telegram) are intentionally out of scope and tracked as a follow-up.
+- Watchlist + threshold alerts use browser `localStorage` (`mt_watchlist_v1`) and the Notification API for foreground UX, and are also synced to the backend via a lightweight device token (`mt_device_token_v1`). Server records are persisted at `data/watchlists.json` (`lib/watchlistStore.ts`). The cron-style route `GET /api/watchlist-cron` (intended to be hit every ~5 min by Replit Scheduled Deployments / GitHub Actions) evaluates every watched item, dispatches email via Resend (`lib/notify.ts → sendEmail`) and Telegram via the Bot API (`sendTelegram`), and applies a 6-hour per-(token,metric) cooldown to avoid spam. Authorization via `CRON_SECRET` (query `?secret=` or `Authorization: Bearer`).
+- Watchlist API: `GET/POST/DELETE /api/watchlist`, all requiring an `x-device-token` header (16–128 char URL-safe). POST body accepts `{ items, email, telegramChatId }` and validates each item against `lib/metrics.ts`.
 - Compare tool (`/money-tracker/compare?a=...&b=...`) computes Pearson correlation and best ±30 day lead-lag and writes selections to the URL for sharing.
 - `lib/analytics.ts` exposes `trackEvent(name, params)` that forwards to GA4 (`gtag`) and GTM `dataLayer`. Used by KPI grid card clicks and the export buttons.
 
