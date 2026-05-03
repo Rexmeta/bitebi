@@ -26,6 +26,7 @@ export interface MonetaryData {
   marketIndices: MarketIndexData
   lastUpdated: string
   hasFredKey: boolean
+  fredKeyInvalid?: boolean
   diagnostics?: {
     source: 'fred' | 'hybrid' | 'fallback'
     isEstimated: boolean
@@ -33,6 +34,8 @@ export interface MonetaryData {
     available: number
     total: number
     missing: string[]
+    missingReasons?: Record<string, string>
+    fredKeyInvalid?: boolean
   }
 }
 
@@ -81,10 +84,22 @@ export interface MoneyTrackerState {
   error: string | null
   lastFetchTime: string | null
   signals: Signal[]
-  refetch: () => void
+  refetch: (opts?: { force?: boolean }) => void
 }
 
 const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
+const CLIENT_FETCH_TIMEOUT = 10_000
+
+async function fetchJsonWithTimeout(url: string, timeoutMs = CLIENT_FETCH_TIMEOUT): Promise<any> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const r = await fetch(url, { signal: ctrl.signal })
+    return await r.json()
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 function generateSignals(
   stablecoinData: StablecoinData | null,
@@ -204,16 +219,18 @@ export function useMoneyTrackerData(): MoneyTrackerState {
   const [signals, setSignals] = useState<Signal[]>([])
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (opts?: { force?: boolean }) => {
     setLoading(true)
     setError(null)
 
+    const monetaryUrl = opts?.force ? '/api/monetary?force=1' : '/api/monetary'
+
     try {
       const [stableRes, monetaryRes, defiRes, fearRes] = await Promise.allSettled([
-        fetch('/api/stablecoins').then(r => r.json()),
-        fetch('/api/monetary').then(r => r.json()),
-        fetch('/api/defi-stats').then(r => r.json()),
-        fetch('/api/fear-greed').then(r => r.json()),
+        fetchJsonWithTimeout('/api/stablecoins'),
+        fetchJsonWithTimeout(monetaryUrl),
+        fetchJsonWithTimeout('/api/defi-stats'),
+        fetchJsonWithTimeout('/api/fear-greed'),
       ])
 
       let newStable: StablecoinData | null = null
@@ -221,24 +238,29 @@ export function useMoneyTrackerData(): MoneyTrackerState {
       let newDefi: DefiStatsData | null = null
       let newFear: FearGreedItem[] | null = null
 
-      if (stableRes.status === 'fulfilled' && !stableRes.value.error) {
+      if (stableRes.status === 'fulfilled' && stableRes.value && !stableRes.value.error) {
         newStable = stableRes.value
         setStablecoinData(newStable)
       }
 
-      if (monetaryRes.status === 'fulfilled' && monetaryRes.value.success) {
+      if (monetaryRes.status === 'fulfilled' && monetaryRes.value?.success) {
         newMonetary = monetaryRes.value.data
         setMonetaryData(newMonetary)
       }
 
-      if (defiRes.status === 'fulfilled' && defiRes.value.success) {
+      if (defiRes.status === 'fulfilled' && defiRes.value?.success) {
         newDefi = defiRes.value.data
         setDefiStats(newDefi)
       }
 
-      if (fearRes.status === 'fulfilled' && fearRes.value.success) {
+      if (fearRes.status === 'fulfilled' && fearRes.value?.success) {
         newFear = fearRes.value.data
         setFearGreedData(newFear)
+      }
+
+      const failures = [stableRes, monetaryRes, defiRes, fearRes].filter(r => r.status === 'rejected').length
+      if (failures > 0) {
+        console.warn(`[useMoneyTrackerData] ${failures}/4 sources failed/timed out`)
       }
 
       const newSignals = generateSignals(newStable, newMonetary, newDefi, newFear)
@@ -258,7 +280,7 @@ export function useMoneyTrackerData(): MoneyTrackerState {
 
   useEffect(() => {
     fetchData()
-    intervalRef.current = setInterval(fetchData, AUTO_REFRESH_INTERVAL)
+    intervalRef.current = setInterval(() => fetchData(), AUTO_REFRESH_INTERVAL)
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }

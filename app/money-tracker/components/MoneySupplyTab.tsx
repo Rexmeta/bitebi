@@ -158,6 +158,23 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
     )
   }
 
+  const diag = monetaryData?.diagnostics
+  const reasons = diag?.missingReasons || {}
+  const isEstimated = diag?.isEstimated
+  const sourceTag =
+    diag?.source === 'fred' ? 'FRED'
+      : diag?.source === 'hybrid' ? 'FRED + 폴백'
+        : monetaryData?.fredKeyInvalid ? '키 무효 → 폴백' : '무료 API 폴백'
+
+  type MetricKey = 'usM2' | 'fedFunds' | 'globalM2' | 'regionalM2' | 'sp500' | 'nasdaq100' | 'gold'
+  const microLabelFor = (key: MetricKey, hasValue: boolean): string | null => {
+    if (!hasValue) return reasons[key] ? `데이터 없음 (${reasons[key]})` : '데이터 없음'
+    if (isEstimated) return `추정치 · ${sourceTag}`
+    return null
+  }
+  type KpiItem = { key: MetricKey | null; has: boolean; label: string; value: string; color: string; dot: string; sub: string }
+  type MarketKpiItem = { key: MetricKey; has: boolean; label: string; value: string; color: string; dot: string; sub: string }
+
   // 지역별 M2
   const regional = monetaryData?.regionalM2
   const regionRows = [
@@ -176,21 +193,56 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
 
       {/* ── KPI 카드 4개 ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {[
-          { label: '미국 M2', value: usM2 ? `$${(usM2/1e12).toFixed(2)}T` : '-', color: 'text-indigo-400', dot: 'bg-indigo-400', sub: '연준 기준 통화량' },
-          { label: '스테이블 총량', value: totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-', color: 'text-amber-400', dot: 'bg-amber-400', sub: '온체인 달러 공급' },
-          { label: 'M2 침투율', value: penetration != null ? `${penetration.toFixed(3)}%` : '-', color: 'text-cyan-400', dot: 'bg-cyan-400', sub: '스테이블/미국 M2' },
-          { label: '글로벌 M2', value: globalM2Total > 0 ? `$${(globalM2Total/1e12).toFixed(2)}T` : '-', color: 'text-emerald-400', dot: 'bg-emerald-400', sub: 'US+EU+JP+UK' },
-        ].map(kpi => (
-          <div key={kpi.label} className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${kpi.dot}`} />
-              <span className="text-xs text-gray-400">{kpi.label}</span>
+        {([
+          { key: 'usM2',     has: !!usM2,             label: '미국 M2',      value: usM2 ? `$${(usM2/1e12).toFixed(2)}T` : '-', color: 'text-indigo-400', dot: 'bg-indigo-400', sub: '연준 기준 통화량' },
+          { key: null,       has: totalSupply > 0,    label: '스테이블 총량', value: totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-', color: 'text-amber-400', dot: 'bg-amber-400', sub: '온체인 달러 공급' },
+          { key: null,       has: penetration != null,label: 'M2 침투율',    value: penetration != null ? `${penetration.toFixed(3)}%` : '-', color: 'text-cyan-400', dot: 'bg-cyan-400', sub: '스테이블/미국 M2' },
+          { key: 'globalM2', has: globalM2Total > 0,  label: '글로벌 M2',    value: globalM2Total > 0 ? `$${(globalM2Total/1e12).toFixed(2)}T` : '-', color: 'text-emerald-400', dot: 'bg-emerald-400', sub: 'US+EU+JP+UK' },
+        ] satisfies KpiItem[]).map(kpi => {
+          const micro = kpi.key ? microLabelFor(kpi.key, kpi.has) : null
+          return (
+            <div key={kpi.label} className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${kpi.dot}`} />
+                <span className="text-xs text-gray-400">{kpi.label}</span>
+              </div>
+              <div className={`text-xl sm:text-2xl font-bold ${kpi.color} mb-0.5`}>{kpi.value}</div>
+              <div className="text-xs text-gray-500">{kpi.sub}</div>
+              {micro && (
+                <div className={`mt-1 text-[10px] ${kpi.has ? 'text-amber-300/80' : 'text-red-300/80'}`}>
+                  {micro}
+                </div>
+              )}
             </div>
-            <div className={`text-xl sm:text-2xl font-bold ${kpi.color} mb-0.5`}>{kpi.value}</div>
-            <div className="text-xs text-gray-500">{kpi.sub}</div>
-          </div>
-        ))}
+          )
+        })}
+      </div>
+
+      {/* ── 시장지수 KPI (S&P/Nasdaq/Gold/연준) ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {([
+          { key: 'fedFunds',  has: monetaryData?.fedFundsRate != null,        label: '연준 금리',  value: monetaryData?.fedFundsRate != null ? `${monetaryData.fedFundsRate}%` : '-', color: 'text-rose-400', dot: 'bg-rose-400', sub: 'Fed Funds Rate' },
+          { key: 'sp500',     has: !!monetaryData?.marketIndices?.sp500,      label: 'S&P 500',    value: monetaryData?.marketIndices?.sp500 ? monetaryData.marketIndices.sp500.toFixed(2) : '-', color: 'text-sky-400', dot: 'bg-sky-400', sub: '미국 대형주 지수' },
+          { key: 'nasdaq100', has: !!monetaryData?.marketIndices?.nasdaq100,  label: 'Nasdaq-100', value: monetaryData?.marketIndices?.nasdaq100 ? monetaryData.marketIndices.nasdaq100.toFixed(2) : '-', color: 'text-violet-400', dot: 'bg-violet-400', sub: '나스닥 100' },
+          { key: 'gold',      has: !!monetaryData?.marketIndices?.gold,       label: '금 가격',    value: monetaryData?.marketIndices?.gold ? `$${monetaryData.marketIndices.gold.toFixed(0)}` : '-', color: 'text-yellow-400', dot: 'bg-yellow-400', sub: 'XAU / oz' },
+        ] satisfies MarketKpiItem[]).map(kpi => {
+          const micro = microLabelFor(kpi.key, kpi.has)
+          return (
+            <div key={kpi.label} className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+              <div className="flex items-center gap-1.5 mb-2">
+                <span className={`w-1.5 h-1.5 rounded-full ${kpi.dot}`} />
+                <span className="text-xs text-gray-400">{kpi.label}</span>
+              </div>
+              <div className={`text-xl sm:text-2xl font-bold ${kpi.color} mb-0.5`}>{kpi.value}</div>
+              <div className="text-xs text-gray-500">{kpi.sub}</div>
+              {micro && (
+                <div className={`mt-1 text-[10px] ${kpi.has ? 'text-amber-300/80' : 'text-red-300/80'}`}>
+                  {micro}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       {/* ── FRED API 경고 ── */}
@@ -198,8 +250,14 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
         <div className="flex items-start gap-3 bg-amber-400/5 border border-amber-400/20 rounded-xl p-4 text-sm">
           <span className="text-amber-400 text-lg mt-0.5">⚠</span>
           <div>
-            <div className="text-amber-400 font-medium mb-0.5">FRED API 키 미설정</div>
-            <div className="text-gray-400 text-xs">환경변수 <code className="bg-[#21262d] px-1 rounded text-amber-300">FRED_API_KEY</code>를 설정하면 실시간 미국 M2 데이터를 표시합니다.</div>
+            <div className="text-amber-400 font-medium mb-0.5">
+              {monetaryData?.fredKeyInvalid ? 'FRED API 키 무효 → 폴백 사용 중' : 'FRED API 키 미설정'}
+            </div>
+            <div className="text-gray-400 text-xs">
+              {monetaryData?.fredKeyInvalid
+                ? '제공된 FRED 키가 거부되어 World Bank · NY Fed · Yahoo Finance 무료 데이터로 자동 전환되었습니다.'
+                : <>환경변수 <code className="bg-[#21262d] px-1 rounded text-amber-300">FRED_API_KEY</code>를 설정하면 실시간 미국 M2 데이터를 표시합니다. 현재는 무료 폴백을 사용합니다.</>}
+            </div>
           </div>
         </div>
       )}

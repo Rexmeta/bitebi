@@ -245,7 +245,7 @@ const MoneyTrackerPage = () => {
                 </div>
               </div>
               <button
-                onClick={() => { refetch(); notify('누락 지표를 재조회합니다.', 'success') }}
+                onClick={() => { refetch({ force: true }); notify('누락 지표를 강제 재조회합니다.', 'success') }}
                 className="shrink-0 text-xs px-2.5 py-1.5 rounded-lg bg-[#21262d] hover:bg-[#30363d] text-gray-200 transition"
               >
                 다시 조회
