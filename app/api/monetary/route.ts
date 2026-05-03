@@ -390,6 +390,72 @@ async function fetchWorldBankPolicyRate(): Promise<number | null> {
 }
 
 // ─────────────────────────────────────────────────────────────
+// Global M2 aggregator — robust to partial regional data
+// ─────────────────────────────────────────────────────────────
+// Approximate share-of-global ratios (relative to US M2) used as last-resort
+// proxies when a region has zero data points at all. Derived from realistic
+// recent levels (~US 22T, EU 18T, JP 8T, UK 3T → total ≈ 51T).
+const REGION_PROXY_RATIO = { eu: 0.78, jp: 0.36, uk: 0.14 } as const
+
+interface GlobalM2Aggregate {
+  globalM2: number | null
+  history: SeriesPoint[]
+  estimated: boolean
+  missingRegions: string[]
+}
+
+function aggregateGlobalM2(input: {
+  us: SeriesPoint[]; eu: SeriesPoint[]; jp: SeriesPoint[]; uk: SeriesPoint[]
+}): GlobalM2Aggregate {
+  const monthMap: Record<string, { us?: number; eu?: number; jp?: number; uk?: number }> = {}
+  const add = (rows: SeriesPoint[], k: 'us' | 'eu' | 'jp' | 'uk') => {
+    for (const p of rows) {
+      const m = p.date.substring(0, 7)
+      monthMap[m] = monthMap[m] || {}
+      monthMap[m][k] = p.value
+    }
+  }
+  add(input.us, 'us'); add(input.eu, 'eu'); add(input.jp, 'jp'); add(input.uk, 'uk')
+
+  const sorted = Object.keys(monthMap).sort()
+  const carry: { us?: number; eu?: number; jp?: number; uk?: number } = {}
+  const history: SeriesPoint[] = []
+  const missing = new Set<string>()
+  let estimated = false
+
+  for (const m of sorted) {
+    const cur = monthMap[m]
+    if (cur.us != null) carry.us = cur.us
+    if (cur.eu != null) carry.eu = cur.eu
+    if (cur.jp != null) carry.jp = cur.jp
+    if (cur.uk != null) carry.uk = cur.uk
+    if (carry.us == null) continue // need US as anchor
+
+    let eu = carry.eu, jp = carry.jp, uk = carry.uk
+    if (eu == null) { eu = carry.us * REGION_PROXY_RATIO.eu; estimated = true; missing.add('eu') }
+    if (jp == null) { jp = carry.us * REGION_PROXY_RATIO.jp; estimated = true; missing.add('jp') }
+    if (uk == null) { uk = carry.us * REGION_PROXY_RATIO.uk; estimated = true; missing.add('uk') }
+    history.push({ date: `${m}-01`, value: carry.us + eu + jp + uk })
+  }
+
+  // Last-resort: no US monthly anchor at all (e.g. World Bank only).
+  // Use US series directly with full proxy multiplier.
+  if (history.length === 0 && input.us.length > 0) {
+    estimated = true
+    missing.add('eu'); missing.add('jp'); missing.add('uk')
+    const mult = 1 + REGION_PROXY_RATIO.eu + REGION_PROXY_RATIO.jp + REGION_PROXY_RATIO.uk
+    for (const p of input.us) history.push({ date: p.date, value: p.value * mult })
+  }
+
+  return {
+    globalM2: history.length ? history[history.length - 1].value : null,
+    history,
+    estimated,
+    missingRegions: Array.from(missing),
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
 // Free-API fallback aggregator (no FRED required)
 // ─────────────────────────────────────────────────────────────
 async function fetchFallbackMonetaryData() {
@@ -400,6 +466,8 @@ async function fetchFallbackMonetaryData() {
     fedFundsHistory: [] as SeriesPoint[],
     globalM2: null as number | null,
     globalM2History: [] as SeriesPoint[],
+    globalM2Estimated: false as boolean,
+    globalM2MissingRegions: [] as string[],
     regionalM2: { eu: 0, jp: 0, uk: 0 } as { eu: number; jp: number; uk: number },
     marketIndices: {
       sp500: 0, sp500History: [] as SeriesPoint[],
@@ -490,43 +558,13 @@ async function fetchFallbackMonetaryData() {
     uk: ukSeries.length ? ukSeries[ukSeries.length - 1].value : 0,
   }
 
-  // Global M2: aggregate by month-key (YYYY-MM); annual points slot into Dec.
-  // Forward-fill the most recent value per region so months where only some
-  // regions report (typical) still produce a sum.
-  const monthMap: Record<string, { us?: number; eu?: number; jp?: number; uk?: number }> = {}
-  const addMonth = (rows: SeriesPoint[], k: 'us' | 'eu' | 'jp' | 'uk') => {
-    for (const p of rows) {
-      const m = p.date.substring(0, 7) // "YYYY-MM"
-      monthMap[m] = monthMap[m] || {}
-      monthMap[m][k] = p.value
-    }
-  }
-  addMonth(usSeries, 'us')
-  addMonth(euSeries, 'eu')
-  addMonth(jpSeries, 'jp')
-  addMonth(ukSeries, 'uk')
-
-  const sortedMonths = Object.keys(monthMap).sort()
-  const carry: { us?: number; eu?: number; jp?: number; uk?: number } = {}
-  const globalHist: SeriesPoint[] = []
-  for (const m of sortedMonths) {
-    const cur = monthMap[m]
-    if (cur.us != null) carry.us = cur.us
-    if (cur.eu != null) carry.eu = cur.eu
-    if (cur.jp != null) carry.jp = cur.jp
-    if (cur.uk != null) carry.uk = cur.uk
-    if (carry.us != null && carry.eu != null && carry.jp != null && carry.uk != null) {
-      globalHist.push({ date: `${m}-01`, value: carry.us + carry.eu + carry.jp + carry.uk })
-    }
-  }
-  if (globalHist.length > 0) {
-    fallback.globalM2 = globalHist[globalHist.length - 1].value
-    fallback.globalM2History = globalHist
-  } else if (fallback.usM2) {
-    // Last-resort global proxy
-    fallback.globalM2 = fallback.usM2 * 3.5
-    fallback.globalM2History = fallback.usM2History.map(p => ({ date: p.date, value: p.value * 3.5 }))
-  }
+  // Global M2 — aggregate by month with carry-forward + proxy fill so that
+  // we always produce a value as long as at least US M2 is present.
+  const fbAgg = aggregateGlobalM2({ us: usSeries, eu: euSeries, jp: jpSeries, uk: ukSeries })
+  fallback.globalM2 = fbAgg.globalM2
+  fallback.globalM2History = fbAgg.history
+  fallback.globalM2Estimated = fbAgg.estimated
+  fallback.globalM2MissingRegions = fbAgg.missingRegions
 
   if (spx.length > 0) { fallback.marketIndices.sp500 = spx[spx.length - 1].value; fallback.marketIndices.sp500History = spx }
   if (ndx.length > 0) { fallback.marketIndices.nasdaq100 = ndx[ndx.length - 1].value; fallback.marketIndices.nasdaq100History = ndx }
@@ -580,6 +618,8 @@ async function buildMonetaryData() {
     fedFundsHistory: [],
     globalM2: null,
     globalM2History: [],
+    globalM2Estimated: false,
+    globalM2MissingRegions: [] as string[],
     regionalM2: { eu: 0, jp: 0, uk: 0 },
     marketIndices: { sp500: 0, sp500History: [], nasdaq100: 0, nasdaq100History: [], gold: 0, goldHistory: [] },
     lastUpdated: new Date().toISOString(),
@@ -656,36 +696,17 @@ async function buildMonetaryData() {
     const jpHistory = processRegional(raw.jpM2, FRED_UNITS.MYAGM2JPM189S.multiplier, v => v / jpyUsd)
     const ukHistory = processRegional(raw.ukM3, FRED_UNITS.MABMM301GBM657S.multiplier, v => v * gbpUsd)
 
-    // Global M2 — only months where all 4 regions are present, forward-fill missing
-    const monthMap: Record<string, { us?: number; eu?: number; jp?: number; uk?: number }> = {}
-    const addMonth = (rows: SeriesPoint[], k: 'us' | 'eu' | 'jp' | 'uk') => {
-      for (const r of rows) {
-        const m = r.date.substring(0, 7)
-        monthMap[m] = monthMap[m] || {}
-        monthMap[m][k] = r.value
-      }
-    }
-    addMonth(data.usM2History as SeriesPoint[], 'us')
-    addMonth(euHistory, 'eu')
-    addMonth(jpHistory, 'jp')
-    addMonth(ukHistory, 'uk')
-
-    const sortedMonths = Object.keys(monthMap).sort()
-    const carry: { us?: number; eu?: number; jp?: number; uk?: number } = {}
-    const globalHist: SeriesPoint[] = []
-    for (const m of sortedMonths) {
-      const cur = monthMap[m]
-      if (cur.us != null) carry.us = cur.us
-      if (cur.eu != null) carry.eu = cur.eu
-      if (cur.jp != null) carry.jp = cur.jp
-      if (cur.uk != null) carry.uk = cur.uk
-      if (carry.us != null && carry.eu != null && carry.jp != null && carry.uk != null) {
-        globalHist.push({ date: `${m}-01`, value: carry.us + carry.eu + carry.jp + carry.uk })
-      }
-    }
-
-    data.globalM2History = globalHist
-    data.globalM2 = globalHist.length > 0 ? globalHist[globalHist.length - 1].value : data.usM2
+    // Global M2 — robust aggregation with carry-forward + proxy fill
+    const fredAgg = aggregateGlobalM2({
+      us: (data.usM2History as SeriesPoint[]) || [],
+      eu: euHistory,
+      jp: jpHistory,
+      uk: ukHistory,
+    })
+    data.globalM2History = fredAgg.history
+    data.globalM2 = fredAgg.globalM2 ?? data.usM2
+    data.globalM2Estimated = fredAgg.estimated
+    data.globalM2MissingRegions = fredAgg.missingRegions
 
     data.regionalM2 = {
       eu: euHistory.length ? euHistory[euHistory.length - 1].value : 0,
@@ -722,7 +743,11 @@ async function buildMonetaryData() {
       if ((data.fedFundsRate == null) && fb.fedFundsRate != null) data.fedFundsRate = fb.fedFundsRate
       if (!data.fedFundsHistory?.length && fb.fedFundsHistory.length) data.fedFundsHistory = fb.fedFundsHistory
 
-      if (!data.globalM2 && fb.globalM2) data.globalM2 = fb.globalM2
+      if (!data.globalM2 && fb.globalM2) {
+        data.globalM2 = fb.globalM2
+        data.globalM2Estimated = data.globalM2Estimated || fb.globalM2Estimated
+        if (fb.globalM2MissingRegions?.length) data.globalM2MissingRegions = fb.globalM2MissingRegions
+      }
       if (!data.globalM2History?.length && fb.globalM2History.length) data.globalM2History = fb.globalM2History
 
       const regMissing = ((data.regionalM2.eu || 0) + (data.regionalM2.jp || 0) + (data.regionalM2.uk || 0)) <= 0
@@ -752,6 +777,8 @@ async function buildMonetaryData() {
       fedFundsHistory: fb.fedFundsHistory,
       globalM2: fb.globalM2,
       globalM2History: fb.globalM2History,
+      globalM2Estimated: fb.globalM2Estimated,
+      globalM2MissingRegions: fb.globalM2MissingRegions,
       regionalM2: fb.regionalM2,
       marketIndices: fb.marketIndices,
     })
@@ -769,7 +796,11 @@ async function buildMonetaryData() {
     },
     globalM2: {
       ok: !!data.globalM2 && data.globalM2 > 0 && (data.globalM2History?.length || 0) > 0,
-      reason: !data.globalM2 ? '4개 지역 데이터 부족' : undefined,
+      reason: !data.globalM2
+        ? '4개 지역 데이터 부족'
+        : (data.globalM2Estimated && data.globalM2MissingRegions?.length
+            ? `누락 지역 추정 보간: ${data.globalM2MissingRegions.join(', ').toUpperCase()}`
+            : undefined),
     },
     regionalM2: {
       ok: ((data.regionalM2.eu || 0) + (data.regionalM2.jp || 0) + (data.regionalM2.uk || 0)) > 0,
@@ -810,7 +841,7 @@ async function buildMonetaryData() {
 
   data.diagnostics = {
     source,
-    isEstimated: source !== 'fred',
+    isEstimated: source !== 'fred' || !!data.globalM2Estimated,
     completeness: Math.round((available / total) * 100),
     available,
     total,
@@ -818,6 +849,8 @@ async function buildMonetaryData() {
     missingReasons: reasons,
     fredKeyInvalid: data.fredKeyInvalid,
     fallbackUsed,
+    globalM2Estimated: !!data.globalM2Estimated,
+    globalM2MissingRegions: data.globalM2MissingRegions || [],
     buildDurationMs: Date.now() - buildStartedAt,
     sourceLatencies: sourceLatencies.map(s => ({
       ...s,

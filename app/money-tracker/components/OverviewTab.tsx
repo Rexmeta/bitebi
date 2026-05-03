@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
 import Chart from 'chart.js/auto'
-import type { StablecoinData, DefiStatsData, Signal, MonetaryData } from '../hooks/useMoneyTrackerData'
+import type { StablecoinData, DefiStatsData, Signal, MonetaryData, FetchStatus } from '../hooks/useMoneyTrackerData'
 import { SkeletonCard } from './SkeletonCard'
 import { UpdateTimestamp } from './UpdateTimestamp'
 
@@ -12,6 +12,8 @@ interface OverviewTabProps {
   loading: boolean
   signals: Signal[]
   onRetry: () => void
+  monetaryStatus?: FetchStatus
+  monetaryError?: string | null
 }
 
 // CryptoQuant 스타일 상태 배지
@@ -46,7 +48,7 @@ function DarkCard({ title, icon, children, timestamp, className = '' }: {
   )
 }
 
-export default function OverviewTab({ stablecoinData, monetaryData, defiStats, loading, signals, onRetry }: OverviewTabProps) {
+export default function OverviewTab({ stablecoinData, monetaryData, defiStats, loading, signals, onRetry, monetaryStatus, monetaryError }: OverviewTabProps) {
   const marketCanvasRef = useRef<HTMLCanvasElement>(null)
   const marketChartRef  = useRef<Chart | null>(null)
   const tvlCanvasRef    = useRef<HTMLCanvasElement>(null)
@@ -122,7 +124,10 @@ export default function OverviewTab({ stablecoinData, monetaryData, defiStats, l
     }
   }, [stablecoinData, defiStats])
 
-  if (loading && !stablecoinData && !defiStats) {
+  // Show skeleton only on the very first load (no data anywhere yet) AND
+  // we are still loading. Once any source has returned, prefer rendering
+  // partial KPIs over an indefinite skeleton — even if monetary failed.
+  if (loading && !stablecoinData && !defiStats && !monetaryData) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
@@ -134,6 +139,11 @@ export default function OverviewTab({ stablecoinData, monetaryData, defiStats, l
   const totalSupply = stablecoinData?.totalSupply || defiStats?.totalStablecoinSupply || 0
   const globalM2   = monetaryData?.globalM2 || 0
   const globalLiq  = globalM2 + totalSupply
+  const globalM2Estimated = !!monetaryData?.globalM2Estimated
+  const globalM2MissingRegions = monetaryData?.globalM2MissingRegions || []
+  const monetaryLoading = monetaryStatus === 'loading' && !monetaryData
+  const monetaryFailed  = monetaryStatus === 'error' && !monetaryData
+  const monetaryStale   = monetaryStatus === 'error' && !!monetaryData
   const topStable  = stables?.[0]
   const usdtDom    = topStable?.dominance?.toFixed(1) || null
   const penetration = globalM2 > 0 ? ((totalSupply / globalM2) * 100).toFixed(3) : null
@@ -201,21 +211,74 @@ export default function OverviewTab({ stablecoinData, monetaryData, defiStats, l
 
       {/* ── KPI 요약 카드 4개 ──────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-        {[
-          { label: '스테이블 총량', value: totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-', sub: `${stables?.length || 0}개 추적`, color: 'text-blue-400', dot: 'bg-blue-400' },
-          { label: 'DeFi TVL',    value: currentTvl > 0 ? `$${(currentTvl/1e9).toFixed(1)}B` : '-', sub: '30일 평균 대비', color: 'text-purple-400', dot: 'bg-purple-400' },
-          { label: '글로벌 M2',   value: globalM2 > 0 ? `$${(globalM2/1e12).toFixed(2)}T` : '-', sub: '주요 4개국 합산', color: 'text-cyan-400', dot: 'bg-cyan-400' },
-          { label: '통합 유동성', value: globalLiq > 0 ? `$${(globalLiq/1e12).toFixed(2)}T` : '-', sub: 'M2 + 스테이블코인', color: 'text-emerald-400', dot: 'bg-emerald-400' },
-        ].map(kpi => (
-          <div key={kpi.label} className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
-            <div className="flex items-center gap-1.5 mb-2">
-              <span className={`w-1.5 h-1.5 rounded-full ${kpi.dot}`} />
-              <span className="text-xs text-gray-400">{kpi.label}</span>
-            </div>
-            <div className={`text-xl sm:text-2xl font-bold ${kpi.color} mb-0.5`}>{kpi.value}</div>
-            <div className="text-xs text-gray-500">{kpi.sub}</div>
+        <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+            <span className="text-xs text-gray-400">스테이블 총량</span>
           </div>
-        ))}
+          <div className="text-xl sm:text-2xl font-bold text-blue-400 mb-0.5">{totalSupply > 0 ? `$${(totalSupply/1e9).toFixed(0)}B` : '-'}</div>
+          <div className="text-xs text-gray-500">{`${stables?.length || 0}개 추적`}</div>
+        </div>
+        <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-purple-400" />
+            <span className="text-xs text-gray-400">DeFi TVL</span>
+          </div>
+          <div className="text-xl sm:text-2xl font-bold text-purple-400 mb-0.5">{currentTvl > 0 ? `$${(currentTvl/1e9).toFixed(1)}B` : '-'}</div>
+          <div className="text-xs text-gray-500">30일 평균 대비</div>
+        </div>
+        <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+            <span className="text-xs text-gray-400">글로벌 M2</span>
+          </div>
+          {monetaryLoading ? (
+            <div className="h-7 w-24 rounded bg-[#21262d] animate-pulse mb-0.5" aria-label="글로벌 M2 로딩 중" />
+          ) : monetaryFailed ? (
+            <div className="flex items-center gap-2 mb-0.5">
+              <span className="text-xl sm:text-2xl font-bold text-red-400">⚠</span>
+              <button
+                onClick={onRetry}
+                className="text-xs px-2 py-1 rounded-lg bg-red-400/10 text-red-300 border border-red-400/30 hover:bg-red-400/20"
+                title={monetaryError || '데이터를 가져오지 못했습니다'}
+              >
+                재시도
+              </button>
+            </div>
+          ) : (
+            <div className="text-xl sm:text-2xl font-bold text-cyan-400 mb-0.5">
+              {globalM2 > 0 ? `$${(globalM2/1e12).toFixed(2)}T` : '-'}
+            </div>
+          )}
+          <div className="text-xs text-gray-500">
+            {monetaryFailed ? (monetaryError || '데이터 불러오기 실패') : '주요 4개국 합산'}
+          </div>
+          {globalM2Estimated && globalM2 > 0 && !monetaryFailed && (
+            <div
+              className="mt-1 text-[10px] inline-block px-1.5 py-0.5 rounded border border-amber-400/30 text-amber-300 bg-amber-400/10"
+              title={globalM2MissingRegions.length ? `누락 지역 추정 보간: ${globalM2MissingRegions.join(', ').toUpperCase()}` : '추정치'}
+            >
+              추정치{globalM2MissingRegions.length ? ` · ${globalM2MissingRegions.join(', ').toUpperCase()} 보간` : ''}
+            </div>
+          )}
+          {monetaryStale && globalM2 > 0 && (
+            <button
+              onClick={onRetry}
+              className="mt-1 ml-1 text-[10px] inline-block px-1.5 py-0.5 rounded border border-orange-400/30 text-orange-300 bg-orange-400/10 hover:bg-orange-400/20"
+              title={monetaryError ? `갱신 실패: ${monetaryError} — 직전 값 표시 중` : '갱신 실패 — 직전 값 표시 중'}
+            >
+              갱신 실패 · 재시도
+            </button>
+          )}
+        </div>
+        <div className="bg-[#161b22] border border-[#21262d] rounded-xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            <span className="text-xs text-gray-400">통합 유동성</span>
+          </div>
+          <div className="text-xl sm:text-2xl font-bold text-emerald-400 mb-0.5">{globalLiq > 0 ? `$${(globalLiq/1e12).toFixed(2)}T` : '-'}</div>
+          <div className="text-xs text-gray-500">M2 + 스테이블코인</div>
+        </div>
       </div>
 
       {/* ── 온체인 인디케이터 테이블 (CryptoQuant 핵심 UI) ── */}

@@ -22,6 +22,8 @@ export interface MonetaryData {
   fedFundsHistory: { date: string; value: number }[]
   globalM2: number | null
   globalM2History: { date: string; value: number }[]
+  globalM2Estimated?: boolean
+  globalM2MissingRegions?: string[]
   regionalM2: { eu: number; jp: number; uk: number }
   marketIndices: MarketIndexData
   lastUpdated: string
@@ -37,6 +39,8 @@ export interface MonetaryData {
     missingReasons?: Record<string, string>
     fredKeyInvalid?: boolean
     fallbackUsed?: boolean
+    globalM2Estimated?: boolean
+    globalM2MissingRegions?: string[]
     buildDurationMs?: number
     sourceLatencies?: {
       label: string
@@ -88,6 +92,8 @@ export interface Signal {
   value?: string
 }
 
+export type FetchStatus = 'idle' | 'loading' | 'ok' | 'error'
+
 export interface MoneyTrackerState {
   stablecoinData: StablecoinData | null
   monetaryData: MonetaryData | null
@@ -97,17 +103,27 @@ export interface MoneyTrackerState {
   error: string | null
   lastFetchTime: string | null
   signals: Signal[]
+  monetaryStatus: FetchStatus
+  monetaryError: string | null
   refetch: (opts?: { force?: boolean }) => void
 }
 
 const AUTO_REFRESH_INTERVAL = 5 * 60 * 1000
 const CLIENT_FETCH_TIMEOUT = 10_000
+// /api/monetary aggregates several external sources and can take ~5–15s on a
+// cold start. Use a longer timeout for it specifically so we don't abort just
+// before the response arrives.
+const MONETARY_FETCH_TIMEOUT = 25_000
 
 async function fetchJsonWithTimeout(url: string, timeoutMs = CLIENT_FETCH_TIMEOUT): Promise<any> {
   const ctrl = new AbortController()
   const timer = setTimeout(() => ctrl.abort(), timeoutMs)
   try {
     const r = await fetch(url, { signal: ctrl.signal })
+    const ct = r.headers.get('content-type') || ''
+    if (!ct.includes('application/json')) {
+      throw new Error(`non-JSON response (${r.status} ${ct || 'no content-type'})`)
+    }
     return await r.json()
   } finally {
     clearTimeout(timer)
@@ -230,18 +246,25 @@ export function useMoneyTrackerData(): MoneyTrackerState {
   const [error, setError] = useState<string | null>(null)
   const [lastFetchTime, setLastFetchTime] = useState<string | null>(null)
   const [signals, setSignals] = useState<Signal[]>([])
+  const [monetaryStatus, setMonetaryStatus] = useState<FetchStatus>('idle')
+  const [monetaryError, setMonetaryError] = useState<string | null>(null)
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  // Hold the latest monetary value across refetches so the UI can keep showing
+  // the previous value while a new fetch is in flight or has just failed.
+  const monetaryRef = useRef<MonetaryData | null>(null)
 
   const fetchData = useCallback(async (opts?: { force?: boolean }) => {
     setLoading(true)
     setError(null)
+    setMonetaryStatus('loading')
+    setMonetaryError(null)
 
     const monetaryUrl = opts?.force ? '/api/monetary?force=1' : '/api/monetary'
 
     try {
       const [stableRes, monetaryRes, defiRes, fearRes] = await Promise.allSettled([
         fetchJsonWithTimeout('/api/stablecoins'),
-        fetchJsonWithTimeout(monetaryUrl),
+        fetchJsonWithTimeout(monetaryUrl, MONETARY_FETCH_TIMEOUT),
         fetchJsonWithTimeout('/api/defi-stats'),
         fetchJsonWithTimeout('/api/fear-greed'),
       ])
@@ -256,9 +279,24 @@ export function useMoneyTrackerData(): MoneyTrackerState {
         setStablecoinData(newStable)
       }
 
-      if (monetaryRes.status === 'fulfilled' && monetaryRes.value?.success) {
+      if (monetaryRes.status === 'fulfilled' && monetaryRes.value?.success && monetaryRes.value?.data) {
         newMonetary = monetaryRes.value.data
+        monetaryRef.current = newMonetary
         setMonetaryData(newMonetary)
+        setMonetaryStatus('ok')
+      } else {
+        // Failure / non-success / timeout: preserve previous monetaryData so
+        // the user does not see a permanent "-".
+        const reason = monetaryRes.status === 'rejected'
+          ? (monetaryRes.reason?.name === 'AbortError'
+              ? '요청 시간 초과'
+              : (monetaryRes.reason?.message || '네트워크 오류'))
+          : (monetaryRes.value?.error || '서버 응답 오류')
+        setMonetaryError(reason)
+        // Use cached/previous value for downstream signals where possible.
+        newMonetary = monetaryRef.current
+        setMonetaryStatus('error')
+        console.warn('[useMoneyTrackerData] /api/monetary failed:', reason)
       }
 
       if (defiRes.status === 'fulfilled' && defiRes.value?.success) {
@@ -286,6 +324,8 @@ export function useMoneyTrackerData(): MoneyTrackerState {
       setLastFetchTime(new Date().toISOString())
     } catch (e) {
       setError('데이터를 불러오는 중 오류가 발생했습니다')
+      setMonetaryStatus('error')
+      setMonetaryError(e instanceof Error ? e.message : '알 수 없는 오류')
     } finally {
       setLoading(false)
     }
@@ -308,6 +348,8 @@ export function useMoneyTrackerData(): MoneyTrackerState {
     error,
     lastFetchTime,
     signals,
+    monetaryStatus,
+    monetaryError,
     refetch: fetchData,
   }
 }

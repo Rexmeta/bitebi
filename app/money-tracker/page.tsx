@@ -33,6 +33,8 @@ const MoneyTrackerPage = () => {
     error,
     lastFetchTime,
     signals,
+    monetaryStatus,
+    monetaryError,
     refetch,
   } = useMoneyTrackerData()
 
@@ -60,7 +62,7 @@ const MoneyTrackerPage = () => {
       return <ErrorState message={error} onRetry={refetch} />
     }
     switch (activeTab) {
-      case 'overview':     return <OverviewTab stablecoinData={stablecoinData} monetaryData={monetaryData} defiStats={defiStats} loading={loading} signals={signals} onRetry={refetch} />
+      case 'overview':     return <OverviewTab stablecoinData={stablecoinData} monetaryData={monetaryData} defiStats={defiStats} loading={loading} signals={signals} onRetry={refetch} monetaryStatus={monetaryStatus} monetaryError={monetaryError} />
       case 'insights':     return <InsightsTab monetaryData={monetaryData} fearGreedData={fearGreedData} stablecoinData={stablecoinData} signals={signals} loading={loading} />
       case 'money-supply': return <MoneySupplyTab stablecoinData={stablecoinData} monetaryData={monetaryData} defiStats={defiStats} loading={loading} onRetry={refetch} />
       case 'metrics':      return <MetricsTab defiStats={defiStats} stablecoinData={stablecoinData} loading={loading} onRetry={refetch} />
@@ -102,6 +104,11 @@ const MoneyTrackerPage = () => {
   const dataSource = monetaryDiagnostics?.source ?? (monetaryData?.hasFredKey ? 'fred' : 'fallback')
   const sourceLabel = dataSource === 'fred' ? 'FRED' : dataSource === 'hybrid' ? 'HYBRID' : 'FALLBACK'
   const missingSeries = monetaryDiagnostics?.missing || []
+  const globalM2Estimated = !!(monetaryData?.globalM2Estimated || monetaryDiagnostics?.globalM2Estimated)
+  const globalM2MissingRegions = monetaryData?.globalM2MissingRegions || monetaryDiagnostics?.globalM2MissingRegions || []
+  const monetaryLoading = monetaryStatus === 'loading' && !monetaryData
+  const monetaryFailed = monetaryStatus === 'error' && !monetaryData
+  const monetaryStale  = monetaryStatus === 'error' && !!monetaryData
   const seriesLabelMap: Record<string, string> = {
     usM2: '미국 M2',
     fedFunds: '연준 금리',
@@ -171,7 +178,40 @@ const MoneyTrackerPage = () => {
             <div className="w-px h-3 bg-[#30363d]" />
             <div className="flex items-center gap-1.5 shrink-0">
               <span className="text-gray-500">글로벌 M2</span>
-              <span className="font-bold text-white">{globalM2 > 0 ? `$${(globalM2/1e12).toFixed(2)}T` : '-'}</span>
+              {monetaryLoading ? (
+                <span className="inline-block h-3 w-16 rounded bg-[#21262d] animate-pulse" aria-label="글로벌 M2 로딩 중" />
+              ) : monetaryFailed ? (
+                <button
+                  onClick={() => { refetch({ force: true }); notify('글로벌 M2 다시 조회합니다.', 'success') }}
+                  className="text-red-400 hover:text-red-300 font-bold underline decoration-dotted"
+                  title={monetaryError || '데이터를 가져오지 못했습니다'}
+                >
+                  실패 · 재시도
+                </button>
+              ) : globalM2 > 0 ? (
+                <>
+                  <span className="font-bold text-white">{`$${(globalM2/1e12).toFixed(2)}T`}</span>
+                  {globalM2Estimated && (
+                    <span
+                      className="text-[10px] px-1.5 py-0.5 rounded border border-amber-400/30 text-amber-300 bg-amber-400/10"
+                      title={globalM2MissingRegions.length ? `누락 지역 추정 보간: ${globalM2MissingRegions.join(', ').toUpperCase()}` : '추정치'}
+                    >
+                      추정
+                    </span>
+                  )}
+                  {monetaryStale && (
+                    <button
+                      onClick={() => { refetch({ force: true }); notify('글로벌 M2 다시 조회합니다.', 'success') }}
+                      className="text-[10px] px-1.5 py-0.5 rounded border border-orange-400/30 text-orange-300 bg-orange-400/10 hover:bg-orange-400/20"
+                      title={monetaryError ? `갱신 실패: ${monetaryError} — 직전 값 표시 중` : '갱신 실패 — 직전 값 표시 중'}
+                    >
+                      갱신 실패
+                    </button>
+                  )}
+                </>
+              ) : (
+                <span className="font-bold text-white">-</span>
+              )}
             </div>
             <div className="w-px h-3 bg-[#30363d]" />
             <div className="flex items-center gap-1.5 shrink-0">
