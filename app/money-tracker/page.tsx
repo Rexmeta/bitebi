@@ -120,11 +120,21 @@ const MoneyTrackerPage = () => {
   }
   const completenessColor = dataCompleteness == null
     ? 'text-gray-400'
-    : dataCompleteness >= 90
-      ? 'text-emerald-400'
-      : dataCompleteness >= 70
-        ? 'text-yellow-400'
-        : 'text-red-400'
+    : globalM2Estimated
+      ? 'text-amber-400'
+      : dataCompleteness >= 90
+        ? 'text-emerald-400'
+        : dataCompleteness >= 70
+          ? 'text-yellow-400'
+          : 'text-red-400'
+  const regionNameMap: Record<string, string> = { us: '미국', eu: '유로존', jp: '일본', uk: '영국' }
+  const completenessTitle = globalM2Estimated
+    ? `글로벌 M2 일부가 추정치로 보간되었습니다${
+        globalM2MissingRegions.length
+          ? ` (누락 지역: ${globalM2MissingRegions.map(r => regionNameMap[r] || r.toUpperCase()).join(', ')}, 미국 M2 프록시 비율 eu=0.78 / jp=0.36 / uk=0.14)`
+          : ''
+      }.`
+    : '데이터 수집 완전성 비율'
 
   return (
     <div className="relative min-h-screen bg-[#0d1117] text-white">
@@ -229,7 +239,7 @@ const MoneyTrackerPage = () => {
               <span className={`font-bold ${sentimentColor}`}>{marketSentiment}</span>
             </div>
             <div className="w-px h-3 bg-[#30363d]" />
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0" title={completenessTitle}>
               <span className="text-gray-500">데이터 완전성</span>
               <span className={`font-bold ${completenessColor}`}>
                 {dataCompleteness != null ? `${dataCompleteness}%` : '-'}
@@ -237,6 +247,14 @@ const MoneyTrackerPage = () => {
               <span className="text-[10px] px-1.5 py-0.5 rounded border border-[#30363d] text-gray-400">
                 {sourceLabel}
               </span>
+              {globalM2Estimated && (
+                <span
+                  className="text-[10px] px-1.5 py-0.5 rounded border border-amber-400/30 text-amber-300 bg-amber-400/10"
+                  title={completenessTitle}
+                >
+                  M2 추정{globalM2MissingRegions.length ? ` · ${globalM2MissingRegions.map(r => (regionNameMap[r] || r).toUpperCase()).join('/')}` : ''}
+                </span>
+              )}
             </div>
           </div>
         </div>

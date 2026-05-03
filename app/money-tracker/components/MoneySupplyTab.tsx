@@ -4,6 +4,7 @@ import Chart from 'chart.js/auto'
 import type { StablecoinData, MonetaryData, DefiStatsData } from '../hooks/useMoneyTrackerData'
 import { SkeletonCard } from './SkeletonCard'
 import { UpdateTimestamp } from './UpdateTimestamp'
+import GlobalM2EstimateBadge, { regionLabel } from './GlobalM2EstimateBadge'
 
 interface MoneySupplyTabProps {
   stablecoinData: StablecoinData | null
@@ -204,16 +205,27 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
 
   const diag = monetaryData?.diagnostics
   const reasons = diag?.missingReasons || {}
-  const isEstimated = diag?.isEstimated
   const sourceTag =
     diag?.source === 'fred' ? 'FRED'
       : diag?.source === 'hybrid' ? 'FRED + 폴백'
         : monetaryData?.fredKeyInvalid ? '키 무효 → 폴백' : '무료 API 폴백'
+  // diag가 없을 때는 "추정치"라고 단정하지 않는다. 명시적으로 source가
+  // 'hybrid'/'fallback'으로 보고된 경우에만 추정치 라벨을 노출.
+  const sourceIsFallback = diag?.source === 'hybrid' || diag?.source === 'fallback'
+  const globalM2Estimated = !!(monetaryData?.globalM2Estimated || diag?.globalM2Estimated)
+  const globalM2MissingRegions =
+    monetaryData?.globalM2MissingRegions || diag?.globalM2MissingRegions || []
 
   type MetricKey = 'usM2' | 'fedFunds' | 'globalM2' | 'regionalM2' | 'sp500' | 'nasdaq100' | 'gold'
   const microLabelFor = (key: MetricKey, hasValue: boolean): string | null => {
     if (!hasValue) return reasons[key] ? `데이터 없음 (${reasons[key]})` : '데이터 없음'
-    if (isEstimated) return `추정치 · ${sourceTag}`
+    if (key === 'globalM2' && globalM2Estimated) {
+      const missing = globalM2MissingRegions.length
+        ? ` · 누락 ${globalM2MissingRegions.map(r => regionLabel(r)).join('/')} 보간`
+        : ''
+      return `추정치 · ${sourceTag}${missing}`
+    }
+    if (sourceIsFallback) return `추정치 · ${sourceTag}`
     return null
   }
   type KpiItem = { key: MetricKey | null; has: boolean; label: string; value: string; color: string; dot: string; sub: string }
@@ -252,6 +264,15 @@ export default function MoneySupplyTab({ stablecoinData, monetaryData, defiStats
               </div>
               <div className={`text-xl sm:text-2xl font-bold ${kpi.color} mb-0.5`}>{kpi.value}</div>
               <div className="text-xs text-gray-500">{kpi.sub}</div>
+              {kpi.key === 'globalM2' && kpi.has && globalM2Estimated && (
+                <div className="mt-1.5">
+                  <GlobalM2EstimateBadge
+                    estimated
+                    missingRegions={globalM2MissingRegions}
+                    size="xs"
+                  />
+                </div>
+              )}
               {micro && (
                 <div className={`mt-1 text-[10px] ${kpi.has ? 'text-amber-300/80' : 'text-red-300/80'}`}>
                   {micro}

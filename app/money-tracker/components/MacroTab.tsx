@@ -4,6 +4,7 @@ import Chart from 'chart.js/auto'
 import type { MonetaryData, DefiStatsData, StablecoinData, Signal } from '../hooks/useMoneyTrackerData'
 import { SkeletonCard } from './SkeletonCard'
 import { UpdateTimestamp } from './UpdateTimestamp'
+import GlobalM2EstimateBadge, { regionLabel } from './GlobalM2EstimateBadge'
 
 interface MacroTabProps {
   monetaryData: MonetaryData | null
@@ -223,13 +224,23 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
   const usM2         = monetaryData?.usM2 || 0
   const globalM2     = monetaryData?.globalM2 || 0
   const globalLiq    = globalM2 + totalSupply
+  const globalM2Estimated = !!(monetaryData?.globalM2Estimated || monetaryData?.diagnostics?.globalM2Estimated)
+  const globalM2MissingRegions =
+    monetaryData?.globalM2MissingRegions || monetaryData?.diagnostics?.globalM2MissingRegions || []
   const penetration  = usM2 > 0 ? (totalSupply / usM2) * 100 : null
   const fedRate      = monetaryData?.fedFundsRate
   const policyStance = fedRate == null ? '-' : fedRate >= 5 ? '긴축적' : fedRate >= 3 ? '중립적' : '완화적'
   const policyColor  = fedRate == null ? 'text-gray-400' : fedRate >= 5 ? 'text-red-400' : fedRate >= 3 ? 'text-yellow-400' : 'text-emerald-400'
 
   // 매크로 인디케이터 테이블
-  const macroIndicators = [
+  const macroIndicators: Array<{
+    name: string
+    value: string
+    status: 'positive' | 'warning' | 'danger' | 'neutral'
+    description: string
+    source: string
+    estimated?: boolean
+  }> = [
     {
       name: '연준 기준금리',
       value: fedRate != null ? `${fedRate}%` : '-',
@@ -244,8 +255,11 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
         ? ((monetaryData!.globalM2History[monetaryData!.globalM2History.length-1]?.value ?? 0) >
            (monetaryData!.globalM2History[monetaryData!.globalM2History.length-2]?.value ?? 0) ? 'positive' : 'danger')
         : 'neutral' as any,
-      description: 'US + EU + JP + UK',
+      description: globalM2Estimated
+        ? `US + EU + JP + UK · 추정치 보간${globalM2MissingRegions.length ? ` (${globalM2MissingRegions.map(r => regionLabel(r)).join('/')})` : ''}`
+        : 'US + EU + JP + UK',
       source: 'WorldBank',
+      estimated: globalM2Estimated,
     },
     {
       name: '통합 유동성',
@@ -309,7 +323,17 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
                     <span className="text-xs bg-[#21262d] text-gray-400 px-2 py-0.5 rounded-full">{ind.source}</span>
                   </td>
                   <td className="px-3 py-3.5 text-right">
-                    <span className="font-mono font-bold text-white">{ind.value}</span>
+                    <div className="flex items-center justify-end gap-1.5">
+                      <span className="font-mono font-bold text-white">{ind.value}</span>
+                      {ind.estimated && (
+                        <GlobalM2EstimateBadge
+                          estimated
+                          missingRegions={globalM2MissingRegions}
+                          size="xs"
+                          label="추정"
+                        />
+                      )}
+                    </div>
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <StatusBadge type={ind.status} />
@@ -361,6 +385,20 @@ export default function MacroTab({ monetaryData, defiStats, stablecoinData, sign
 
         {/* 글로벌 유동성 지수 */}
         <DarkCard title="글로벌 유동성 지수 (M2 + 스테이블코인)" icon="🌊" timestamp={monetaryData?.lastUpdated || null}>
+          {globalM2Estimated && (
+            <div className="mb-3 flex items-start gap-2">
+              <GlobalM2EstimateBadge
+                estimated
+                missingRegions={globalM2MissingRegions}
+                size="xs"
+              />
+              <span className="text-[10px] text-amber-300/80 leading-snug">
+                {globalM2MissingRegions.length > 0
+                  ? `${globalM2MissingRegions.map(r => regionLabel(r)).join(', ')} 데이터가 없어 미국 M2 프록시(eu=0.78, jp=0.36, uk=0.14)로 보간되었습니다.`
+                  : '글로벌 M2 일부가 미국 M2 기반 프록시로 보간된 추정치입니다.'}
+              </span>
+            </div>
+          )}
           <div className="grid grid-cols-3 gap-2 mb-4">
             {[
               { label: 'M2+스테이블', value: globalLiq > 0 ? `$${(globalLiq/1e12).toFixed(2)}T` : '-', color: 'text-indigo-400' },

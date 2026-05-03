@@ -4,6 +4,7 @@ import Chart from 'chart.js/auto'
 import type { MonetaryData, FearGreedItem, Signal, StablecoinData } from '../hooks/useMoneyTrackerData'
 import { UpdateTimestamp } from './UpdateTimestamp'
 import { SkeletonCard } from './SkeletonCard'
+import GlobalM2EstimateBadge, { regionLabel } from './GlobalM2EstimateBadge'
 
 interface InsightsTabProps {
   monetaryData: MonetaryData | null
@@ -200,6 +201,9 @@ export default function InsightsTab({ monetaryData, fearGreedData, stablecoinDat
   const m2Prev   = m2Hist[m2Hist.length - 2]?.value || 0
   const m2Trend  = m2Prev > 0 ? ((m2Latest - m2Prev) / m2Prev) * 100 : 0
   const m2TrendUp = m2Trend > 0
+  const globalM2Estimated = !!(monetaryData?.globalM2Estimated || monetaryData?.diagnostics?.globalM2Estimated)
+  const globalM2MissingRegions =
+    monetaryData?.globalM2MissingRegions || monetaryData?.diagnostics?.globalM2MissingRegions || []
 
   // 인사이트 서사 생성
   const narrative = fngValue < 30
@@ -228,11 +232,26 @@ export default function InsightsTab({ monetaryData, fearGreedData, stablecoinDat
             <div className="flex items-start gap-3 p-4 bg-[#21262d] rounded-lg">
               <span className="text-2xl">📊</span>
               <div>
-                <div className="text-xs text-gray-400 mb-1">글로벌 M2 유동성</div>
+                <div className="text-xs text-gray-400 mb-1 flex items-center gap-1.5">
+                  글로벌 M2 유동성
+                  <GlobalM2EstimateBadge
+                    estimated={globalM2Estimated}
+                    missingRegions={globalM2MissingRegions}
+                    size="xs"
+                  />
+                </div>
                 <div className="text-white font-bold text-lg">${((monetaryData?.globalM2 || 0) / 1e12).toFixed(2)}T</div>
                 <div className={`text-xs mt-0.5 ${m2TrendUp ? 'text-emerald-400' : 'text-red-400'}`}>
                   {m2TrendUp ? '▲ 확장' : '▼ 수축'} {Math.abs(m2Trend).toFixed(2)}% (전월 대비)
                 </div>
+                {globalM2Estimated && globalM2MissingRegions.length > 0 && (
+                  <div
+                    className="text-[10px] text-amber-300/80 mt-1 leading-snug"
+                    title="누락된 지역은 미국 M2 기준 프록시 비율(eu=0.78, jp=0.36, uk=0.14)로 보간되었습니다."
+                  >
+                    {globalM2MissingRegions.map(r => regionLabel(r)).join(', ')} 데이터가 비어 있어 미국 M2 프록시로 보간된 추정치입니다.
+                  </div>
+                )}
               </div>
             </div>
 
@@ -340,7 +359,19 @@ export default function InsightsTab({ monetaryData, fearGreedData, stablecoinDat
             </div>
           )}
         </div>
-        <p className="text-[10px] text-gray-600 mt-3 text-right">* 글로벌 M2 (US+EU+JP+UK) 와 나스닥 지수의 월간 동기화 차트</p>
+        <p className="text-[10px] text-gray-600 mt-3 text-right">
+          * 글로벌 M2 (US+EU+JP+UK) 와 나스닥 지수의 월간 동기화 차트
+          {globalM2Estimated && (
+            <span
+              className="ml-1 text-amber-300/80"
+              title="누락 지역은 미국 M2 기반 프록시(eu=0.78, jp=0.36, uk=0.14)로 보간되었습니다."
+            >
+              · 추정치 포함{globalM2MissingRegions.length > 0
+                ? ` (${globalM2MissingRegions.map(r => regionLabel(r)).join('/')} 보간)`
+                : ''}
+            </span>
+          )}
+        </p>
       </div>
 
     </div>
